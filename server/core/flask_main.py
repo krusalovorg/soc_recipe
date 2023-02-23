@@ -1,12 +1,14 @@
 import sys
 
-from flask import Flask, flash, render_template, url_for, request, redirect, abort
+from flask import Flask, jsonify, flash, render_template, url_for, request, redirect, abort
 from flask_migrate import Migrate
 
 from data.__models import SqlBase
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
+
+from database import Database
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -20,29 +22,47 @@ session = Session()
 migrate = Migrate(app, engine)
 
 
+""" Пример json для добавления"""
+recipe = {
+    "user": {
+        "recipe": [
+            {"text": "text"},
+            {"text": "картинка #1"},
+            {"text": "text"},
+        ],
+        "comments": [],
+        "likes": [],
+    }
+}
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     pass
 
 
-@app.route('/add_recipes', methods=['post', 'get'])
+# Добавить рецепт
+@app.route('api/add_recipes', methods=['post'])
 def add_recipes():
     return
 
 
-@app.route('/rem_recipes', methods=['post', 'get'])
+# Удалить рецепт
+@app.route('api/rem_recipes', methods=['post', 'get'])
 def rem_recipes():
     return
 
 
-@app.route('/edit_recipes', methods=['post', 'get'])
+# Изменить рецепт
+@app.route('api/edit_recipes', methods=['post', 'get'])
 def edit_recipes():
     return
 
 
-@app.route('/get_recipes', methods=['post', 'get'])
+# Получить рецепт
+@app.route('api/get_recipes', methods=['get'])
 def get_recipes():
-    return
+    return jsonify({'recipe': recipe})
 
 
 if __name__ == '__main__':

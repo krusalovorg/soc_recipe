@@ -36,7 +36,7 @@ class Ingredient(SqlBase):
 associated_links = sqlalchemy.Table(
     'ingredients_to_recipes', SqlBase.metadata,
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('recipe.id')),
+                      sqlalchemy.ForeignKey('recipes.id')),
     sqlalchemy.Column('ingredient_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('ingredients.id'))
 )

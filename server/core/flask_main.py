@@ -1,14 +1,13 @@
 import sys
+from time import time
 
-from flask import Flask, jsonify, flash, render_template, url_for, request, redirect, abort
+from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
 
-from data.__models import SqlBase
+from data.__models import SqlBase, User
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-
-from database import Database
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -20,7 +19,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 migrate = Migrate(app, engine)
-
 
 """ Пример json для добавления"""
 recipe = {
@@ -41,26 +39,58 @@ def index():
     pass
 
 
+# Регистрация пользователя
+@app.route('/api/user_reg', methods=['post'])
+def user_reg():
+    name = request.json["name"]
+    surname = request.json["surname"]
+    email = request.json["email"]
+    password = request.json["password"]
+    user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
+    if user:
+        return make_response("User alredy exist")
+    if name and surname and email and password:
+        new_user = User(name=name, surname=surname, email=email, password=User.set_password(password),
+                        created_date=time())
+        session.add(new_user)
+        session.commit()
+    else:
+        return abort(400)
+
+
 # Добавить рецепт
-@app.route('api/add_recipes', methods=['post'])
-def add_recipes():
-    return
+@app.route('/api/add_recipes/<int:user_id>', methods=['POST'])
+def add_recipes(user_id):
+    if not request.json:
+        abort(400)
+    recipe = {
+        "title": request.json["title"],
+        "category": request.json["category"],
+        "proteins": request.json.get["proteins"],
+        "calories": request.json.get["calories"],
+        "fats": request.json.get["fats"],
+        "carbohydrates": request.json.get["carbohydrates"],
+        "ingredients": request.json["ingredients"],
+    }
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        pass
 
 
 # Удалить рецепт
-@app.route('api/rem_recipes', methods=['post', 'get'])
+@app.route('/api/rem_recipes', methods=['DELETE'])
 def rem_recipes():
-    return
+    pass
 
 
 # Изменить рецепт
-@app.route('api/edit_recipes', methods=['post', 'get'])
+@app.route('/api/edit_recipes', methods=['PUT'])
 def edit_recipes():
-    return
+    pass
 
 
 # Получить рецепт
-@app.route('api/get_recipes', methods=['get'])
+@app.route('/api/get_recipes', methods=['GET'])
 def get_recipes():
     return jsonify({'recipe': recipe})
 

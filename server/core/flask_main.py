@@ -4,7 +4,7 @@ from time import time
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
 
-from data.__models import SqlBase, User
+from data.__models import SqlBase, User, Recipe
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -61,20 +61,7 @@ def user_reg():
 # Добавить рецепт
 @app.route('/api/add_recipes/<int:user_id>', methods=['POST'])
 def add_recipes(user_id):
-    if not request.json:
-        abort(400)
-    recipe = {
-        "title": request.json["title"],
-        "category": request.json["category"],
-        "proteins": request.json.get["proteins"],
-        "calories": request.json.get["calories"],
-        "fats": request.json.get["fats"],
-        "carbohydrates": request.json.get["carbohydrates"],
-        "ingredients": request.json["ingredients"],
-    }
-    user = User.query.filter_by(id=user_id).first()
-    if user:
-        pass
+    pass
 
 
 # Удалить рецепт

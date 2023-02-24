@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
 
@@ -23,9 +25,28 @@ def index():
     pass
 
 
+# Логин
+@app.route("/api/user_login", methods=["POST", 'GET'])
+def login():
+    if not request.json:
+        abort(400)
+    users = session.query(User).all()
+    email = request.json["email"]
+    password = request.json["password"]
+    for user in users:
+        if user.email == email and user.check_password(password):
+            super_secret = "H@S213s$-1" + email + user.hashed_password
+            sshkey = ""
+            for i in range(24):
+                sshkey += random.choice(super_secret)
+
+
+
 # Регистрация пользователя
 @app.route('/api/user_reg', methods=['post'])
 def user_reg():
+    if not request.json:
+        abort(400)
     name = request.json["name"]
     surname = request.json["surname"]
     email = request.json["email"]
@@ -71,20 +92,22 @@ def add_recipes(user_id):
 # Удалить рецепт
 @app.route('/api/rem_recipes', methods=['DELETE'])
 def rem_recipes():
-    pass
+    if not request.json:
+        abort(400)
 
 
 # Изменить рецепт
 @app.route('/api/edit_recipes', methods=['PUT'])
 def edit_recipes():
-    pass
+    if not request.json:
+        abort(400)
 
 
 # Получить рецепт
 @app.route('/api/get_recipes', methods=['GET'])
 def get_recipes():
     recipe = session.query(Recipe).all()
-    print(recipe)
+    print(session.query(Session).all())
     return jsonify({'recipe': recipe})
 
 

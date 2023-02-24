@@ -55,17 +55,19 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 24,
         marginVertical: 5,
-        color: 'black'
+        color: 'black',
+        fontFamily: 'Montserrat-Regular'
     },
     text: {
         fontSize: 16,
         lineHeight: 24,
         marginBottom: 10,
+        fontFamily: 'Montserrat-Regular'
     },
     tableContainer: {
         marginTop: 10,
-        borderWidth: 1,
-        borderColor: '#000',
+        borderWidth: 2,
+        borderColor: 'black',
     },
     tableRow: {
         flexDirection: 'row',
@@ -74,11 +76,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderBottomWidth: 1,
-        borderBottomColor: '#000',
+        borderBottomColor: 'black',
     },
     tableCell: {
         fontSize: 16,
         lineHeight: 24,
+        color: "black"
     },
 });
 

@@ -2,55 +2,33 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Comments = ({ comments, level = 0 }) => {
-    // Используем useState hook для управления состоянием input элемента
-    const [inputValue, setInputValue] = useState('');
-
-    // Обработчик события изменения значения input элемента
-    const handleInputChange = (value) => {
-        setInputValue(value);
-    };
-
-    // Обработчик события отправки комментария на сервер
-    const handleCommentSubmit = () => {
-        // отправка комментария на сервер
-        setInputValue('');
-    };
-
     return (
-        <View style={{ marginLeft: level * 20 }}>
+        <View style={{ marginLeft: level * 20, marginBottom: 10 }}>
             {/* Комментарии */}
-            {comments.map((comment) => (
-                <View key={comment.id}>
-                    {/* Отображаем текст комментария и количество лайков */}
-                    <Text style={styles.commentText}>
-                        {comment.text}{' '}
-                        {comment.likes.length > 0 && (
-                            <Text style={styles.likesCount}>
-                                {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
-                            </Text>
-                        )}
-                    </Text>
+            {comments.map((comment, i) => (
+                <>
+                    <View key={i}>
+                        {/* Отображаем текст комментария и количество лайков */}
+                        <Text style={styles.avtor}>
+                            {comment.avtor && comment.avtor.name}
+                        </Text>
+                        <Text style={styles.commentText}>
+                            {comment.text}{' '}
+                            {comment.likes.length > 0 && (
+                                <Text style={styles.likesCount}>
+                                    {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
+                                </Text>
+                            )}
+                        </Text>
 
-                    {/* Если есть ответы на комментарий, рекурсивно вызываем этот же компонент */}
-                    {comment.answers.length > 0 && (
+                        {/* Если есть ответы на комментарий, рекурсивно вызываем этот же компонент */}
+                        {/* {comment.answers.length > 0 && (
                         <Comments comments={comment.answers} level={level + 1} />
-                    )}
-                </View>
+                    )} */}
+                    </View>
+                    <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
+                </>
             ))}
-            {/* Инпут для ввода комментария и кнопка отправки */}
-            <View style={styles.inputContainer}>
-                <TextInput
-                    style={styles.input}
-                    value={inputValue}
-                    onChangeText={handleInputChange}
-                    placeholder="Оставьте комментарий..."
-                    placeholderTextColor="#777"
-                />
-                <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
-                    <Text style={styles.buttonText}>Отправить</Text>
-                </TouchableOpacity>
-            </View>
-
         </View>
     );
 };
@@ -81,6 +59,9 @@ const styles = StyleSheet.create({
     },
     commentText: {
         marginBottom: 5,
+    },
+    avtor: {
+
     },
     likesCount: {
         color: '#2196F3',

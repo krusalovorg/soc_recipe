@@ -8,7 +8,4 @@ export const AuthContext = createContext({
     login: noop,
     logout: noop,
     isAuthenticated: false,
-    setNewPinCode: noop,
-    PinCode: null,
-    AuthPinCode: noop,
 })

@@ -43,13 +43,15 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        color: 'black'
+        color: 'black',
+        fontFamily: 'Montserrat-Medium'
     },
     views: {
         marginTop: 10
     },
     name: {
-        fontSize: 15
+        fontSize: 15,
+        fontFamily: 'Lato-Regular'
     }
 })
 

@@ -45,6 +45,9 @@ const HomeScreen = ({navigation}) => {
                 <Recipe navigation={navigation}/>
                 <Recipe navigation={navigation}/>
                 <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
             </ScrollView>
         </SafeAreaView>
     )

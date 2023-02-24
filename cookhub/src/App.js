@@ -34,7 +34,7 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      {token == null ?
+      {token != null ?
         <Stack.Navigator>
           <Stack.Screen
             name="reg"

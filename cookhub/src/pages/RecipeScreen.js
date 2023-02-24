@@ -41,17 +41,17 @@ const RecipeScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView style={styles.page_contanier}>
-                <ImageBackground 
-                    resizeMode='cover'
-                    source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }}
-                    blurRadius={200}>
-                    <View style={styles.title_contanier}>
-                        <Text style={styles.title}>Салат Цезарь</Text>
-                        <TouchableOpacity style={styles.back} onPress={() => {navigation.goBack()}}>
-                            <Image style={styles.back_image} source={back} />
-                        </TouchableOpacity>
-                    </View>
+            <ImageBackground
+                resizeMode='cover'
+                source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }}
+                blurRadius={200}>
+                <View style={styles.title_contanier}>
+                    <Text style={styles.title}>Салат Цезарь</Text>
+                    <TouchableOpacity style={styles.back} onPress={() => { navigation.goBack() }}>
+                        <Image style={styles.back_image} source={back} />
+                    </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.page_contanier}>
                     <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />
                     <View style={styles.content}>
                         <Text style={styles.desc}>
@@ -77,9 +77,10 @@ const RecipeScreen = ({ navigation }) => {
                         </View>
                         <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
                         <Comments comments={comments} />
+                        <View style={{ width: "100%", paddingHorizontal: 10, height: 100, marginVertical: 5 }}></View>
                     </View>
-                </ImageBackground>
-            </ScrollView>
+                </ScrollView>
+            </ImageBackground>
         </SafeAreaView>
     )
 }

@@ -1,4 +1,3 @@
-import sys
 from time import time
 
 from flask import Flask, jsonify, make_response, request, abort
@@ -35,7 +34,7 @@ def user_reg():
     password = request.json["password"]
     user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
-        return make_response("User alredy exist")
+        return make_response("User already exist")
     if name and surname and email and password:
         new_user = User(name=name, surname=surname, email=email, password=User.set_password(password))
         session.add(new_user)
@@ -67,6 +66,7 @@ def add_recipes(user_id):
             new_recipe.ingredients.extend(ingredients)
             session.commit()
     return make_response("Successful add")
+
 
 # Удалить рецепт
 @app.route('/api/rem_recipes', methods=['DELETE'])

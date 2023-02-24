@@ -20,6 +20,7 @@ class Recipe(SqlBase):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
     time = sqlalchemy.Column(sqlalchemy.Numeric, nullable=False)
+    steps = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Numeric)
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
@@ -48,8 +49,8 @@ class User(SqlBase, UserMixin, SerializerMixin):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
-    hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=False)
+    hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 
     likes = orm.relationship('Recipe', secondary='recipes_to_users', backref='users')
@@ -69,7 +70,8 @@ associated_recipes = sqlalchemy.Table(
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('recipes.id')),
     sqlalchemy.Column('ingredient_id', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('ingredients.id'))
+                      sqlalchemy.ForeignKey('ingredients.id')),
+    sqlalchemy.Column('weight', sqlalchemy.Numeric)
 )
 
 

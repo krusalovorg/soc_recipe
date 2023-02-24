@@ -43,7 +43,6 @@ def login():
                 sshkey += random.choice(super_secret)
 
 
-
 # Регистрация пользователя
 @app.route('/api/user_reg', methods=['post'])
 def user_reg():
@@ -132,8 +131,8 @@ def search():
         for recipe in recipes:
             print(recipe.title)
     else:
-         return make_response('Nothing found')
+        return make_response('Nothing found')
 
-        
+
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

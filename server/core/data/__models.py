@@ -71,7 +71,7 @@ associated_recipes = sqlalchemy.Table(
                       sqlalchemy.ForeignKey('recipes.id')),
     sqlalchemy.Column('ingredient_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('ingredients.id')),
-    sqlalchemy.Column('weight', sqlalchemy.Numeric)
+    sqlalchemy.Column('quantity', sqlalchemy.String)
 )
 
 

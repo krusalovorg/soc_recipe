@@ -1,5 +1,3 @@
-from time import time
-
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
 
@@ -50,6 +48,8 @@ def add_recipes(user_id):
         abort(400)
     title = request.json["title"]
     category = request.json["category"]
+    time = request.json["time"]
+    steps = request.json["steps"]
     calories = request.json["calories"]
     proteins = request.json["proteins"]
     fats = request.json["fats"]
@@ -57,7 +57,7 @@ def add_recipes(user_id):
     ingredients = request.json["ingredients"]
     user = User.query.filter_by(id=user_id).first()
     if user:
-        new_recipe = Recipe(title=title, category=category, time=time(),
+        new_recipe = Recipe(title=title, category=category, time=time, steps=steps,
                             calories=calories, proteins=proteins, fats=fats,
                             carbohydrates=carbohydrates)
         session.add(new_recipe)

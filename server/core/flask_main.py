@@ -6,6 +6,8 @@ from data.__models import SqlBase, User, Recipe
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 
+from fuzzywuzzy import fuzz
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
 
@@ -88,5 +90,27 @@ def get_recipes():
     return jsonify({'recipe': recipe})
 
 
+@app.route('/api/search', methods=['GET'])
+def search():
+    if request.method == 'POST':
+        recipes = []
+        input_string = request.form.get('search')
+        input_list = input_string.split()
+        for recipe in session.query(Recipe).all():
+            ingredient_names = [ingredient.name for ingredient in recipe.ingredients]
+            ingredient_names_lower = [name.lower() for name in ingredient_names]
+            for input_word in input_list:
+                input_word_lower = input_word.lower()
+                for name, name_lower in zip(ingredient_names, ingredient_names_lower):
+                    ratio = fuzz.ratio(input_word_lower, name_lower)
+                    if ratio > 70:  # задаем порог совпадения
+                        recipes.append(recipe)
+                        break
+        for recipe in recipes:
+            print(recipe.title)
+    else:
+         return make_response('Nothing found')
+
+        
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

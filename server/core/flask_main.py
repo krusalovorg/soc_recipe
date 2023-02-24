@@ -42,7 +42,7 @@ def login():
             for i in range(24):
                 sshkey += random.choice(super_secret)
                 ses['user_id'] = {"user_id": user.id, "key": sshkey}
-    return jsonify({'status': True})
+    return jsonify({'status': True, "sshkey": sshkey})
 
 
 # Регистрация пользователя

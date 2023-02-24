@@ -1,6 +1,6 @@
 import random
 
-from flask import Flask, jsonify, make_response, request, abort
+from flask import Flask, jsonify, make_response, request, abort, session as ses
 from flask_migrate import Migrate
 
 from data.__models import SqlBase, User, Recipe
@@ -30,8 +30,8 @@ def index():
 # Логин
 @app.route("/api/user_login", methods=["POST", 'GET'])
 def login():
-    if not request.json:
-        abort(400)
+    # if not request.json:
+    #     abort(400)
     users = session.query(User).all()
     email = request.json["email"]
     password = request.json["password"]
@@ -41,6 +41,8 @@ def login():
             sshkey = ""
             for i in range(24):
                 sshkey += random.choice(super_secret)
+                ses['user_id'] = {"user_id": user.id, "key": sshkey}
+    return jsonify({'status': True})
 
 
 # Регистрация пользователя
@@ -54,13 +56,14 @@ def user_reg():
     password = request.json["password"]
     user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
-        return make_response("User already exist")
+        return jsonify({'status': False})
     if name and surname and email and password:
         new_user = User(name=name, surname=surname, email=email, password=User.set_password(password))
         session.add(new_user)
         session.commit()
     else:
         abort(400)
+    return jsonify({'status': True})
 
 
 # Добавить рецепт
@@ -87,7 +90,7 @@ def add_recipes(user_id):
         if ingredients:
             new_recipe.ingredients.extend(ingredients)
             session.commit()
-    return make_response("Successful add")
+    return jsonify({'status': True})
 
 
 # Удалить рецепт
@@ -95,6 +98,7 @@ def add_recipes(user_id):
 def rem_recipes():
     if not request.json:
         abort(400)
+    jsonify({'status': True})
 
 
 # Изменить рецепт
@@ -102,6 +106,7 @@ def rem_recipes():
 def edit_recipes():
     if not request.json:
         abort(400)
+    jsonify({'status': True})
 
 
 # Получить рецепт

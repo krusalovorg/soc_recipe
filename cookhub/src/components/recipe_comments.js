@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Comments = ({ comments, level = 0 }) => {
     // Используем useState hook для управления состоянием input элемента
@@ -18,24 +18,17 @@ const Comments = ({ comments, level = 0 }) => {
 
     return (
         <View style={{ marginLeft: level * 20 }}>
-            {/* Инпут для ввода комментария и кнопка отправки */}
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TextInput
-                    style={{ flex: 1, marginRight: 10 }}
-                    value={inputValue}
-                    onChangeText={handleInputChange}
-                />
-                <TouchableOpacity onPress={handleCommentSubmit}>
-                    <Text>Отправить</Text>
-                </TouchableOpacity>
-            </View>
             {/* Комментарии */}
             {comments.map((comment) => (
                 <View key={comment.id}>
                     {/* Отображаем текст комментария и количество лайков */}
-                    <Text>
+                    <Text style={styles.commentText}>
                         {comment.text}{' '}
-                        {comment.likes.length > 0 && `${comment.likes.length} лайка`}
+                        {comment.likes.length > 0 && (
+                            <Text style={styles.likesCount}>
+                                {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
+                            </Text>
+                        )}
                     </Text>
 
                     {/* Если есть ответы на комментарий, рекурсивно вызываем этот же компонент */}
@@ -44,8 +37,54 @@ const Comments = ({ comments, level = 0 }) => {
                     )}
                 </View>
             ))}
+            {/* Инпут для ввода комментария и кнопка отправки */}
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    value={inputValue}
+                    onChangeText={handleInputChange}
+                    placeholder="Оставьте комментарий..."
+                    placeholderTextColor="#777"
+                />
+                <TouchableOpacity style={styles.button} onPress={handleCommentSubmit}>
+                    <Text style={styles.buttonText}>Отправить</Text>
+                </TouchableOpacity>
+            </View>
+
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    input: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 10,
+        color: '#333',
+    },
+    button: {
+        backgroundColor: '#2196F3',
+        padding: 10,
+        borderRadius: 5,
+        marginLeft: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    commentText: {
+        marginBottom: 5,
+    },
+    likesCount: {
+        color: '#2196F3',
+    },
+});
 
 export default Comments;

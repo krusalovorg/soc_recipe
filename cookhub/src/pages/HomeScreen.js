@@ -40,7 +40,11 @@ const HomeScreen = ({navigation}) => {
                         </Text>
                     </TouchableHighlight>
                 </View>
+                <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#F2F4F5", height: 2, marginVertical: 5 }}></View>
                 <Text style={styles.title_contanier}>Актуальное</Text>
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
                 <Recipe navigation={navigation}/>
                 <Recipe navigation={navigation}/>
                 <Recipe navigation={navigation}/>
@@ -74,6 +78,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
         marginLeft: 15,
+        fontFamily: 'Montserrat-Regular'
     },
 
     searchSection: {
@@ -86,7 +91,8 @@ const styles = StyleSheet.create({
         borderColor: '#F2F4F5',
         borderWidth: 2,
         borderRadius: 20,
-        marginHorizontal: 15
+        marginHorizontal: 15,
+        marginTop: 10
     },
     searchIcon: {
         padding: 10,

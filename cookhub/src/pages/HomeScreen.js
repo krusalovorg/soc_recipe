@@ -3,7 +3,7 @@ import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
     const [findValue, setFindValue] = useState("");
     return (
         <SafeAreaView>
@@ -34,11 +34,16 @@ const HomeScreen = () => {
                             Завтрак
                         </Text>
                     </TouchableHighlight>
+                    <TouchableHighlight style={styles.category}>
+                        <Text>
+                            Другое
+                        </Text>
+                    </TouchableHighlight>
                 </View>
                 <Text style={styles.title_contanier}>Актуальное</Text>
-                <Recipe />
-                <Recipe />
-                <Recipe />
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
+                <Recipe navigation={navigation}/>
             </ScrollView>
         </SafeAreaView>
     )
@@ -46,13 +51,13 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
     page_contanier: {
-        width: '100%',
-        height: 1000,
-        minHeight: Dimensions.get('window').height,
+        flexGrow: 1,
         backgroundColor: 'white',
     },
     categorys: {
-        flexDirection: "row"
+        flexDirection: "row",
+        marginTop: 10,
+        marginHorizontal: 15
     },
     category: {
         marginHorizontal: 5,
@@ -76,9 +81,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: '#F2F4F5',
         paddingHorizontal: 20,
-        borderColor: '#424242',
+        borderColor: '#F2F4F5',
         borderWidth: 2,
         borderRadius: 20,
         marginHorizontal: 15
@@ -96,8 +101,8 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         paddingBottom: 10,
         paddingLeft: 0,
-        backgroundColor: '#fff',
-        color: '#424242',
+        backgroundColor: '#F2F4F5',
+        color: 'black',
     }
 })
 

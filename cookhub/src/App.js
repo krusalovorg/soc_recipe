@@ -16,6 +16,7 @@ import HomeScreen from './pages/HomeScreen';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DrawerProfile from './components/profile';
+import RecipeScreen from './pages/RecipeScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -24,13 +25,21 @@ const Stack = createNativeStackNavigator();
 const App = () => {
   return (
     <NavigationContainer>
-      <Drawer.Navigator drawerContent={(props) => <DrawerProfile {...props} />}>
-          <Drawer.Screen
-            name="home"
-            component={HomeScreen}
-            options={{
-              title: 'Рецепты',
-            }} />
+      <Drawer.Navigator
+        drawerContent={(props) => <DrawerProfile {...props} />}
+        initialRouteName={"home"}>
+        <Drawer.Screen
+          name="home"
+          component={HomeScreen}
+          options={{
+            title: 'Рецепты',
+          }} />
+        <Drawer.Screen
+          name="recipe"
+          component={RecipeScreen}
+          options={{
+            drawerItemStyle: {height: 0}
+          }}/>
       </Drawer.Navigator>
     </NavigationContainer>
   );

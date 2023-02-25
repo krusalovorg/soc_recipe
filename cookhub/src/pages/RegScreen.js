@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 // import axios from 'axios';
@@ -7,15 +8,17 @@ const RegScreen = () => {
     const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [tag, setTag] = useState('');
 
     const handleRegistration = async () => {
         try {
-            const response = await axios.post('https://siteurl/api/user_reg', {
-                name: name,
-                surname: surname,
-                email: email,
-                password: password,
-            });
+            const response = await axios.post('https://localhost:8000/api/user_reg', {
+                name,
+                surname,
+                email,
+                password,
+                tag
+            }, {method: 'POST'});
             console.log(response.data);
         } catch (error) {
             console.log(error);
@@ -52,6 +55,17 @@ const RegScreen = () => {
                         onChangeText={setEmail}
                         value={email}
                         keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                </View>
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Тэг</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Введите ваш тэг"
+                        onChangeText={setTag}
+                        value={tag}
+                        keyboardType="default"
                         autoCapitalize="none"
                     />
                 </View>

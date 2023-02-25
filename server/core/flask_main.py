@@ -28,7 +28,7 @@ def index():
 
 
 # Получаем пользователя для отображения его страницы
-@app.route("api/get_user", methods=["GET"])
+@app.route("/api/get_user", methods=["GET"])
 def get_user():
     if not request.json:
         abort(400)

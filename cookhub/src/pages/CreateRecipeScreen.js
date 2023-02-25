@@ -97,6 +97,7 @@ const CreateRecipeScreen = ({navigation}) => {
       carbohydrates,
       ingredients,
     };
+    console.log(category)
     console.log("======")
     Object.keys(data).map((key) => {
       const item = data[key];
@@ -143,7 +144,7 @@ const CreateRecipeScreen = ({navigation}) => {
         <Text style={styles.label}>Категория</Text>
         <Picker
           selectedValue={category}
-          onValueChange={setCategory}
+          onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}
           style={{ borderWidth: 1 }}
         >
           <Picker.Item label="Завтрак" value="lunch" />

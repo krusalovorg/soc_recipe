@@ -34,6 +34,47 @@ def index():
     pass
 
 
+# Получаем профль другого пользователя
+@app.route("/api/get_user_profile")
+def get_user_profile():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_tag = request.json.get("tag")
+    if session.query(Sessions).order_by(sshkey=sshkey).first():
+        user = session.query(User).order_by(tag=user_tag).first()
+        recipes = session.query(Recipe).filter_by(author=user.id).all()
+        return jsonify({
+            "status": True,
+            "name": user.name,
+            "surname": user.surname,
+            "likes": user.likes,
+            'recipes': recipes
+        })
+    return jsonify({"status": False})
+
+
+# Получаем свой профль
+@app.route("/api/get_profile")
+def get_profile():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_tag = request.json.get("tag")
+    user = session.query(User).order_by(tag=user_tag).first()
+    if session.query(Sessions).order_by(sshkey=sshkey, user_id=user.id).first():
+        recipes = session.query(Recipe).filter_by(author=user.id).all()
+        return jsonify({
+            "status": True,
+            "name": user.name,
+            "surname": user.surname,
+            "email": user.email,
+            "likes": user.likes,
+            'recipes': recipes
+        })
+    return jsonify({"status": False})
+
+
 # Получаем пользователя для отображения его страницы
 @app.route("/api/get_user", methods=["GET"])
 def get_user():

@@ -19,16 +19,16 @@ class Recipe(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
-    time = sqlalchemy.Column(sqlalchemy.Numeric, nullable=False)
+    time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     steps = sqlalchemy.Column(sqlalchemy.JSON, nullable=False)
-    calories = sqlalchemy.Column(sqlalchemy.Numeric)
-    proteins = sqlalchemy.Column(sqlalchemy.Numeric)
-    fats = sqlalchemy.Column(sqlalchemy.Numeric)
-    carbohydrates = sqlalchemy.Column(sqlalchemy.Numeric)
+    calories = sqlalchemy.Column(sqlalchemy.Integer)
+    proteins = sqlalchemy.Column(sqlalchemy.Integer)
+    fats = sqlalchemy.Column(sqlalchemy.Integer)
+    carbohydrates = sqlalchemy.Column(sqlalchemy.Integer)
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
-    views = sqlalchemy.Column(sqlalchemy.Numeric)
-    likes = sqlalchemy.Column(sqlalchemy.Numeric)
+    views = sqlalchemy.Column(sqlalchemy.Integer)
+    likes = sqlalchemy.Column(sqlalchemy.Integer)
     ingredients = sqlalchemy.Column(sqlalchemy.JSON)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
@@ -91,8 +91,6 @@ class Article(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
-
-
 
 
 associated_access = sqlalchemy.Table(

@@ -42,7 +42,6 @@ def get_user():
             "name": user.name,
             "surname": user.surname,
             "recipes": recipes
-
         })
     return jsonify({"status": False})
 

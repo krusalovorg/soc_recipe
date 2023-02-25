@@ -6,14 +6,16 @@ import RecipeContent from '../components/recipe_content';
 import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
 import Loader from '../components/loader';
+import { getRecipe } from '../api/recipes';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
     const [loading, setLoading] = useState(true);
+    const [data, setData] = useState([]);
+    const [steps, setSteps] = useState([]);
+    const [comments, setComments] = useState([]);
 
     const id = route.params.data;
-    const data = [];
-    const comments = [];
 
     // Обработчик события изменения значения input элемента
     const handleInputChange = (value) => {
@@ -27,8 +29,15 @@ const RecipeScreen = ({ navigation, route }) => {
     };
 
     async function loadRecipe() {
-        
-        setLoading(true);
+        const recipe = await getRecipe(id);
+        if (recipe) {
+            console.log('RECIPE',recipe)
+            setData(recipe);
+            console.log(data)
+            setSteps([...recipe.steps, {type: "table", table: data.ingredients}]);
+            setComments([]); //comments добавить
+        }
+        setLoading(false);
     }
 
     useEffect(()=>{
@@ -65,7 +74,7 @@ const RecipeScreen = ({ navigation, route }) => {
                 source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }}
                 blurRadius={200}>
                 <View style={styles.title_contanier}>
-                    <Text style={styles.title}>Салат Цезарь</Text>
+                    <Text style={styles.title}>{data.title}</Text>
                     <TouchableOpacity style={styles.back} onPress={() => { navigation.goBack() }}>
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
@@ -77,7 +86,7 @@ const RecipeScreen = ({ navigation, route }) => {
                             Простой салат Цезарь с курицей — народный вариант любимого классического блюда.
                             А народное не может быть сложным, поэтому я внес небольшие коррективы. Как известно, традиционный салат славится своей заправкой.
                         </Text>
-                        <RecipeContent data={data} />
+                        <RecipeContent data={steps} />
 
 
                         {/* Инпут для ввода комментария и кнопка отправки */}

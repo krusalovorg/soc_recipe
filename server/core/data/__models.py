@@ -29,9 +29,10 @@ class Recipe(SqlBase):
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
     views = sqlalchemy.Column(sqlalchemy.Numeric)
     likes = sqlalchemy.Column(sqlalchemy.Numeric)
+    ingredients = sqlalchemy.Column(sqlalchemy.JSON)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
-    ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
+    # ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 

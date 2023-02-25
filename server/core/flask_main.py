@@ -137,12 +137,10 @@ def add_recipes():
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, author=user.tag, views=0, likes=0)
+                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, views=0, likes=0)
             session.add(new_recipe)
             session.commit()
             if ingredients:
-                for ingredient in ingredients:
-                    pass
                 session.commit()
         return jsonify({'status': True})
     return jsonify({"status": False})

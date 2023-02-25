@@ -2,24 +2,7 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { server_ip } from '../api/config';
-// import axios from 'axios';
-
-function Input(props) {
-    return (
-        <View style={styles.inputContainer}>
-            <Text style={styles.label}>{props.label}</Text>
-            <TextInput
-                style={styles.input}
-                placeholder={props.placeholder}
-                onChangeText={props.onChangeText}
-                keyboardType={props.keyboardType}
-                value={props.value}
-                {...props}
-            />
-            {props.error && <Text style={[styles.label, { color: 'red', marginBottom: 0 }]}>{props.error}</Text>}
-        </View>
-    )
-}
+import InputAuth from '../components/InputAuth';
 
 const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,7 +14,7 @@ function validatePassword(password) {
     return regex.test(password);
 }
 
-const RegScreen = () => {
+const RegScreen = ({navigation}) => {
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
@@ -39,14 +22,20 @@ const RegScreen = () => {
     const [tag, setTag] = useState('');
 
     const [error, setError] = useState({});
-
+    
     const handleRegistration = async () => {
         setError({
             name: (name ? "" : "Заполните поле!"),
             surname: (surname ? "" : "Заполните поле!"),
             email: (validateEmail(email) ? "" : "Почта не валидная!"),
             tag: (tag ? "" : "Заполните поле!"),
-            password: (validatePassword(password) < 8 ? "" : "Минимум 8 символов!"),
+            password: (validatePassword(password) ? "" : "Минимум 8 символов!"),
+        })
+
+        error.map((item) => {
+            if (item != '') {
+                return false;
+            }
         })
 
         try {
@@ -57,7 +46,9 @@ const RegScreen = () => {
                 password,
                 tag
             });
-            console.log('GET', response.data);
+            if (response.data.status == true) {
+                navigation.navigate('login');
+            }
         } catch (error) {
             console.log(error);
         }
@@ -69,18 +60,18 @@ const RegScreen = () => {
                 <View style={styles.contanier_scroll}>
                     <Text style={styles.title}>Регистрация</Text>
                     <View style={styles.form}>
-                        <Input placeholder="Введите ваше имя" onChangeText={setName} value={name} label={"Имя"} error={error.name} />
-                        <Input placeholder="Введите вашу фамилию" onChangeText={setSurname} value={surname} label={"Фамилия"} error={error.surname} />
-                        <Input placeholder="Введите ваш тэг" onChangeText={setTag} value={tag} label={"Тэг"} autoCapitalize="none" error={error.tag} />
-                        <Input placeholder="Введите ваш email" onChangeText={setEmail} value={email} label={"Email"} keyboardType={"email-address"} autoCapitalize="none" error={error.email} />
-                        <Input placeholder="Введите ваш пароль" onChangeText={setPassword} value={password} label={"Пароль"} secureTextEntry={true} error={error.password} />
+                        <InputAuth placeholder="Введите ваше имя" onChangeText={setName} value={name} label={"Имя"} error={error.name} />
+                        <InputAuth placeholder="Введите вашу фамилию" onChangeText={setSurname} value={surname} label={"Фамилия"} error={error.surname} />
+                        <InputAuth placeholder="Введите ваш тэг" onChangeText={setTag} value={tag} label={"Тэг"} autoCapitalize="none" error={error.tag} />
+                        <InputAuth placeholder="Введите ваш email" onChangeText={setEmail} value={email} label={"Email"} keyboardType={"email-address"} autoCapitalize="none" error={error.email} />
+                        <InputAuth placeholder="Введите ваш пароль" onChangeText={setPassword} value={password} label={"Пароль"} secureTextEntry={true} error={error.password} />
 
                         <TouchableOpacity style={styles.button} onPress={handleRegistration}>
                             <Text style={styles.buttonText}>Зарегистрироваться</Text>
                         </TouchableOpacity>
                         <View style={styles.loginLinkContainer}>
                             <Text style={styles.loginLinkText}>Уже зарегистрированы?</Text>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={()=>{navigation.navigate("login")}}>
                                 <Text style={styles.loginLink}> Войти</Text>
                             </TouchableOpacity>
                         </View>

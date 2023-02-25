@@ -1,4 +1,5 @@
 import random
+from hashlib import sha256
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
@@ -47,7 +48,7 @@ def get_user():
 
 
 # Проверка sshkey верный
-@app.route("/api/correct_key", methods=["GET"])
+@app.route("/api/correct_key", methods=["POST"])
 def correct_key():
     if not request.json:
         abort(400)
@@ -67,11 +68,8 @@ def login():
     password = request.json["password"]
     users = session.query(User).all()
     for user in users:
-        if user.email == email and user.check_password(password):
-            super_secret = "H@S213s$-1" + email + user.hashed_password
-            sshkey = ""
-            for i in range(24):
-                sshkey += random.choice(super_secret)
+        if (user.email == email or user.tag == email) and user.check_password(password):
+            sshkey = sha256(f"H@S213s$-1{email}{user.hashed_password}".encode('utf-8')).hexdigest()
             ses = Sessions(user_id=user.id, sshkey=sshkey)
             session.add(ses)
             session.commit()
@@ -106,10 +104,11 @@ def user_reg():
     password = request.json.get("password")
     if not all([tag, name, surname, email, password]): # Проверка на пустые значения
         return jsonify({'status': False})
-    user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
+    user = session.query(User).filter_by(email=email).first()# Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
-    new_user = User(tag=tag, name=name, surname=surname, email=email, password=User.set_password(password))
+    new_user = User(tag=tag, name=name, surname=surname, email=email)
+    new_user.set_password(password)
     session.add(new_user)
     session.commit()
     return jsonify({'status': True})

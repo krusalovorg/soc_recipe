@@ -23,6 +23,8 @@ import Spinner from 'react-native-loading-spinner-overlay';
 
 import { Cache } from "react-native-cache";
 import { checkSSHkey } from './api/auth';
+import LoginScreen from './pages/LoginScreen';
+import { AuthContext } from './context/auth.context';
 
 const Drawer = createDrawerNavigator();
 
@@ -30,11 +32,14 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [isAuthenticated, setIsAuth] = useState(false);
+
   const [dataUser, setDataUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const cache = new Cache({
-    namespace: "myapp",
+    namespace: "auth",
     policy: {
       maxEntries: 50000,
       stdTTL: 0
@@ -43,11 +48,12 @@ const App = () => {
   });
 
   async function checkLogin() {
-    const sshkey = await cache.get("sshkey");
-    console.log('SSH',sshkey)
+    const sshkey = await cache.get("token");
     if (sshkey) {
-      checkSSHkey(sshkey);
-      setToken(sshkey);
+      if (checkSSHkey(sshkey)) {
+        setToken(sshkey);
+        setIsAuth(true);
+      }
     }
     setLoading(false);
   }
@@ -68,37 +74,46 @@ const App = () => {
 
   return (
     <>
-      <NavigationContainer>
-        {token == null ?
-          <Stack.Navigator>
-            <Stack.Screen
-              name="reg"
-              component={RegScreen}
-              options={{
-                title: "Регистрация",
-                headerShown: false
-              }} />
-          </Stack.Navigator>
-          :
-          <Drawer.Navigator
-            drawerContent={(props) => <DrawerProfile {...props} />}
-            initialRouteName={"home"}>
-            <Drawer.Screen
-              name="home"
-              component={HomeScreen}
-              options={{
-                title: 'Рецепты',
-              }} />
-            <Drawer.Screen
-              name="recipe"
-              component={RecipeScreen}
-              options={{
-                drawerItemStyle: { height: 0 },
-                headerShown: false
-              }} />
-          </Drawer.Navigator>
-        }
-      </NavigationContainer>
+      <AuthContext.Provider value={{token, userId, checkLogin, isAuthenticated}}>
+        <NavigationContainer>
+          {token == null ?
+            <Stack.Navigator>
+              <Stack.Screen
+                name="reg"
+                component={RegScreen}
+                options={{
+                  title: "Регистрация",
+                  headerShown: false
+                }} />
+              <Stack.Screen
+                name="login"
+                component={LoginScreen}
+                options={{
+                  title: "Вход",
+                  headerShown: false
+                }} />
+            </Stack.Navigator>
+            :
+            <Drawer.Navigator
+              drawerContent={(props) => <DrawerProfile {...props} />}
+              initialRouteName={"home"}>
+              <Drawer.Screen
+                name="home"
+                component={HomeScreen}
+                options={{
+                  title: 'Рецепты',
+                }} />
+              <Drawer.Screen
+                name="recipe"
+                component={RecipeScreen}
+                options={{
+                  drawerItemStyle: { height: 0 },
+                  headerShown: false
+                }} />
+            </Drawer.Navigator>
+          }
+        </NavigationContainer>
+      </AuthContext.Provider>
     </>
   );
 };

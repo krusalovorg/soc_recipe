@@ -10,7 +10,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Button,
-  ImagePicker
+  Image
 } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
@@ -18,6 +18,7 @@ import axios from 'axios';
 import { useContext } from 'react';
 import { AuthContext } from '../context/auth.context';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { server_ip } from '../api/config';
 
 // import {ImagePicker} from 'react-native-image-picker';
 
@@ -120,25 +121,22 @@ const CreateRecipeScreen = ({ navigation }) => {
     const formdata = new FormData();
     Object.keys(data).map((key) => {
       const item = data[key];
-      data.append(key, item);
+      formdata[key] = item;
     })
-    data.append('image', {
+    formdata.append('image', {
       uri: image.uri,
       name: image.fileName || 'image.jpg',
       type: image.type || 'image/jpeg',
     });
 
     try {
-      const res = await axios.post('http://192.168.0.12:8000/api/add_recipes',
-        {
-          ...data
-        },
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          }
-        }
-      )
+      console.log(server_ip + '/add_recipes/')
+      const res = await axios.post(server_ip + '/add_recipes/',{
+        method: "post",
+        data: formdata,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      
       if (res.data.status) {
         alert('Рецепт сохранён!');
         setTitle('');
@@ -265,6 +263,7 @@ const CreateRecipeScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleSave}>
           <Text style={styles.saveButton}>Сохранить</Text>
         </TouchableOpacity>
+        <View style={{ paddingBottom: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );

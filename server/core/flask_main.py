@@ -118,7 +118,7 @@ def user_reg():
 def add_recipes():
     if not request.json:
         abort(400)
-    print(request.json)
+    print(request.form)
     sshkey = request.json["sshkey"]
     title = request.json["title"]
     category = request.json["category"]
@@ -136,7 +136,7 @@ def add_recipes():
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
-            crypto_name_file = sha256((image.filename+time.time()).encode("utf-8")).hexdigest()+"."+image.filename.split(".")[1]
+            crypto_name_file = sha256((str(image.filename)+time.time()).encode("utf-8")).hexdigest()+"."+image.filename.split(".")[1]
             print(crypto_name_file)
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,

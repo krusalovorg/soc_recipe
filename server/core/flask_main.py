@@ -1,9 +1,13 @@
 import random
 from hashlib import sha256
 
-from flask import Flask, jsonify, make_response, request, abort
+from flask import Flask, jsonify, make_response, request, abort, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
+
+import base64, time
+from io import BytesIO
+from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions
 
@@ -115,35 +119,47 @@ def user_reg():
     return jsonify({'status': True})
 
 
+# Получить изображение с сервера
+@app.route('/api/get_image/<string:filename>', methods=['GET'])
+def get_image(filename):
+    return send_file('./images/'+filename)
+
 # Добавить рецепт
 @app.route('/api/add_recipes/', methods=['POST'])
 def add_recipes():
-    print(request.form)
-    if not request.form:
+    print(request.json)
+    if not request.json:
         abort(400)
-    sshkey = request.form["sshkey"]
-    title = request.form["title"]
-    category = request.form["category"]
-    access = request.form["access"]
-    time = request.form["time"]
-    steps = request.form["steps"]
-    calories = request.form["calories"]
-    proteins = request.form["proteins"]
-    fats = request.form["fats"]
-    carbohydrates = request.form["carbohydrates"]
-    ingredients = request.form["ingredients"]
-    image = request.files.get('image')
+    sshkey = request.json["sshkey"]
+    title = request.json["title"]
+    category = request.json["category"]
+    access = request.json["access"]
+    time_ = request.json["time"]
+    steps = request.json["steps"]
+    calories = request.json["calories"]
+    proteins = request.json["proteins"]
+    fats = request.json["fats"]
+    carbohydrates = request.json["carbohydrates"]
+    ingredients = request.json["ingredients"]
+    image = request.json.get('file')
+    filename = request.json.get('filename')
+    description = request.json["description"]
 
     if sshkey:
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
-            crypto_name_file = sha256((str(image.filename)+time.time()).encode("utf-8")).hexdigest()+"."+image.filename.split(".")[1]
-            print(crypto_name_file)
-            new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
-                                calories=calories, proteins=proteins, fats=fats,
+            crypto_name_file = sha256((filename+str(time.time())).encode("utf-8")).hexdigest()+"."+filename.split(".")[1]
+            new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
+                                calories=calories, proteins=proteins, fats=fats, description=description,
                                 carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, image=crypto_name_file, views=0, likes=0)
-            image.save(f'./images/{crypto_name_file}')
+
+            starter = image.find(',')
+            image_data = image[starter + 1:]
+            image_data = bytes(image_data, encoding="ascii")
+            im = Image.open(BytesIO(base64.b64decode(image_data)))
+            im.save(f'./images/{crypto_name_file}')
+
             session.add(new_recipe)
             session.commit()
             if ingredients:

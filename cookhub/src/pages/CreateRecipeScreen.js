@@ -19,6 +19,7 @@ import { useContext } from 'react';
 import { AuthContext } from '../context/auth.context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { server_ip } from '../api/config';
+import fs from 'react-native-fs';
 
 // import {ImagePicker} from 'react-native-image-picker';
 
@@ -117,18 +118,7 @@ const CreateRecipeScreen = ({ navigation }) => {
       alert(error)
       return;
     }
-
-    const formdata = new FormData();
-    formdata.append('title', title);
-    formdata.append('category', category);
-    formdata.append('access', access ? "private" : "public");
-    formdata.append('time', time);
-    formdata.append('calories', calories);
-    formdata.append('proteins', proteins);
-    formdata.append('fats', fats);
-    formdata.append('carbohydrates', carbohydrates);
-    formdata.append('sshkey', token);
-
+    
     // Object.keys(data).map((key) => {
     //   const item = data[key];
     //   if (key == 'steps') {
@@ -143,16 +133,14 @@ const CreateRecipeScreen = ({ navigation }) => {
 
     try {
       console.log(server_ip + '/add_recipes/')
+      const select_image = image.assets[0];
+      const uri_file = select_image.uri
+      const file_base64 = "data:" + select_image.type + ";base64," + await fs.readFile(uri_file, 'base64')
 
-      const res = await axios({
-        url: server_ip + '/add_recipes',
-        data: formdata,
-        method: "POST",
-        headers: {
-          Accept: 'application/json',
-          "Content-Type": "multipart/form-data"
-        }
-      });
+      data["file"] = file_base64;
+      data["filename"] = select_image.fileName;
+
+      const res = await axios.post(server_ip + '/add_recipes', data);
 
       if (res.data.status) {
         alert('Рецепт сохранён!');

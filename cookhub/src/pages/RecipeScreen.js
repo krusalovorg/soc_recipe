@@ -7,6 +7,7 @@ import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
 import Loader from '../components/loader';
 import { getRecipe } from '../api/recipes';
+import { server_ip } from '../api/config';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
@@ -31,13 +32,14 @@ const RecipeScreen = ({ navigation, route }) => {
     async function loadRecipe() {
         const recipe = await getRecipe(id);
         if (recipe) {
-            console.log('RECIPE',recipe)
+            console.log('RECIPE',recipe, {type: "table", table: recipe.ingredients})
             setData(recipe);
-            console.log(data)
-            setSteps([...recipe.steps, {type: "table", table: data.ingredients}]);
+            setSteps([{type: "list", list: recipe.steps}, {type: "table", table: recipe.ingredients}]);
             setComments([]); //comments добавить
         }
-        setLoading(false);
+        setTimeout(()=>{
+            setLoading(false);
+        },500)
     }
 
     useEffect(()=>{
@@ -80,11 +82,10 @@ const RecipeScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
                 <ScrollView style={styles.page_contanier}>
-                    <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />
+                    <Image style={styles.image} source={{ uri: server_ip+"/get_image/"+data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.desc}>
-                            Простой салат Цезарь с курицей — народный вариант любимого классического блюда.
-                            А народное не может быть сложным, поэтому я внес небольшие коррективы. Как известно, традиционный салат славится своей заправкой.
+                            {data.description}
                         </Text>
                         <RecipeContent data={steps} />
 

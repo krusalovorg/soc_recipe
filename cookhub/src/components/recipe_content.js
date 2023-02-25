@@ -10,7 +10,7 @@ const RecipeContent = ({ data }) => {
                         {item.list.map((listItem, i) => {
                             return (
                                 <Text key={i} style={styles.listItem}>
-                                    {`${i + 1}. ${listItem}`}
+                                    {`${i + 1}. ${listItem.text}`}
                                 </Text>
                             );
                         })}
@@ -29,10 +29,10 @@ const RecipeContent = ({ data }) => {
                             return (
                                 <View key={i} style={styles.tableRow}>
                                     <Text style={[styles.tableCell]}>
-                                        {row[0]}
+                                        {row.name}
                                     </Text>
                                     <Text style={[styles.tableCell]}>
-                                        {row[1]}
+                                        {row.amount}
                                     </Text>
                                 </View>
                             );

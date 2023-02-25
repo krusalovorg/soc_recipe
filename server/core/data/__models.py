@@ -31,6 +31,7 @@ class Recipe(SqlBase):
     likes = sqlalchemy.Column(sqlalchemy.Integer)
     image = sqlalchemy.Column(sqlalchemy.String)
     ingredients = sqlalchemy.Column(sqlalchemy.JSON)
+    description = sqlalchemy.Column(sqlalchemy.String)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
     # ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')

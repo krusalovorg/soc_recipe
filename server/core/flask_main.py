@@ -99,20 +99,19 @@ def logout():
 def user_reg():
     if not request.json:
         abort(400)
-    tag = request.json["tag"]
-    name = request.json["name"]
-    surname = request.json["surname"]
-    email = request.json["email"]
-    password = request.json["password"]
+    tag = request.json.get("tag")
+    name = request.json.get("name")
+    surname = request.json.get("surname")
+    email = request.json.get("email")
+    password = request.json.get("password")
+    if not all([tag, name, surname, email, password]): # Проверка на пустые значения
+        return jsonify({'status': False})
     user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
-    if name and surname and email and password and tag:
-        new_user = User(tag=tag, name=name, surname=surname, email=email, password=User.set_password(password))
-        session.add(new_user)
-        session.commit()
-    else:
-        abort(400)
+    new_user = User(tag=tag, name=name, surname=surname, email=email, password=User.set_password(password))
+    session.add(new_user)
+    session.commit()
     return jsonify({'status': True})
 
 

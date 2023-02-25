@@ -26,7 +26,7 @@ class Recipe(SqlBase):
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Numeric)
-    creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
     ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
@@ -78,6 +78,16 @@ class Sessions(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     sshkey = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+
+class Article(SqlBase):
+    __tablename__ = "articles"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
 
 
 associated_access = sqlalchemy.Table(

@@ -36,7 +36,7 @@ def get_user():
     user_tag = request.json["tag"]
     if user_tag:
         user = session.query(User).order_by(tag=user_tag).first()
-        recipes = session.query(Recipe).order_by(creator=user.id).filter(access="public").first()
+        recipes = session.query(Recipe).order_by(author=user.id).filter(access="public").first()
         return jsonify({
             "status": True,
             "name": user.name,
@@ -136,7 +136,7 @@ def add_recipes():
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, creator=user.id)
+                                carbohydrates=carbohydrates, author=user.id)
             session.add(new_recipe)
             session.commit()
             if ingredients:

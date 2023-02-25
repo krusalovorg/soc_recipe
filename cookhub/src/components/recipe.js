@@ -13,8 +13,9 @@ function Recipe(props) {
                     <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />
                     <View style={styles.content}>
                         <Text style={styles.title}>{props.data.title}</Text>
-                        <Text style={styles.name}>{props.data.creator}</Text>
-                        <Text style={styles.views}>10 views</Text>
+                        <Text style={styles.name}>{props.data.author}</Text>
+                        <Text style={styles.views}>{props.data.views} просмотров</Text>
+                        <Text style={styles.views}>{props.data.likes} лайков</Text>
                     </View>
                 </View>
             </TouchableHighlight>

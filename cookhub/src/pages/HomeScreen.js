@@ -2,11 +2,32 @@ import React, { useEffect, useState, useContext } from 'react';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
+import { getRecipies } from '../api/recipes';
+import Loader from '../components/loader';
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
     const [findValue, setFindValue] = useState("");
+    const [recipies, setRecipies] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    async function loadRecipies() {
+        const recipies = await getRecipies()
+        if (recipies.length > 0) {
+            setRecipies(recipies);
+        }
+        setLoading(false);
+    }
+
+    useEffect(() => {
+        loadRecipies();
+    }, [HomeScreen])
+
+    if (loading) {
+        return <Loader />
+    }
+
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
             <ScrollView style={styles.page_contanier}>
                 <View style={styles.searchSection}>
                     <TextInput
@@ -42,12 +63,11 @@ const HomeScreen = ({navigation}) => {
                 </View>
                 <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#F2F4F5", height: 2, marginVertical: 5 }}></View>
                 <Text style={styles.title_contanier}>Актуальное</Text>
-                <Recipe navigation={navigation}/>
-                <Recipe navigation={navigation}/>
-                <Recipe navigation={navigation}/>
-                <Recipe navigation={navigation}/>
-                <Recipe navigation={navigation}/>
-                <Recipe navigation={navigation}/>
+                {
+                    recipies.map((item) => {
+                        return <Recipe navigation={navigation} />
+                    })
+                }
             </ScrollView>
         </SafeAreaView>
     )

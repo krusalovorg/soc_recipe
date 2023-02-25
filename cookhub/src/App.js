@@ -19,12 +19,13 @@ import DrawerProfile from './components/profile';
 import RecipeScreen from './pages/RecipeScreen';
 import RegScreen from './pages/RegScreen';
 
-import Spinner from 'react-native-loading-spinner-overlay';
-
 import { Cache } from "react-native-cache";
 import { checkSSHkey } from './api/auth';
 import LoginScreen from './pages/LoginScreen';
 import { AuthContext } from './context/auth.context';
+
+import Loader from './components/loader';
+import CreateRecipeScreen from './pages/CreateRecipeScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -69,18 +70,12 @@ const App = () => {
   }, [App])
 
   if (loading) {
-    return (
-      <SafeAreaView>
-        <View>
-          <Spinner visible={true} />
-        </View>
-      </SafeAreaView>
-    )
+    return <Loader />
   }
 
   return (
     <>
-      <AuthContext.Provider value={{token, userId, checkLogin, isAuthenticated}}>
+      <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
         <NavigationContainer>
           {token == null ?
             <Stack.Navigator>
@@ -103,6 +98,12 @@ const App = () => {
             <Drawer.Navigator
               drawerContent={(props) => <DrawerProfile {...props} />}
               initialRouteName={"home"}>
+              <Drawer.Screen
+                name="add"
+                component={CreateRecipeScreen}
+                options={{
+                  title: 'Добавить рецепи',
+                }} />
               <Drawer.Screen
                 name="home"
                 component={HomeScreen}

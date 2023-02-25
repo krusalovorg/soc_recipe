@@ -53,7 +53,7 @@ def correct_key():
     if not request.json:
         abort(400)
     sshkey = request.json["sshkey"]
-    ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
         return jsonify({"status": True})
     return jsonify({"status": False})
@@ -119,6 +119,7 @@ def user_reg():
 def add_recipes():
     if not request.json:
         abort(400)
+    print(request.json)
     sshkey = request.json["sshkey"]
     title = request.json["title"]
     category = request.json["category"]
@@ -131,8 +132,8 @@ def add_recipes():
     carbohydrates = request.json["carbohydrates"]
     ingredients = request.json["ingredients"]
     if sshkey:
-        user_id = session.query(Sessions).order_by(sshkey=sshkey).first()
-        user = User.query.filter_by(id=user_id).first()
+        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
@@ -166,9 +167,13 @@ def edit_recipes():
 # Получить рецепт
 @app.route('/api/get_recipes', methods=['GET'])
 def get_recipes():
-    recipe = session.query(Recipe).all()
-    print(session.query(Session).all())
-    return jsonify({'recipe': recipe})
+    from_num = request.args.get('f') or 0
+    to_num = request.args.get('t') or 10
+    recipes = list(session.query(Recipe).all())[int(from_num):int(to_num)]
+    recipes_dicts = []
+    for recipe in recipes:
+        recipes_dicts.append(recipe.as_dict())
+    return jsonify({'recipe': recipes})
 
 
 @app.route('/api/search', methods=['GET'])

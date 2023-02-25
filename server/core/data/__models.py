@@ -21,7 +21,7 @@ class Recipe(SqlBase):
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
     time = sqlalchemy.Column(sqlalchemy.Numeric, nullable=False)
     access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    steps = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    steps = sqlalchemy.Column(sqlalchemy.JSON, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Numeric)
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
@@ -30,6 +30,8 @@ class Recipe(SqlBase):
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
     ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Category(SqlBase):

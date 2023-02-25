@@ -8,13 +8,17 @@ import {
   Switch,
   Alert,
   StyleSheet,
-  SafeAreaView
+  SafeAreaView,
+  Button,
+  ImagePicker
 } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useContext } from 'react';
 import { AuthContext } from '../context/auth.context';
+
+// import {ImagePicker} from 'react-native-image-picker';
 
 const initialIngredient = { name: '', amount: '' };
 const initialStep = { type: 'text', text: '' };
@@ -47,7 +51,7 @@ function RecipeInput(props) {
   )
 }
 
-const CreateRecipeScreen = ({navigation}) => {
+const CreateRecipeScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [access, setAccess] = useState('');
@@ -60,6 +64,7 @@ const CreateRecipeScreen = ({navigation}) => {
   const [ingredients, setIngredients] = useState([{ name: '', amount: '' }]);
   const [error, setError] = useState();
   const { token } = useContext(AuthContext);
+  const [image, setImage] = useState(null);
 
   const handleAddIngredient = () => {
     setIngredients([...ingredients, { name: '', amount: '' }]);
@@ -97,8 +102,7 @@ const CreateRecipeScreen = ({navigation}) => {
       carbohydrates,
       ingredients,
     };
-    console.log(category)
-    console.log("======")
+
     Object.keys(data).map((key) => {
       const item = data[key];
       if (item == '' && typeof item != 'boolean') {
@@ -112,10 +116,28 @@ const CreateRecipeScreen = ({navigation}) => {
       return;
     }
 
+    const formdata = new FormData();
+    Object.keys(data).map((key) => {
+      const item = data[key];
+      data.append(key, item);
+    })
+    data.append('image', {
+      uri: image.uri,
+      name: image.fileName || 'image.jpg',
+      type: image.type || 'image/jpeg',
+    });
+
     try {
-      const res = await axios.post('http://192.168.0.12:8000/api/add_recipes', {
-        ...data
-      })
+      const res = await axios.post('http://192.168.0.12:8000/api/add_recipes',
+        {
+          ...data
+        },
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      )
       if (res.data.status) {
         alert('Рецепт сохранён!');
         setTitle('');
@@ -136,10 +158,27 @@ const CreateRecipeScreen = ({navigation}) => {
     };
   };
 
+  const selectImage = () => {
+    ImagePicker.showImagePicker({ title: 'Select Image' }, (response) => {
+      if (!response.didCancel && !response.error) {
+        setImage(response);
+      }
+    });
+  };
+
   return (
     <SafeAreaView>
       <ScrollView style={styles.container}>
         <RecipeInput label={"Название"} placeholder={"Введите название рецепта"} value={title} setValue={setTitle} />
+
+        <Button title="Выберете изображение" onPress={selectImage} />
+
+        {image && (
+          <View>
+            <Text>Выбранное изображение:</Text>
+            <Image source={{ uri: image.uri }} style={{ width: 200, height: 200 }} />
+          </View>
+        )}
 
         <Text style={styles.label}>Категория</Text>
         <Picker

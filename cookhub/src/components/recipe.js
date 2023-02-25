@@ -7,7 +7,7 @@ function Recipe(props) {
             <TouchableHighlight
                 style={styles.touch}
                 onPress={() => {
-                    props.navigation.navigate('recipe')
+                    props.navigation.navigate('recipe', {data: props.data.id})
                 }}>
                 <View style={styles.contanier}>
                     <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />

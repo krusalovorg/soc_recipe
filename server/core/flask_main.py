@@ -1,9 +1,9 @@
 import random
 
-from flask import Flask, jsonify, make_response, request, abort, session as ses
+from flask import Flask, jsonify, make_response, request, abort,
 from flask_migrate import Migrate
 
-from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes
+from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -27,22 +27,51 @@ def index():
     pass
 
 
+@app.route("/api/correct_key", methods=["GET"])
+def correct_key():
+    if not request.json:
+        abort(400)
+    sshkey = request.json["sshkey"]
+    ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+    if ses:
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
 # Логин
 @app.route("/api/user_login", methods=["POST", 'GET'])
 def login():
     if not request.json:
         abort(400)
-    users = session.query(User).all()
     email = request.json["email"]
     password = request.json["password"]
+    users = session.query(User).all()
     for user in users:
         if user.email == email and user.check_password(password):
             super_secret = "H@S213s$-1" + email + user.hashed_password
             sshkey = ""
             for i in range(24):
                 sshkey += random.choice(super_secret)
-                ses['user_id'] = {"user_id": user.id, "key": sshkey}
+            ses = Sessions(user_id=user.id, sshkey=sshkey)
+            session.add(ses)
+            session.commit()
             return jsonify({'status': True, "sshkey": sshkey})
+    return jsonify({"status": False})
+
+
+# Логаут
+@app.route("/api/user_logout", methods=["POST", 'GET'])
+def logout():
+    if not request.json:
+        abort(400)
+    sshkey = request.json["sshkey"]
+    if sshkey:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        if ses:
+            session.delete(ses)
+            session.commit()
+            return jsonify({"status": True})
+    return jsonify({"status": False})
 
 
 # Регистрация пользователя
@@ -67,10 +96,11 @@ def user_reg():
 
 
 # Добавить рецепт
-@app.route('/api/add_recipes/<int:user_id>', methods=['POST'])
-def add_recipes(user_id):
+@app.route('/api/add_recipes/', methods=['POST'])
+def add_recipes():
     if not request.json:
         abort(400)
+    sshkey = request.json["sshkey"]
     title = request.json["title"]
     category = request.json["category"]
     time = request.json["time"]
@@ -80,18 +110,21 @@ def add_recipes(user_id):
     fats = request.json["fats"]
     carbohydrates = request.json["carbohydrates"]
     ingredients = request.json["ingredients"]
-    user = User.query.filter_by(id=user_id).first()
-    if user:
-        new_recipe = Recipe(title=title, category=category, time=time, steps=steps,
-                            calories=calories, proteins=proteins, fats=fats,
-                            carbohydrates=carbohydrates, creator=user.id)
-        session.add(new_recipe)
-        session.commit()
-        if ingredients:
-            for ingredient in ingredients:
-                pass
+    if sshkey:
+        user_id = session.query(Sessions).order_by(sshkey=sshkey).first()
+        user = User.query.filter_by(id=user_id).first()
+        if user:
+            new_recipe = Recipe(title=title, category=category, time=time, steps=steps,
+                                calories=calories, proteins=proteins, fats=fats,
+                                carbohydrates=carbohydrates, creator=user.id)
+            session.add(new_recipe)
             session.commit()
-    return jsonify({'status': True})
+            if ingredients:
+                for ingredient in ingredients:
+                    pass
+                session.commit()
+        return jsonify({'status': True})
+    return jsonify({"status": False})
 
 
 # Удалить рецепт

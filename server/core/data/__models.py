@@ -69,6 +69,14 @@ class User(SqlBase, UserMixin, SerializerMixin):
         self.hashed_password = generate_password_hash(password)
 
 
+class Sessions(SqlBase):
+    __tablename__ = "sessions"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
+    sshkey = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+
 associated_recipes = sqlalchemy.Table(
     'ingredients_to_recipes', SqlBase.metadata,
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,

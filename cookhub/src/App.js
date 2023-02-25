@@ -50,9 +50,15 @@ const App = () => {
   async function checkLogin() {
     const sshkey = await cache.get("token");
     if (sshkey) {
-      if (checkSSHkey(sshkey)) {
+      const res = await checkSSHkey(sshkey)
+      if (res) {
         setToken(sshkey);
         setIsAuth(true);
+      } else {
+        console.log("GETETSTT FALSE")
+        await cache.remove("token");
+        setToken('');
+        setIsAuth(false);
       }
     }
     setLoading(false);

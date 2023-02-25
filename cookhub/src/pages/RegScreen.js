@@ -32,7 +32,8 @@ const RegScreen = ({navigation}) => {
             password: (validatePassword(password) ? "" : "Минимум 8 символов!"),
         })
 
-        error.map((item) => {
+        Object.keys(error).map((key) => {
+            const item = error[key];
             if (item != '') {
                 return false;
             }
@@ -46,6 +47,7 @@ const RegScreen = ({navigation}) => {
                 password,
                 tag
             });
+            console.log(response.data)
             if (response.data.status == true) {
                 navigation.navigate('login');
             }

@@ -7,8 +7,9 @@ export const checkSSHkey = async (sshkey) => {
             sshkey
         });
         console.log(response.data);
-        return response.data
+        return response.data.status
     } catch (error) {
         console.log(error);
+        return false
     }
 };

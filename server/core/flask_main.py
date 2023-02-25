@@ -27,6 +27,24 @@ def index():
     pass
 
 
+# Получаем пользователя для отображения его страницы
+@app.route("api/get_user", methods=["GET"])
+def get_user():
+    if not request.json:
+        abort(400)
+    user_tag = request.json["tag"]
+    if user_tag:
+        user = session.query(User).order_by(tag=user_tag).first()
+        return jsonify({
+            "status": True,
+            "name": user.name,
+            "surname": user.surname,
+
+        })
+    return jsonify({"status": False})
+
+
+# Проверка sshkey верный
 @app.route("/api/correct_key", methods=["GET"])
 def correct_key():
     if not request.json:
@@ -79,6 +97,7 @@ def logout():
 def user_reg():
     if not request.json:
         abort(400)
+    tag = request.json["tag"]
     name = request.json["name"]
     surname = request.json["surname"]
     email = request.json["email"]
@@ -86,8 +105,8 @@ def user_reg():
     user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
-    if name and surname and email and password:
-        new_user = User(name=name, surname=surname, email=email, password=User.set_password(password))
+    if name and surname and email and password and tag:
+        new_user = User(tag=tag, name=name, surname=surname, email=email, password=User.set_password(password))
         session.add(new_user)
         session.commit()
     else:

@@ -27,8 +27,24 @@ def index():
     pass
 
 
+# Получаем пользователя для отображения его страницы
+@app.route("api/get_user", methods=["GET"])
+def get_user():
+    if not request.json:
+        abort(400)
+    user_tag = request.json["tag"]
+    if user_tag:
+        user = session.query(User).order_by(tag=user_tag).first()
+        return jsonify({
+            "status": True,
+            "name": user.name,
+            "surname": user.surname,
 
-#Проверка sshkey верный
+        })
+    return jsonify({"status": False})
+
+
+# Проверка sshkey верный
 @app.route("/api/correct_key", methods=["GET"])
 def correct_key():
     if not request.json:
@@ -152,8 +168,6 @@ def get_recipes():
     recipe = session.query(Recipe).all()
     print(session.query(Session).all())
     return jsonify({'recipe': recipe})
-
-
 
 
 @app.route('/api/search', methods=['GET'])

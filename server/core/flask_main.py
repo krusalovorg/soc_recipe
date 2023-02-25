@@ -173,7 +173,6 @@ def get_recipes():
     recipes_dicts = []
     for recipe in recipes:
         recipes_dicts.append(recipe.as_dict())
-    print(recipes_dicts)
     return jsonify({'recipe': recipes_dicts})
 
 

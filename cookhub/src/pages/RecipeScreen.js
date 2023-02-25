@@ -5,9 +5,15 @@ import Comments from '../components/recipe_comments';
 import RecipeContent from '../components/recipe_content';
 import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
+import Loader from '../components/loader';
 
-const RecipeScreen = ({ navigation }) => {
+const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    const id = route.params.data;
+    const data = [];
+    const comments = [];
 
     // Обработчик события изменения значения input элемента
     const handleInputChange = (value) => {
@@ -20,24 +26,37 @@ const RecipeScreen = ({ navigation }) => {
         setInputValue('');
     };
 
-    const data = [
-        { type: "list", list: ["text1", "text2", "text3"] },
-        { type: "text", text: "просто текст" },
-        {
-            type: "table",
-            table: [
-                ['огурец', '10 грамм'],
-                ['помидор', '1 шт.'],
-                ['соль', '1 столовая ложка']
-            ]
-        }
-    ]
+    async function loadRecipe() {
+        
+        setLoading(true);
+    }
 
-    const comments = [
-        { text: "отличный рецепт", avtor: { name: "Egor", id: 100 }, likes: [1003, 4583, 2345], answers: [{ text: "согласен", answers: [], likes: [1003], id: 1003 }], id: 1002 },
-        { text: "плохой рецепт", avtor: { name: "Egor", id: 100 }, likes: [], answers: [], id: 1034 },
-        { text: "норм", avtor: { name: "Egor", id: 100 }, likes: [], answers: [], id: 2356 }
-    ]
+    useEffect(()=>{
+        loadRecipe();
+    },[RecipeScreen])
+
+    // const data = [
+    //     { type: "list", list: ["text1", "text2", "text3"] },
+    //     { type: "text", text: "просто текст" },
+    //     {
+    //         type: "table",
+    //         table: [
+    //             ['огурец', '10 грамм'],
+    //             ['помидор', '1 шт.'],
+    //             ['соль', '1 столовая ложка']
+    //         ]
+    //     }
+    // ]
+
+    // const comments = [
+    //     { text: "отличный рецепт", avtor: { name: "Egor", id: 100 }, likes: [1003, 4583, 2345], answers: [{ text: "согласен", answers: [], likes: [1003], id: 1003 }], id: 1002 },
+    //     { text: "плохой рецепт", avtor: { name: "Egor", id: 100 }, likes: [], answers: [], id: 1034 },
+    //     { text: "норм", avtor: { name: "Egor", id: 100 }, likes: [], answers: [], id: 2356 }
+    // ]
+
+    if (loading) {
+        return <Loader />
+    }
 
     return (
         <SafeAreaView style={styles.container}>

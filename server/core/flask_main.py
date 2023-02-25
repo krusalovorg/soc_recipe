@@ -130,13 +130,16 @@ def add_recipes():
     fats = request.json["fats"]
     carbohydrates = request.json["carbohydrates"]
     ingredients = request.json["ingredients"]
+    image = request.files.get('image')
+
     if sshkey:
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, views=0, likes=0)
+                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, image=image,views=0, likes=0)
+            image.save(f'./images/{image.filename}')
             session.add(new_recipe)
             session.commit()
             if ingredients:

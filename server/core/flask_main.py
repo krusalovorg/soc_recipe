@@ -163,7 +163,7 @@ def edit_recipes():
     return jsonify({'status': True})
 
 
-# Получить рецепт
+# Получить рецепты
 @app.route('/api/get_recipes', methods=['GET'])
 def get_recipes():
     from_num = request.args.get('f') or 0
@@ -173,6 +173,13 @@ def get_recipes():
     for recipe in recipes:
         recipes_dicts.append(recipe.as_dict())
     return jsonify({'recipe': recipes_dicts})
+
+# Получить рецепт
+@app.route('/api/get_recipe', methods=['GET'])
+def get_recipe():
+    id_ = request.args.get('id') or 0
+    recipe = session.query(Recipe).filter_by(id=id_).first()
+    return jsonify({'recipe': recipe.as_dict()})
 
 
 @app.route('/api/search', methods=['GET'])

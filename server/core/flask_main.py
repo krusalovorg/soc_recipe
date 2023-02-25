@@ -3,7 +3,7 @@ import random
 from flask import Flask, jsonify, make_response, request, abort, session as ses
 from flask_migrate import Migrate
 
-from data.__models import SqlBase, User, Recipe
+from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -88,7 +88,8 @@ def add_recipes(user_id):
         session.add(new_recipe)
         session.commit()
         if ingredients:
-            new_recipe.ingredients.extend(ingredients)
+            for ingredient in ingredients:
+                pass
             session.commit()
     return jsonify({'status': True})
 

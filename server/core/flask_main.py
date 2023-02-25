@@ -107,9 +107,9 @@ def user_reg():
     surname = request.json.get("surname")
     email = request.json.get("email")
     password = request.json.get("password")
-    if not all([tag, name, surname, email, password]): # Проверка на пустые значения
+    if not all([tag, name, surname, email, password]):  # Проверка на пустые значения
         return jsonify({'status': False})
-    user = session.query(User).filter_by(email=email).first()# Проверка есть ли пользователь в БД
+    user = session.query(User).filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
     new_user = User(tag=tag, name=name, surname=surname, email=email)
@@ -122,7 +122,8 @@ def user_reg():
 # Получить изображение с сервера
 @app.route('/api/get_image/<string:filename>', methods=['GET'])
 def get_image(filename):
-    return send_file('./images/'+filename)
+    return send_file('./images/' + filename)
+
 
 # Добавить рецепт
 @app.route('/api/add_recipes/', methods=['POST'])
@@ -149,10 +150,12 @@ def add_recipes():
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
-            crypto_name_file = sha256((filename+str(time.time())).encode("utf-8")).hexdigest()+"."+filename.split(".")[1]
+            crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
+                               filename.split(".")[1]
             new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats, description=description,
-                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, image=crypto_name_file, views=0, likes=0)
+                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
+                                image=crypto_name_file, views=0, likes=0)
 
             starter = image.find(',')
             image_data = image[starter + 1:]
@@ -162,8 +165,6 @@ def add_recipes():
 
             session.add(new_recipe)
             session.commit()
-            if ingredients:
-                session.commit()
         return jsonify({'status': True})
     return jsonify({"status": False})
 
@@ -173,7 +174,12 @@ def add_recipes():
 def rem_recipes():
     if not request.json:
         abort(400)
-    return jsonify({'status': True})
+    sshkey = request.json.get("sshkey")
+    id_ = request.json.get("id_")
+    if sshkey == session.query(Session).order_by(sshkey=sshkey).first():
+        session.delete(Recipe(id=id_))
+        return jsonify({'status': True})
+    return jsonify({'status': False})
 
 
 # Изменить рецепт
@@ -181,6 +187,52 @@ def rem_recipes():
 def edit_recipes():
     if not request.json:
         abort(400)
+    id_ = request.json.get("id")
+    sshkey = request.json.get("sshkey")
+    title = request.json.get("title")
+    category = request.json.get("category")
+    access = request.json.get("access")
+    time_ = request.json.get("time")
+    steps = request.json.get("steps")
+    calories = request.json.get("calories")
+    proteins = request.json.get("proteins")
+    fats = request.json.get("fats")
+    carbohydrates = request.json.get("carbohydrates")
+    ingredients = request.json.get("ingredients")
+    image = request.json.get.get('file')
+    filename = request.json.get('filename')
+    description = request.json.get("description")
+
+    if sshkey:
+        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=user_id.user_id).first()
+        recipe = session.query(Recipe).order_by(id=id_).first()
+        if user:
+            crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
+                               filename.split(".")[1]
+            recipe.title = title
+            recipe.category = category
+            recipe.time = time_
+            recipe.access = access
+            recipe.steps = steps
+            recipe.calories = calories
+            recipe.proteins = proteins
+            recipe.fats = fats
+            recipe.description = description
+            recipe.carbohydrates = carbohydrates
+            recipe.ingredients = ingredients
+            recipe.author = user.tag
+            recipe.image = crypto_name_file
+
+            starter = image.find(',')
+            image_data = image[starter + 1:]
+            image_data = bytes(image_data, encoding="ascii")
+            im = Image.open(BytesIO(base64.b64decode(image_data)))
+            im.save(f'./images/{crypto_name_file}')
+
+            session.commit()
+        return jsonify({'status': True})
+    return jsonify({"status": False})
     return jsonify({'status': True})
 
 
@@ -194,6 +246,7 @@ def get_recipes():
     for recipe in recipes:
         recipes_dicts.append(recipe.as_dict())
     return jsonify({'recipe': recipes_dicts})
+
 
 # Получить рецепт
 @app.route('/api/get_recipe', methods=['GET'])

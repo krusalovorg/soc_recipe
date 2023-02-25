@@ -13,17 +13,18 @@ from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes,
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from flask_mail import Mail, Message
+from flask_mail import Mail,Message
 from fuzzywuzzy import fuzz
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
-app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'test@gmail.com'  # введите свой адрес электронной почты здесь
-app.config['MAIL_DEFAULT_SENDER'] = 'test@gmail.com'  # и здесь
-app.config['MAIL_PASSWORD'] = 'password'  # введите пароль
+app.config['MAIL_SERVER'] = 'smtp.mail.ru'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'mail.ru почта'  # введите свой адрес электронной почты здесь
+app.config['MAIL_DEFAULT_SENDER'] = 'mail.ru почта'  # и здесь
+app.config['MAIL_PASSWORD'] = '******'  # введите пароль
 CORS(app)
 
 engine = sqlalchemy.create_engine('sqlite:///db/db.db?check_same_thread=False', echo=False)
@@ -121,8 +122,8 @@ def edit_password():
 
 
 # Изменение пароля подтверждение <int:link_id>
-@app.route("/api/edit_password_confirm/<str:shhkey>/<str:new_password>", methods=["POST"])
-def edit_password():
+@app.route("/api/edit_password_confirm/<string:sshkey>/<string:new_password>", methods=["POST"])
+def edit_password_confirm():
     if not request.get("sshkey"):
         abort(400)
     sshkey = request.get("sshkey")
@@ -134,7 +135,6 @@ def edit_password():
         session.commit()
         return jsonify({"status": True})
     return jsonify({"status": False})
-
 
 
 # Проверка sshkey верный

@@ -1,4 +1,5 @@
 import random
+from hashlib import sha256
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
@@ -35,7 +36,7 @@ def get_user():
     user_tag = request.json["tag"]
     if user_tag:
         user = session.query(User).order_by(tag=user_tag).first()
-        recipes = session.query(Recipe).order_by(creator=user.id).filter(access="public").first()
+        recipes = session.query(Recipe).order_by(author=user.id).filter(access="public").first()
         return jsonify({
             "status": True,
             "name": user.name,
@@ -46,12 +47,12 @@ def get_user():
 
 
 # Проверка sshkey верный
-@app.route("/api/correct_key", methods=["GET"])
+@app.route("/api/correct_key", methods=["POST"])
 def correct_key():
     if not request.json:
         abort(400)
     sshkey = request.json["sshkey"]
-    ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
         return jsonify({"status": True})
     return jsonify({"status": False})
@@ -66,11 +67,8 @@ def login():
     password = request.json["password"]
     users = session.query(User).all()
     for user in users:
-        if user.email == email and user.check_password(password):
-            super_secret = "H@S213s$-1" + email + user.hashed_password
-            sshkey = ""
-            for i in range(24):
-                sshkey += random.choice(super_secret)
+        if (user.email == email or user.tag == email) and user.check_password(password):
+            sshkey = sha256(f"H@S213s$-1{email}{user.hashed_password}".encode('utf-8')).hexdigest()
             ses = Sessions(user_id=user.id, sshkey=sshkey)
             session.add(ses)
             session.commit()
@@ -94,24 +92,24 @@ def logout():
 
 
 # Регистрация пользователя
-@app.route('/api/user_reg', methods=['post'])
+@app.route('/api/user_reg', methods=['POST'])
 def user_reg():
     if not request.json:
         abort(400)
-    tag = request.json["tag"]
-    name = request.json["name"]
-    surname = request.json["surname"]
-    email = request.json["email"]
-    password = request.json["password"]
-    user = User.query.filter_by(email=email).first()  # Проверка есть ли пользователь в БД
+    tag = request.json.get("tag")
+    name = request.json.get("name")
+    surname = request.json.get("surname")
+    email = request.json.get("email")
+    password = request.json.get("password")
+    if not all([tag, name, surname, email, password]): # Проверка на пустые значения
+        return jsonify({'status': False})
+    user = session.query(User).filter_by(email=email).first()# Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
-    if name and surname and email and password and tag:
-        new_user = User(tag=tag, name=name, surname=surname, email=email, password=User.set_password(password))
-        session.add(new_user)
-        session.commit()
-    else:
-        abort(400)
+    new_user = User(tag=tag, name=name, surname=surname, email=email)
+    new_user.set_password(password)
+    session.add(new_user)
+    session.commit()
     return jsonify({'status': True})
 
 
@@ -120,6 +118,7 @@ def user_reg():
 def add_recipes():
     if not request.json:
         abort(400)
+    print(request.json)
     sshkey = request.json["sshkey"]
     title = request.json["title"]
     category = request.json["category"]
@@ -132,12 +131,12 @@ def add_recipes():
     carbohydrates = request.json["carbohydrates"]
     ingredients = request.json["ingredients"]
     if sshkey:
-        user_id = session.query(Sessions).order_by(sshkey=sshkey).first()
-        user = User.query.filter_by(id=user_id).first()
+        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, creator=user.id)
+                                carbohydrates=carbohydrates, author=user.tag, views=0, likes=0)
             session.add(new_recipe)
             session.commit()
             if ingredients:
@@ -167,9 +166,14 @@ def edit_recipes():
 # Получить рецепт
 @app.route('/api/get_recipes', methods=['GET'])
 def get_recipes():
-    recipe = session.query(Recipe).all()
-    print(session.query(Session).all())
-    return jsonify({'recipe': recipe})
+    from_num = request.args.get('f') or 0
+    to_num = request.args.get('t') or 10
+    recipes = list(session.query(Recipe).all())[int(from_num):int(to_num)]
+    recipes_dicts = []
+    for recipe in recipes:
+        recipes_dicts.append(recipe.as_dict())
+    print(recipes_dicts)
+    return jsonify({'recipe': recipes_dicts})
 
 
 @app.route('/api/search', methods=['GET'])
@@ -195,4 +199,4 @@ def search():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000)

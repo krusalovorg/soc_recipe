@@ -21,15 +21,19 @@ class Recipe(SqlBase):
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
     time = sqlalchemy.Column(sqlalchemy.Numeric, nullable=False)
     access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    steps = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    steps = sqlalchemy.Column(sqlalchemy.JSON, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Numeric)
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Numeric)
-    creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
+    views = sqlalchemy.Column(sqlalchemy.Numeric)
+    likes = sqlalchemy.Column(sqlalchemy.Numeric)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
     ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Category(SqlBase):
@@ -78,6 +82,16 @@ class Sessions(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     sshkey = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+
+class Article(SqlBase):
+    __tablename__ = "articles"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
 
 
 associated_access = sqlalchemy.Table(

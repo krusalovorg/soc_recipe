@@ -17,6 +17,7 @@ import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useContext } from 'react';
 import { AuthContext } from '../context/auth.context';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 // import {ImagePicker} from 'react-native-image-picker';
 
@@ -159,7 +160,7 @@ const CreateRecipeScreen = ({ navigation }) => {
   };
 
   const selectImage = () => {
-    ImagePicker.showImagePicker({ title: 'Select Image' }, (response) => {
+    launchImageLibrary({ title: 'Выберете изображение' }, (response) => {
       if (!response.didCancel && !response.error) {
         setImage(response);
       }

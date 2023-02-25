@@ -29,6 +29,7 @@ class Recipe(SqlBase):
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
     views = sqlalchemy.Column(sqlalchemy.Integer)
     likes = sqlalchemy.Column(sqlalchemy.Integer)
+    image = sqlalchemy.Column(sqlalchemy.String)
     ingredients = sqlalchemy.Column(sqlalchemy.JSON)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')

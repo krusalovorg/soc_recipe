@@ -136,10 +136,12 @@ def add_recipes():
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
         if user:
+            crypto_name_file = sha256((image.filename+time.time()).encode("utf-8")).hexdigest()+"."+image.filename.split(".")[1]
+            print(crypto_name_file)
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, image=image,views=0, likes=0)
-            image.save(f'./images/{image.filename}')
+                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag, image=crypto_name_file, views=0, likes=0)
+            image.save(f'./images/{crypto_name_file}')
             session.add(new_recipe)
             session.commit()
             if ingredients:

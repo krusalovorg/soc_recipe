@@ -119,24 +119,41 @@ const CreateRecipeScreen = ({ navigation }) => {
     }
 
     const formdata = new FormData();
-    Object.keys(data).map((key) => {
-      const item = data[key];
-      formdata[key] = item;
-    })
-    formdata.append('image', {
-      uri: image.uri,
-      name: image.fileName || 'image.jpg',
-      type: image.type || 'image/jpeg',
-    });
+    formdata.append('title', title);
+    formdata.append('category', category);
+    formdata.append('access', access ? "private" : "public");
+    formdata.append('time', time);
+    formdata.append('calories', calories);
+    formdata.append('proteins', proteins);
+    formdata.append('fats', fats);
+    formdata.append('carbohydrates', carbohydrates);
+    formdata.append('sshkey', token);
+
+    // Object.keys(data).map((key) => {
+    //   const item = data[key];
+    //   if (key == 'steps') {
+    //     formdata[key] = JSON.stringify(item);
+    //   }
+    // })
+    // formdata.append('image', {
+    //   uri: image.uri,
+    //   name: image.fileName || 'image.jpg',
+    //   type: image.type || 'image/jpeg',
+    // });
 
     try {
       console.log(server_ip + '/add_recipes/')
-      const res = await axios.post(server_ip + '/add_recipes/',{
-        method: "post",
+
+      const res = await axios({
+        url: server_ip + '/add_recipes',
         data: formdata,
-        headers: { "Content-Type": "multipart/form-data" },
+        method: "POST",
+        headers: {
+          Accept: 'application/json',
+          "Content-Type": "multipart/form-data"
+        }
       });
-      
+
       if (res.data.status) {
         alert('Рецепт сохранён!');
         setTitle('');

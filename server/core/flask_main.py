@@ -3,6 +3,7 @@ from hashlib import sha256
 
 from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions
 
@@ -13,6 +14,7 @@ from fuzzywuzzy import fuzz
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
+CORS(app)
 
 engine = sqlalchemy.create_engine('sqlite:///db/db.db?check_same_thread=False', echo=False)
 SqlBase.metadata.create_all(engine)
@@ -116,20 +118,20 @@ def user_reg():
 # Добавить рецепт
 @app.route('/api/add_recipes/', methods=['POST'])
 def add_recipes():
-    if not request.json:
-        abort(400)
     print(request.form)
-    sshkey = request.json["sshkey"]
-    title = request.json["title"]
-    category = request.json["category"]
-    access = request.json["access"]
-    time = request.json["time"]
-    steps = request.json["steps"]
-    calories = request.json["calories"]
-    proteins = request.json["proteins"]
-    fats = request.json["fats"]
-    carbohydrates = request.json["carbohydrates"]
-    ingredients = request.json["ingredients"]
+    if not request.form:
+        abort(400)
+    sshkey = request.form["sshkey"]
+    title = request.form["title"]
+    category = request.form["category"]
+    access = request.form["access"]
+    time = request.form["time"]
+    steps = request.form["steps"]
+    calories = request.form["calories"]
+    proteins = request.form["proteins"]
+    fats = request.form["fats"]
+    carbohydrates = request.form["carbohydrates"]
+    ingredients = request.form["ingredients"]
     image = request.files.get('image')
 
     if sshkey:

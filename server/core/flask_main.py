@@ -1,6 +1,6 @@
 import random
 
-from flask import Flask, jsonify, make_response, request, abort,
+from flask import Flask, jsonify, make_response, request, abort
 from flask_migrate import Migrate
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions

@@ -42,6 +42,9 @@ class Ingredient(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
+    def __repr__(self):
+        return f'<Ingredient> {self.id}'
+
 
 class User(SqlBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
@@ -74,7 +77,6 @@ associated_recipes = sqlalchemy.Table(
     sqlalchemy.Column('quantity', sqlalchemy.String)
 )
 
-
 associated_users = sqlalchemy.Table(
     'recipes_to_users', SqlBase.metadata,
     sqlalchemy.Column('user_id', sqlalchemy.Integer,
@@ -82,6 +84,3 @@ associated_users = sqlalchemy.Table(
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('recipes.id'))
 )
-
-
-

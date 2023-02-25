@@ -13,11 +13,17 @@ from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes,
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-
+from flask_mail import Mail, Message
 from fuzzywuzzy import fuzz
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'test@gmail.com'  # введите свой адрес электронной почты здесь
+app.config['MAIL_DEFAULT_SENDER'] = 'test@gmail.com'  # и здесь
+app.config['MAIL_PASSWORD'] = 'password'  # введите пароль
 CORS(app)
 
 engine = sqlalchemy.create_engine('sqlite:///db/db.db?check_same_thread=False', echo=False)
@@ -27,6 +33,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 migrate = Migrate(app, engine)
+mail = Mail(app)
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -91,6 +98,43 @@ def get_user():
             "recipes": recipes
         })
     return jsonify({"status": False})
+
+
+# Изменение пароля
+@app.route("/api/edit_password", methods=["POST"])
+def edit_password():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    password = request.json.get("password")
+    new_password = request.json.get("new_password")
+    if sshkey:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        user = session.query(User).order_by(id=ses.user_id).first()
+        if session.query(User).order_by(id=user.id).first().check_password(password):
+            msg = Message("Subject", recipients=[user.email])
+            msg.body = "If you are trying to change the password using the link, then this message is the place to be."
+            msg.html = f"If you are trying to change the password using the link, then this message is the place to be.<a>https://site/api/edit_password_confirm?shhkey={sshkey}&new_password={new_password}</a>"
+            mail.send(msg)
+            return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+# Изменение пароля подтверждение <int:link_id>
+@app.route("/api/edit_password_confirm/<str:shhkey>/<str:new_password>", methods=["POST"])
+def edit_password():
+    if not request.get("sshkey"):
+        abort(400)
+    sshkey = request.get("sshkey")
+    new_password = request.get("new_password")
+    if sshkey:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        user = session.query(User).order_by(id=ses.user_id).first()
+        user.set_password(new_password)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
 
 
 # Проверка sshkey верный

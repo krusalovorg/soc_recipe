@@ -30,8 +30,8 @@ def index():
 # Логин
 @app.route("/api/user_login", methods=["POST", 'GET'])
 def login():
-    # if not request.json:
-    #     abort(400)
+    if not request.json:
+        abort(400)
     users = session.query(User).all()
     email = request.json["email"]
     password = request.json["password"]
@@ -84,7 +84,7 @@ def add_recipes(user_id):
     if user:
         new_recipe = Recipe(title=title, category=category, time=time, steps=steps,
                             calories=calories, proteins=proteins, fats=fats,
-                            carbohydrates=carbohydrates)
+                            carbohydrates=carbohydrates, creator=user.id)
         session.add(new_recipe)
         session.commit()
         if ingredients:
@@ -99,7 +99,7 @@ def add_recipes(user_id):
 def rem_recipes():
     if not request.json:
         abort(400)
-    jsonify({'status': True})
+    return jsonify({'status': True})
 
 
 # Изменить рецепт
@@ -107,7 +107,7 @@ def rem_recipes():
 def edit_recipes():
     if not request.json:
         abort(400)
-    jsonify({'status': True})
+    return jsonify({'status': True})
 
 
 # Получить рецепт

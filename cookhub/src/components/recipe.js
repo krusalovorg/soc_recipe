@@ -1,5 +1,6 @@
 import React from "react";
 import { TextInput, StyleSheet, Image, Text, View, TouchableHighlight } from "react-native";
+import { server_ip } from "../api/config";
 
 function Recipe(props) {
     return (
@@ -10,7 +11,7 @@ function Recipe(props) {
                     props.navigation.navigate('recipe', {data: props.data.id})
                 }}>
                 <View style={styles.contanier}>
-                    <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />
+                    <Image style={styles.image} source={{ uri: server_ip+"/get_image/"+props.data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.title}>{props.data.title}</Text>
                         <Text style={styles.name}>{props.data.author}</Text>

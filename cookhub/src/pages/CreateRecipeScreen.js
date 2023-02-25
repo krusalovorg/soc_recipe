@@ -37,6 +37,7 @@ const translate_ids = {
   fats: "жиры",
   carbohydrates: "углеводы",
   ingredients: "ингредиенты",
+  description: "описание"
 }
 
 function RecipeInput(props) {
@@ -66,6 +67,7 @@ const CreateRecipeScreen = ({ navigation }) => {
   const [carbohydrates, setCarbohydrates] = useState('');
   const [ingredients, setIngredients] = useState([{ name: '', amount: '' }]);
   const [error, setError] = useState();
+  const [description, setDescription] = useState('');
   const { token } = useContext(AuthContext);
   const [image, setImage] = useState(null);
 
@@ -104,6 +106,7 @@ const CreateRecipeScreen = ({ navigation }) => {
       fats,
       carbohydrates,
       ingredients,
+      description
     };
 
     Object.keys(data).map((key) => {
@@ -174,6 +177,7 @@ const CreateRecipeScreen = ({ navigation }) => {
     <SafeAreaView>
       <ScrollView style={styles.container}>
         <RecipeInput label={"Название"} placeholder={"Введите название рецепта"} value={title} setValue={setTitle} />
+        <RecipeInput label={"Описание"} placeholder={"Введите описание блюда"} value={description} setValue={setDescription} />
 
         <Button title="Выберете изображение" onPress={selectImage} />
 

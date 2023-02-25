@@ -73,7 +73,7 @@ const RecipeScreen = ({ navigation, route }) => {
         <SafeAreaView style={styles.container}>
             <ImageBackground
                 resizeMode='cover'
-                source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }}
+                source={{ uri: server_ip+"/get_image/"+data.image }}
                 blurRadius={200}>
                 <View style={styles.title_contanier}>
                     <Text style={styles.title}>{data.title}</Text>

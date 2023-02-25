@@ -35,10 +35,12 @@ def get_user():
     user_tag = request.json["tag"]
     if user_tag:
         user = session.query(User).order_by(tag=user_tag).first()
+        recipes = session.query(Recipe).order_by(creator=user.id).filter(access="public").first()
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
+            "recipes": recipes
 
         })
     return jsonify({"status": False})
@@ -122,6 +124,7 @@ def add_recipes():
     sshkey = request.json["sshkey"]
     title = request.json["title"]
     category = request.json["category"]
+    access = request.json["access"]
     time = request.json["time"]
     steps = request.json["steps"]
     calories = request.json["calories"]
@@ -133,7 +136,7 @@ def add_recipes():
         user_id = session.query(Sessions).order_by(sshkey=sshkey).first()
         user = User.query.filter_by(id=user_id).first()
         if user:
-            new_recipe = Recipe(title=title, category=category, time=time, steps=steps,
+            new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
                                 carbohydrates=carbohydrates, creator=user.id)
             session.add(new_recipe)

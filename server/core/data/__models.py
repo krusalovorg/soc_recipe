@@ -20,6 +20,7 @@ class Recipe(SqlBase):
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
     time = sqlalchemy.Column(sqlalchemy.Numeric, nullable=False)
+    access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     steps = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Numeric)
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)

@@ -25,6 +25,7 @@ class Recipe(SqlBase):
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Numeric)
+    creator = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
 
     ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
 

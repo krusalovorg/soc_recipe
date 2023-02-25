@@ -26,7 +26,9 @@ class Recipe(SqlBase):
     proteins = sqlalchemy.Column(sqlalchemy.Numeric)
     fats = sqlalchemy.Column(sqlalchemy.Numeric)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Numeric)
-    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
+    views = sqlalchemy.Column(sqlalchemy.Numeric)
+    likes = sqlalchemy.Column(sqlalchemy.Numeric)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
     ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')

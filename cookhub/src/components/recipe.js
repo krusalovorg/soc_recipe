@@ -12,8 +12,8 @@ function Recipe(props) {
                 <View style={styles.contanier}>
                     <Image style={styles.image} source={{ uri: "https://www.ermolino-produkty.ru/recipes/picts/recipes/tnw682-670%D1%85430_salat-cezar-s-kuricey.jpg" }} />
                     <View style={styles.content}>
-                        <Text style={styles.title}>Салат Цезарь</Text>
-                        <Text style={styles.name}>@krusalovorg</Text>
+                        <Text style={styles.title}>{props.data.title}</Text>
+                        <Text style={styles.name}>{props.data.creator}</Text>
                         <Text style={styles.views}>10 views</Text>
                     </View>
                 </View>

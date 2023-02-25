@@ -65,7 +65,7 @@ const HomeScreen = ({ navigation }) => {
                 <Text style={styles.title_contanier}>Актуальное</Text>
                 {
                     recipies.map((item) => {
-                        return <Recipe navigation={navigation} />
+                        return <Recipe data={item} navigation={navigation} />
                     })
                 }
             </ScrollView>

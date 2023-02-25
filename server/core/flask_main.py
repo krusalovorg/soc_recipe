@@ -137,7 +137,7 @@ def add_recipes():
         if user:
             new_recipe = Recipe(title=title, category=category, time=time, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats,
-                                carbohydrates=carbohydrates, author=user.id)
+                                carbohydrates=carbohydrates, author=user.tag, views=0, likes=0)
             session.add(new_recipe)
             session.commit()
             if ingredients:
@@ -173,7 +173,8 @@ def get_recipes():
     recipes_dicts = []
     for recipe in recipes:
         recipes_dicts.append(recipe.as_dict())
-    return jsonify({'recipe': recipes})
+    print(recipes_dicts)
+    return jsonify({'recipe': recipes_dicts})
 
 
 @app.route('/api/search', methods=['GET'])

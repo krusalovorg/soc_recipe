@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { server_ip } from '../api/config';
 // import axios from 'axios';
 
 const RegScreen = () => {
@@ -12,14 +13,15 @@ const RegScreen = () => {
 
     const handleRegistration = async () => {
         try {
-            const response = await axios.post('https://localhost:8000/api/user_reg', {
+            console.log("SEND")
+            const response = await axios.post(server_ip+'/user_reg', {
                 name,
                 surname,
                 email,
                 password,
                 tag
-            }, {method: 'POST'});
-            console.log(response.data);
+            });
+            console.log('GET',response.data);
         } catch (error) {
             console.log(error);
         }

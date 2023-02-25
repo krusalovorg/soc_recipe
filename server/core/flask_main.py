@@ -95,7 +95,7 @@ def logout():
 
 
 # Регистрация пользователя
-@app.route('/api/user_reg', methods=['post'])
+@app.route('/api/user_reg', methods=['POST'])
 def user_reg():
     if not request.json:
         abort(400)
@@ -196,4 +196,4 @@ def search():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, host="0.0.0.0", port=8000)

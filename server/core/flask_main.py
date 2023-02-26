@@ -132,14 +132,16 @@ def edit_password_confirm():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
+    code = request.json.get("code")
     new_password = request.json.get("new_password")
     if sshkey:
         ses = session.query(Sessions).order_by(sshkey=sshkey).first()
         user = session.query(User).order_by(id=ses.user_id).first()
-        if ((datetime.datetime().now()-cods[user.id][1]).minute < 3):
-            user.set_password(new_password)
-            session.commit()
-        return jsonify({"status": True})
+        if cods[user.id][0] == code:
+            if ((datetime.datetime().now()-cods[user.id][1]).minute < 3):
+                user.set_password(new_password)
+                session.commit()
+            return jsonify({"status": True})
     return jsonify({"status": False})
 
 

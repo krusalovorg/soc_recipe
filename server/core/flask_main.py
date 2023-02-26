@@ -179,6 +179,28 @@ def edit_password():
     return jsonify({"status": False})
 
 
+# Забыли пароль
+@app.route("/api/edit_password", methods=["POST"])
+def remember_password():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    email = request.json.get("email")
+    if sshkey:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        user = session.query(User).order_by(id=ses.user_id).first()
+
+        if user.email == email:
+            cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
+            msg = Message("Subject", recipients=[user.email])
+            msg.body = f"If you are trying to remember the password copy it {cods[user.id][0]}, then this message is the place to be."
+            mail.send(msg)
+            return jsonify({"status": True,
+                            "key": cods[user.id][0]
+                            })
+    return jsonify({"status": False})
+
+
 # Изменение пароля подтверждение
 @app.route("/api/edit_password_confirm", methods=["POST"])
 def edit_password_confirm():
@@ -196,7 +218,7 @@ def edit_password_confirm():
                 sshkey = sha256(f"H@S213s$-1{user.email}{user.hashed_password}".encode('utf-8')).hexdigest()
                 ses.sshkey = sshkey
                 session.commit()
-            return jsonify({"status": True,"sshkey":sshkey})
+            return jsonify({"status": True, "sshkey": sshkey})
     return jsonify({"status": False})
 
 

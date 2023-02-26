@@ -353,26 +353,15 @@ def get_recipe():
     return jsonify({'recipe': recipe.as_dict()})
 
 
-@app.route('/api/search', methods=['GET'])
+@app.route('/api/search', methods=['POST'])
 def search():
     if request.method == 'POST':
-        recipes = []
-        input_string = request.form.get('search')
-        input_list = input_string.split()
-        for recipe in session.query(Recipe).all():
-            ingredient_names = [ingredient.name for ingredient in recipe.ingredients]
-            ingredient_names_lower = [name.lower() for name in ingredient_names]
-            for input_word in input_list:
-                input_word_lower = input_word.lower()
-                for name, name_lower in zip(ingredient_names, ingredient_names_lower):
-                    ratio = fuzz.ratio(input_word_lower, name_lower)
-                    if ratio > 70:  # задаем порог совпадения
-                        recipes.append(recipe)
-                        break
-        for recipe in recipes:
-            print(recipe.title)
+        input_string = request.json.get('search')
+        return jsonify({"recipes": []})
     else:
         return make_response('Nothing found')
+
+#krusalovorg
 
 chats = [
     {
@@ -392,7 +381,7 @@ schema_list = [
 threshold = 60
 limit = 10
 
-@app.route('/chat', methods=["POST"])
+@app.route('/api/chat', methods=["POST"])
 def chatting():
     if not request.json:
         abort(400)

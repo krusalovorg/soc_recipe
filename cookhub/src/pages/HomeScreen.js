@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
+import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView, RefreshControl } from 'react-native';
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
 import { getRecipies } from '../api/recipes';
@@ -9,14 +9,23 @@ const HomeScreen = ({ navigation }) => {
     const [findValue, setFindValue] = useState("");
     const [recipies, setRecipies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     async function loadRecipies() {
-        const recipies = await getRecipies()
+        setRefreshing(true);
+        const recipies = await getRecipies();
         if (recipies.length > 0) {
             setRecipies(recipies);
         }
         setLoading(false);
+        setRefreshing(false);
     }
+
+    async function handleRefresh() {
+        setRecipies([]);
+        await loadRecipies();
+        setRefreshing(false);
+    };
 
     useEffect(() => {
         loadRecipies();
@@ -27,8 +36,17 @@ const HomeScreen = ({ navigation }) => {
     }
 
     return (
-        <SafeAreaView style={{backgroundColor: 'white', height: '100%'}}>
-            <ScrollView style={styles.page_contanier}>
+        <SafeAreaView style={{ backgroundColor: 'white', height: '100%' }}>
+            <ScrollView
+                style={styles.page_contanier}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        colors={['#0080ff']}
+                    />
+                }
+            >
                 <View style={styles.searchSection}>
                     <TextInput
                         placeholder='Цезарь'

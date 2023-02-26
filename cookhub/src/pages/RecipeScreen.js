@@ -32,19 +32,28 @@ const RecipeScreen = ({ navigation, route }) => {
     async function loadRecipe() {
         const recipe = await getRecipe(id);
         if (recipe) {
-            console.log('RECIPE',recipe, {type: "table", table: recipe.ingredients})
+            console.log('RECIPE', recipe, { type: "table", table: recipe.ingredients })
             setData(recipe);
-            setSteps([{type: "list", list: recipe.steps}, {type: "table", table: recipe.ingredients}]);
+            setSteps([
+                { type: "list", list: recipe.steps },
+                { type: "table", table: recipe.ingredients },
+                { type: "text", text: "Энергетическая ценность:", style: {marginTop: 15, marginBottom: 5}},
+                { type: "table", table: [
+                    {name: "Углеводы", amount: recipe.carbohydrates},
+                    {name: "Жиры", amount: recipe.fats},
+                    {name: "Белки", amount: recipe.proteins},
+                    {name: "Калории", amount: recipe.calories},
+                ] }]);
             setComments([]); //comments добавить
         }
-        setTimeout(()=>{
+        setTimeout(() => {
             setLoading(false);
-        },500)
+        }, 500)
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         loadRecipe();
-    },[RecipeScreen])
+    }, [RecipeScreen])
 
     // const data = [
     //     { type: "list", list: ["text1", "text2", "text3"] },
@@ -73,22 +82,26 @@ const RecipeScreen = ({ navigation, route }) => {
         <SafeAreaView style={styles.container}>
             <ImageBackground
                 resizeMode='cover'
-                source={{ uri: server_ip+"/get_image/"+data.image }}
+                source={{ uri: server_ip + "/get_image/" + data.image }}
                 blurRadius={200}>
                 <View style={styles.title_contanier}>
                     <Text style={styles.title}>{data.title}</Text>
-                    <TouchableOpacity style={styles.back} onPress={() => { navigation.goBack() }}>
+                    <TouchableOpacity style={styles.back} onPress={() => { navigation.navigate("home") }}>
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
                 </View>
                 <ScrollView style={styles.page_contanier}>
-                    <Image style={styles.image} source={{ uri: server_ip+"/get_image/"+data.image }} />
+                    <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.desc}>
                             {data.description}
                         </Text>
                         <RecipeContent data={steps} />
 
+                        <Text style={[styles.desc, {marginTop: 20, color: 'black'}]}>Время приготовления: {data.time > 1 ? data.time : data.time*60} {data.time > 1 ? "час" : "минут"}</Text>
+                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Категория: {data.category}</Text>
+                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Автор: {data.author}</Text>
+                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Просмотров: {data.views}</Text>
 
                         {/* Инпут для ввода комментария и кнопка отправки */}
                         <Text style={{ ...styles.title, marginLeft: 0, marginTop: 20, marginBottom: 20 }}>Комментарии</Text>

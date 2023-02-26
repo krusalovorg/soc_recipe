@@ -18,7 +18,7 @@ const RecipeContent = ({ data }) => {
                 );
             } else if (item.type === 'text') {
                 return (
-                    <Text key={index} style={styles.text}>
+                    <Text key={index} style={[styles.text, item.style]}>
                         {item.text}
                     </Text>
                 );

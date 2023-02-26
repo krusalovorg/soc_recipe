@@ -194,9 +194,9 @@ const CreateRecipeScreen = ({ navigation }) => {
           onValueChange={(itemValue, itemIndex) => setCategory(itemValue)}
           style={{ borderWidth: 1 }}
         >
-          <Picker.Item label="Завтрак" value="lunch" />
-          <Picker.Item label="Обед" value="dinner" />
-          <Picker.Item label="Ужин" value="breakfast" />
+          <Picker.Item label="Завтрак" value="Завтрак" />
+          <Picker.Item label="Обед" value="Обед" />
+          <Picker.Item label="Ужин" value="Ужин" />
         </Picker>
 
 

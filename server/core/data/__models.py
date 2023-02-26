@@ -101,7 +101,7 @@ class Watches(SqlBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
-    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipe.id'))
+    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))
 
 
 class Commetns(SqlBase):
@@ -109,7 +109,7 @@ class Commetns(SqlBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
-    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipe.id'))
+    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 

@@ -46,7 +46,7 @@ morph = pymorphy2.MorphAnalyzer(lang='ru')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    return True
+    return jsonify({"status": True})
 
 
 # Добавить коменты на рецпт
@@ -242,7 +242,7 @@ def add_like():
     return jsonify({"status": False})
 
 
-@app.route("api/get_like", methods=["GET"])
+@app.route("/api/get_like", methods=["GET"])
 def get_like():
     if not request.json:
         abort(400)
@@ -273,7 +273,7 @@ def add_watch():
     return jsonify({"status": False})
 
 
-@app.route("api/get_watch", methods=["GET"])
+@app.route("/api/get_watch", methods=["GET"])
 def get_watch():
     if not request.json:
         abort(400)

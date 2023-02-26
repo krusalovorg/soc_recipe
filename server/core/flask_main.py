@@ -1,6 +1,7 @@
 import random
 from hashlib import sha256
 
+import pymorphy2
 from flask import Flask, jsonify, make_response, request, abort, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -15,6 +16,8 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from flask_mail import Mail, Message
 from fuzzywuzzy import fuzz
+
+from server.core.utils.cmd2dict import challenge_command
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -37,6 +40,7 @@ migrate = Migrate(app, engine)
 mail = Mail(app)
 cods = []
 
+morph = pymorphy2.MorphAnalyzer(lang='ru')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -384,27 +388,80 @@ def get_recipe():
     return jsonify({'recipe': recipe.as_dict()})
 
 
-@app.route('/api/search', methods=['GET'])
+@app.route('/api/search', methods=['POST'])
 def search():
     if request.method == 'POST':
-        recipes = []
-        input_string = request.form.get('search')
-        input_list = input_string.split()
-        for recipe in session.query(Recipe).all():
-            ingredient_names = [ingredient.name for ingredient in recipe.ingredients]
-            ingredient_names_lower = [name.lower() for name in ingredient_names]
-            for input_word in input_list:
-                input_word_lower = input_word.lower()
-                for name, name_lower in zip(ingredient_names, ingredient_names_lower):
-                    ratio = fuzz.ratio(input_word_lower, name_lower)
-                    if ratio > 70:  # задаем порог совпадения
-                        recipes.append(recipe)
-                        break
-        for recipe in recipes:
-            print(recipe.title)
+        input_string = request.json.get('search')
+        return jsonify({"recipes": []})
     else:
         return make_response('Nothing found')
 
+#krusalovorg
+
+chats = [
+    {
+        "id": 1,
+        "messages": [
+            { "from": "user", "text": "найди рецепт для завтрака" },
+            { "from": "bot", "text": "я нашел рецепты:", "data": []},
+
+        ]
+    }
+]
+
+schema_list = [
+    {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context", "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
+]
+
+threshold = 60
+limit = 10
+
+@app.route('/api/chat', methods=["POST"])
+def chatting():
+    if not request.json:
+        abort(400)
+
+    sshkey = request.json.get("sshkey")
+    text = request.json.get("text")
+
+    session_ = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if not session_:
+        print('not session')
+        abort(400)
+
+    user_id = session_.user_id
+
+    model = {"from": user_id, "text": text}
+
+    res = challenge_command(text, schema_list)
+
+    if res:
+        input_ingredients = []
+        for ingredient in res['ingredients']:
+            word = morph.parse(ingredient)[0].normal_form
+            input_ingredients.append(word)
+
+    filtered_recipes = []
+
+    recipes = session.query(Recipe).all()
+
+    for recipe in recipes:
+        recipe_ingredients = recipe.ingredients
+        match_scores = []
+        for ingredient in input_ingredients:
+            best_match = 0
+            for recipe_ingredient in recipe_ingredients:
+                match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
+                if match_score > best_match:
+                    best_match = match_score
+            match_scores.append(best_match)
+        avg_score = sum(match_scores) / len(match_scores)
+        if avg_score >= threshold:
+            filtered_recipes.append((recipe.as_dict(), avg_score))
+
+    filtered_recipes.sort(key=lambda x: x[1], reverse=True)
+
+    return jsonify({"answer": { "from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes }})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8000)

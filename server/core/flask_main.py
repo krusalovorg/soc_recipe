@@ -168,7 +168,7 @@ def add_like():
     return jsonify({"status": False})
 
 
-# Просмотры на рецпет
+# Просмотры на рецпете
 @app.route("/api/add_watch", methods=["POST"])
 def add_watch():
     if not request.json:

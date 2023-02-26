@@ -5,7 +5,7 @@ from flask import Flask, jsonify, make_response, request, abort, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
 
-import base64, time
+import base64, time, datetime
 from io import BytesIO
 from PIL import Image
 
@@ -13,7 +13,7 @@ from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes,
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from flask_mail import Mail,Message
+from flask_mail import Mail, Message
 from fuzzywuzzy import fuzz
 
 app = Flask(__name__)
@@ -101,6 +101,9 @@ def get_user():
     return jsonify({"status": False})
 
 
+cods = []
+
+
 # Изменение пароля
 @app.route("/api/edit_password", methods=["POST"])
 def edit_password():
@@ -108,31 +111,34 @@ def edit_password():
         abort(400)
     sshkey = request.json.get("sshkey")
     password = request.json.get("password")
-    new_password = request.json.get("new_password")
     if sshkey:
         ses = session.query(Sessions).order_by(sshkey=sshkey).first()
         user = session.query(User).order_by(id=ses.user_id).first()
+
         if session.query(User).order_by(id=user.id).first().check_password(password):
+            cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
             msg = Message("Subject", recipients=[user.email])
-            msg.body = "If you are trying to change the password using the link, then this message is the place to be."
-            msg.html = f"If you are trying to change the password using the link, then this message is the place to be.<a>https://site/api/edit_password_confirm?shhkey={sshkey}&new_password={new_password}</a>"
+            msg.body = f"If you are trying to change the password copy it {cods[user.id][0]}, then this message is the place to be."
             mail.send(msg)
-            return jsonify({"status": True})
+            return jsonify({"status": True,
+                            "key": cods[user.id][0]
+                            })
     return jsonify({"status": False})
 
 
 # Изменение пароля подтверждение <int:link_id>
-@app.route("/api/edit_password_confirm/<string:sshkey>/<string:new_password>", methods=["POST"])
+@app.route("/api/edit_password_confirm", methods=["POST"])
 def edit_password_confirm():
-    if not request.get("sshkey"):
+    if not request.json:
         abort(400)
-    sshkey = request.get("sshkey")
-    new_password = request.get("new_password")
+    sshkey = request.json.get("sshkey")
+    new_password = request.json.get("new_password")
     if sshkey:
         ses = session.query(Sessions).order_by(sshkey=sshkey).first()
         user = session.query(User).order_by(id=ses.user_id).first()
-        user.set_password(new_password)
-        session.commit()
+        if ((datetime.datetime().now()-cods[user.id][1]).minute < 3):
+            user.set_password(new_password)
+            session.commit()
         return jsonify({"status": True})
     return jsonify({"status": False})
 

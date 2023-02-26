@@ -42,6 +42,7 @@ cods = []
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
 
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     pass
@@ -128,7 +129,7 @@ def edit_password():
     return jsonify({"status": False})
 
 
-# Изменение пароля подтверждение <int:link_id>
+# Изменение пароля подтверждение
 @app.route("/api/edit_password_confirm", methods=["POST"])
 def edit_password_confirm():
     if not request.json:
@@ -147,6 +148,7 @@ def edit_password_confirm():
     return jsonify({"status": False})
 
 
+# Лайки на рецепте
 @app.route("/api/add_like", methods=["POST"])
 def add_like():
     if not request.json:
@@ -166,6 +168,7 @@ def add_like():
     return jsonify({"status": False})
 
 
+# Просмотры на рецпет
 @app.route("/api/add_watch", methods=["POST"])
 def add_watch():
     if not request.json:
@@ -396,25 +399,28 @@ def search():
     else:
         return make_response('Nothing found')
 
-#krusalovorg
+
+# krusalovorg
 
 chats = [
     {
         "id": 1,
         "messages": [
-            { "from": "user", "text": "найди рецепт для завтрака" },
-            { "from": "bot", "text": "я нашел рецепты:", "data": []},
+            {"from": "user", "text": "найди рецепт для завтрака"},
+            {"from": "bot", "text": "я нашел рецепты:", "data": []},
 
         ]
     }
 ]
 
 schema_list = [
-    {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context", "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
+    {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context",
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
 ]
 
 threshold = 60
 limit = 10
+
 
 @app.route('/api/chat', methods=["POST"])
 def chatting():
@@ -461,7 +467,8 @@ def chatting():
 
     filtered_recipes.sort(key=lambda x: x[1], reverse=True)
 
-    return jsonify({"answer": { "from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes }})
+    return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes}})
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8000)

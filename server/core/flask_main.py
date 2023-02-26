@@ -9,7 +9,7 @@ import base64, time, datetime
 from io import BytesIO
 from PIL import Image
 
-from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions
+from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -35,6 +35,7 @@ session = Session()
 
 migrate = Migrate(app, engine)
 mail = Mail(app)
+cods = []
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -43,7 +44,7 @@ def index():
 
 
 # Получаем профль другого пользователя
-@app.route("/api/get_user_profile")
+@app.route("/api/get_user_profile", methods=["GET"])
 def get_user_profile():
     if not request.json:
         abort(400)
@@ -63,7 +64,7 @@ def get_user_profile():
 
 
 # Получаем свой профль
-@app.route("/api/get_profile")
+@app.route("/api/get_profile", methods=["GET"])
 def get_profile():
     if not request.json:
         abort(400)
@@ -101,9 +102,6 @@ def get_user():
     return jsonify({"status": False})
 
 
-cods = []
-
-
 # Изменение пароля
 @app.route("/api/edit_password", methods=["POST"])
 def edit_password():
@@ -138,10 +136,48 @@ def edit_password_confirm():
         ses = session.query(Sessions).order_by(sshkey=sshkey).first()
         user = session.query(User).order_by(id=ses.user_id).first()
         if cods[user.id][0] == code:
-            if ((datetime.datetime().now()-cods[user.id][1]).minute < 3):
+            if ((datetime.datetime().now() - cods[user.id][1]).minute < 3):
                 user.set_password(new_password)
                 session.commit()
             return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+@app.route("/api/add_like", methods=["POST"])
+def add_like():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    recipe_id = request.json.get("recipe_id")
+    if sshkey and recipe_id:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        like = session.query(associated_users).order_by(user_id=ses.id, recipe_id=recipe_id).first()
+        if like:
+            session.delete(like)
+            session.commit()
+            return jsonify({"status": True})
+        session.add(associated_users(user_id=ses.id, recipe_id=recipe_id))
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+@app.route("/api/add_watch", methods=["POST"])
+def add_watch():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    recipe_id = request.json.get("recipe_id")
+    if sshkey and recipe_id:
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        wathes = session.query(Watches).order_by(user_id=ses.user_id).first()
+        if wathes:
+            session.delete(wathes)
+            session.commit()
+            return jsonify({"status": True})
+        session.add(Watches(user_id=ses.id, recipe_id=recipe_id))
+        session.commit()
+        return jsonify({"status": True})
     return jsonify({"status": False})
 
 
@@ -326,7 +362,6 @@ def edit_recipes():
             session.commit()
         return jsonify({'status': True})
     return jsonify({"status": False})
-    return jsonify({'status': True})
 
 
 # Получить рецепты

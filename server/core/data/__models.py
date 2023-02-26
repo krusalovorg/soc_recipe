@@ -34,6 +34,7 @@ class Recipe(SqlBase):
     description = sqlalchemy.Column(sqlalchemy.String)
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
+
     # ingredients = orm.relationship('Ingredient', secondary='ingredients_to_recipes', backref='recipes')
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -93,6 +94,14 @@ class Article(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
+class Watches(SqlBase):
+    __tablename__ = "watchers"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
+    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipe.id'))
 
 
 associated_access = sqlalchemy.Table(

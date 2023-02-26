@@ -1,21 +1,13 @@
 import re
 
 from fuzzywuzzy.fuzz import ratio
-<<<<<<< Updated upstream
-from modules.utils.text2num import TextToNumber
-=======
 from utils.text2num import TextToNumber
->>>>>>> Stashed changes
 
 text2num = TextToNumber()
 
 blacktypes = ['whitelist', '_id', 'rang']
 
-<<<<<<< Updated upstream
-def parse_command(sentence: str, schema: dict, number=False):
-=======
 def parse_command(sentence: str, schema: dict, number=False) -> dict:
->>>>>>> Stashed changes
     if number:
         sentence = text2num.parse(sentence)
 
@@ -122,11 +114,7 @@ def parse_command(sentence: str, schema: dict, number=False) -> dict:
 
     return result
 
-<<<<<<< Updated upstream
-def challenge_command(sentence, schema_list, number=False):
-=======
 def challenge_command(sentence: str, schema_list: [], number: bool = False) -> dict:
->>>>>>> Stashed changes
     results = False
     schema_list = sorted(schema_list, key=lambda d: d.get('rang') or 10, reverse=True)
     for schema in schema_list:
@@ -139,11 +127,7 @@ def challenge_command(sentence: str, schema_list: [], number: bool = False) -> d
 if __name__ == '__main__':
     sentence_video = "включи видео про майнкрафт на ютубе"
     schema_video = {"type": "ютуб", "act": ["найди", "включи"], "video": "context", "whitelist": ["видео","про","на"]}
-<<<<<<< Updated upstream
-    print(challenge_command(sentence_video, [schema_video]))
-=======
     print(challenge_command(sentence_video, [schema_video]))
 
 
 #by krusalovorg krusalovorg@gmail.com
->>>>>>> Stashed changes

@@ -1,5 +1,7 @@
 from flask import Flask, request, abort, jsonify
 
+from fuzzywuzzy import fuzz
+
 import pymorphy2
 
 import sqlalchemy
@@ -26,10 +28,13 @@ chats = [
 ]
 
 schema_list = [
-    {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context", "whitelist": ["для", "по", "пожалуйста", "на", "с"], 'rang': 1},
+    {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context", "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
 ]
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
+
+threshold = 60
+limit = 10
 
 @app.route('/chat', methods=["POST"])
 def chatting():
@@ -51,10 +56,32 @@ def chatting():
     res = challenge_command(text, schema_list)
 
     if res:
+        input_ingredients = []
         for ingredient in res['ingredients']:
+            word = morph.parse(ingredient)[0].normal_form
+            input_ingredients.append(word)
 
+    filtered_recipes = []
 
-    return jsonify({"answer": { "from": "bot", "text": "test" }})
+    recipes = session.query(Recipe).all()
+
+    for recipe in recipes:
+        recipe_ingredients = recipe.ingredients
+        match_scores = []
+        for ingredient in input_ingredients:
+            best_match = 0
+            for recipe_ingredient in recipe_ingredients:
+                match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
+                if match_score > best_match:
+                    best_match = match_score
+            match_scores.append(best_match)
+        avg_score = sum(match_scores) / len(match_scores)
+        if avg_score >= threshold:
+            filtered_recipes.append((recipe.as_dict(), avg_score))
+
+    filtered_recipes.sort(key=lambda x: x[1], reverse=True)
+
+    return jsonify({"answer": { "from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes }})
 
 
 if __name__ == '__main__':

@@ -240,10 +240,6 @@ class TextToNumber:
 if __name__ == '__main__':
     ttn = TextToNumber()
     #print(ttn.parse("включи звук на сто"))
-<<<<<<< Updated upstream
-    print(ttn.parse("включи звук на двадцать один"))
-=======
     print(ttn.parse("включи звук на двадцать один"))
 
 #by krusalovorg krusalovorg@gmail.com
->>>>>>> Stashed changes

@@ -193,8 +193,10 @@ def edit_password_confirm():
         if cods[user.id][0] == code:
             if ((datetime.datetime().now() - cods[user.id][1]).minute < 3):
                 user.set_password(new_password)
+                sshkey = sha256(f"H@S213s$-1{user.email}{user.hashed_password}".encode('utf-8')).hexdigest()
+                ses.sshkey = sshkey
                 session.commit()
-            return jsonify({"status": True})
+            return jsonify({"status": True,"sshkey":sshkey})
     return jsonify({"status": False})
 
 

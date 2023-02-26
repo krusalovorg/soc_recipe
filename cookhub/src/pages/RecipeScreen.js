@@ -5,9 +5,14 @@ import Comments from '../components/recipe_comments';
 import RecipeContent from '../components/recipe_content';
 import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
+
+import like_fill from '../assets/like_fill.svg';
+import like_unfill from '../assets/like_unfill.svg';
+
 import Loader from '../components/loader';
 import { getRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
+import SvgUri from 'react-native-svg-uri';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
@@ -15,6 +20,7 @@ const RecipeScreen = ({ navigation, route }) => {
     const [data, setData] = useState([]);
     const [steps, setSteps] = useState([]);
     const [comments, setComments] = useState([]);
+    const [like, setLike] = useState(false);
 
     const id = route.params.data;
 
@@ -37,13 +43,15 @@ const RecipeScreen = ({ navigation, route }) => {
             setSteps([
                 { type: "list", list: recipe.steps },
                 { type: "table", table: recipe.ingredients },
-                { type: "text", text: "Энергетическая ценность:", style: {marginTop: 15, marginBottom: 5}},
-                { type: "table", table: [
-                    {name: "Углеводы", amount: recipe.carbohydrates},
-                    {name: "Жиры", amount: recipe.fats},
-                    {name: "Белки", amount: recipe.proteins},
-                    {name: "Калории", amount: recipe.calories},
-                ] }]);
+                { type: "text", text: "Энергетическая ценность:", style: { marginTop: 15, marginBottom: 5 } },
+                {
+                    type: "table", table: [
+                        { name: "Углеводы", amount: recipe.carbohydrates },
+                        { name: "Жиры", amount: recipe.fats },
+                        { name: "Белки", amount: recipe.proteins },
+                        { name: "Калории", amount: recipe.calories },
+                    ]
+                }]);
             setComments([]); //comments добавить
         }
         setTimeout(() => {
@@ -93,15 +101,22 @@ const RecipeScreen = ({ navigation, route }) => {
                 <ScrollView style={styles.page_contanier}>
                     <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + data.image }} />
                     <View style={styles.content}>
+                        <SvgUri
+                            width="24"
+                            height="24"
+                            style={styles.like}
+                            source={like ? like_fill : like_unfill}
+                        />
+
                         <Text style={styles.desc}>
                             {data.description}
                         </Text>
                         <RecipeContent data={steps} />
 
-                        <Text style={[styles.desc, {marginTop: 20, color: 'black'}]}>Время приготовления: {data.time > 1 ? data.time : data.time*60} {data.time > 1 ? "час" : "минут"}</Text>
-                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Категория: {data.category}</Text>
-                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Автор: {data.author}</Text>
-                        <Text style={[styles.desc, {marginTop: 5, color: 'black'}]}>Просмотров: {data.views}</Text>
+                        <Text style={[styles.desc, { marginTop: 20, color: 'black' }]}>Время приготовления: {data.time > 1 ? data.time : data.time * 60} {data.time > 1 ? "час" : "минут"}</Text>
+                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Категория: {data.category}</Text>
+                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Автор: {data.author}</Text>
+                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Просмотров: {data.views}</Text>
 
                         {/* Инпут для ввода комментария и кнопка отправки */}
                         <Text style={{ ...styles.title, marginLeft: 0, marginTop: 20, marginBottom: 20 }}>Комментарии</Text>
@@ -140,6 +155,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+    },
+
+    like: {
+
     },
 
     container: {

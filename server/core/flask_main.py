@@ -304,14 +304,20 @@ def login():
     email = request.json["email"]
     password = request.json["password"]
     users = session.query(User).all()
+    user_found = False
     for user in users:
         if (user.email == email or user.tag == email) and user.check_password(password):
             sshkey = sha256(f"H@S213s$-1{email}{user.hashed_password}".encode('utf-8')).hexdigest()
             ses = Sessions(user_id=user.id, sshkey=sshkey)
             session.add(ses)
             session.commit()
+            user_found = True
             return jsonify({'status': True, "sshkey": sshkey})
-    return jsonify({"status": False})
+
+    if user_found:
+        return jsonify({"status": False, "error": "password"})
+    else:
+        return jsonify({"status": False, "error": "user"})
 
 
 # Логаут
@@ -484,6 +490,9 @@ def get_recipes():
 def get_recipe():
     id_ = request.args.get('id') or 0
     recipe = session.query(Recipe).filter_by(id=id_).first()
+    recipe.views += 1
+    session.commit()
+
     return jsonify({'recipe': recipe.as_dict()})
 
 

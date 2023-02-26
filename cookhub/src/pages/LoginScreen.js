@@ -41,7 +41,10 @@ const LoginScreen = ({ navigation }) => {
             if (response.data.status == true) {
                 cache.set('token', response.data.sshkey)
                 checkLogin();
-
+            } else if (response.data.error == "password") {
+                setError({...error, "server": "Пароль неверный!"});
+            } else if (response.data.error == "user") {
+                setError({...error, "server": "Пользователь не найден!"});
             }
         } catch (error) {
             console.log(error);
@@ -57,7 +60,8 @@ const LoginScreen = ({ navigation }) => {
                         <InputAuth placeholder="Введите ваш email" onChangeText={setEmail} value={email} label={"Email"} keyboardType={"email-address"} autoCapitalize="none" error={error.email} />
                         <InputAuth placeholder="Введите ваш пароль" onChangeText={setPassword} value={password} label={"Пароль"} secureTextEntry={true} />
 
-                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                        <Text style={{color: "red", textAlign: "center", marginTop: 5}}>{error.server}</Text>
+                        <TouchableOpacity style={[styles.button, {marginTop: 5}]} onPress={handleLogin}>
                             <Text style={styles.buttonText}>Войти</Text>
                         </TouchableOpacity>
                         <View style={styles.loginLinkContainer}>

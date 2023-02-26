@@ -67,6 +67,7 @@ const App = () => {
 
   useEffect(() => {
     checkLogin();
+    console.log(token)
   }, [App])
 
   if (loading) {

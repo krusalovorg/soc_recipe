@@ -10,7 +10,8 @@ import base64, time, datetime
 from io import BytesIO
 from PIL import Image
 
-from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches
+from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
+    Commetns
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -45,7 +46,56 @@ morph = pymorphy2.MorphAnalyzer(lang='ru')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    pass
+    return True
+
+
+# Добавить коменты на рецпт
+@app.route("/api/add_comment", methods=["POST"])
+def add_comment():
+    if request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    recipe_id = request.json.get("recipe_id")
+    title = request.json.get("title")
+    text = request.json.get("text")
+    if all(sshkey, recipe_id, title, text):
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, title=title, text=text)
+        session.add(new_comment)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+# Удалить комент с рецепта
+@app.route("/api/rem_comment", methods=["POST"])
+def rem_comment():
+    if request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    comment_id = request.json.get("comment_id")
+    if all(sshkey, comment_id):
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        rem_comment = session.query(Commetns).order_by(id=comment_id, user_id=ses.user_id)
+        session.delete(rem_comment)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+# Получить все коменты по id рецепта
+@app.route("/api/get_comments", methods=["POST"])
+def get_comments():
+    if request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    recipe_id = request.json.get("recipe_id")
+    if all(sshkey, recipe_id):
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        get_comments = session.query(Commetns).order_by(recipe_id=recipe_id, user_id=ses.user_id).all()
+        return jsonify({"status": True,
+                        "comments": get_comments})
+    return jsonify({"status": False})
 
 
 # Получаем профль другого пользователя
@@ -168,6 +218,17 @@ def add_like():
     return jsonify({"status": False})
 
 
+@app.route("api/get_like", methods=["GET"])
+def get_like():
+    if not request.json:
+        abort(400)
+    recipe_id = request.json.get("recipe_id")
+    if recipe_id:
+        recipes = session.query(Commetns).order_by(recipe_id=recipe_id).all()
+        return jsonify({"status": True, "recipes": recipes})
+    return jsonify({"status": False})
+
+
 # Просмотры на рецпете
 @app.route("/api/add_watch", methods=["POST"])
 def add_watch():
@@ -185,6 +246,17 @@ def add_watch():
         session.add(Watches(user_id=ses.id, recipe_id=recipe_id))
         session.commit()
         return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+@app.route("api/get_watch", methods=["GET"])
+def get_watch():
+    if not request.json:
+        abort(400)
+    recipe_id = request.json.get("recipe_id")
+    if recipe_id:
+        watch = session.query(Watches).order_by(recipe_id=recipe_id).all()
+        return jsonify({"status": True, "watch": watch})
     return jsonify({"status": False})
 
 

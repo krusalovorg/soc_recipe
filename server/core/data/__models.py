@@ -104,6 +104,16 @@ class Watches(SqlBase):
     recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipe.id'))
 
 
+class Commetns(SqlBase):
+    __tablename__ = "Comments"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
+    recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipe.id'))
+    title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+
 associated_access = sqlalchemy.Table(
     'recipes_access_to_users', SqlBase.metadata,
     sqlalchemy.Column("recipe_id", sqlalchemy.Integer,

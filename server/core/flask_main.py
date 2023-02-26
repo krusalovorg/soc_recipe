@@ -222,7 +222,6 @@ def edit_password_confirm():
     return jsonify({"status": False})
 
 
-# Лайки на рецепте
 @app.route("/api/add_like", methods=["POST"])
 def add_like():
     if not request.json:
@@ -230,15 +229,20 @@ def add_like():
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
     if sshkey and recipe_id:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        like = session.query(associated_users).order_by(user_id=ses.id, recipe_id=recipe_id).first()
-        if like:
-            session.delete(like)
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=ses.id).first()
+        if user:
+            recipe = session.query(Recipe).filter_by(id=recipe_id).first()
+            likes = recipe.likes
+            if isinstance(likes, str):
+                likes = likes.split('|')
+            if str(user.id) in likes:
+                likes.remove(str(user.id))
+            else:
+                likes.append(str(user.id))
+            recipe.likes = '|'.join(likes)
             session.commit()
             return jsonify({"status": True})
-        session.add(associated_users(user_id=ses.id, recipe_id=recipe_id))
-        session.commit()
-        return jsonify({"status": True})
     return jsonify({"status": False})
 
 
@@ -393,7 +397,7 @@ def add_recipes():
             new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
                                 calories=calories, proteins=proteins, fats=fats, description=description,
                                 carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
-                                image=crypto_name_file, views=0, likes=0)
+                                image=crypto_name_file, views=0, likes="")
 
             starter = image.find(',')
             image_data = image[starter + 1:]
@@ -492,7 +496,6 @@ def get_recipe():
     recipe = session.query(Recipe).filter_by(id=id_).first()
     recipe.views += 1
     session.commit()
-
     return jsonify({'recipe': recipe.as_dict()})
 
 

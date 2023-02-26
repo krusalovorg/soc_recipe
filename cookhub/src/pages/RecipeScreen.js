@@ -6,13 +6,14 @@ import RecipeContent from '../components/recipe_content';
 import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
 
-import like_fill from '../assets/like_fill.svg';
-import like_unfill from '../assets/like_unfill.svg';
+import like_fill from '../assets/like_fill.png';
+import like_unfill from '../assets/like_unfill.png';
 
 import Loader from '../components/loader';
-import { getRecipe } from '../api/recipes';
+import { getRecipe, likeRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
-import SvgUri from 'react-native-svg-uri';
+
+import { AuthContext } from '../context/auth.context';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
@@ -21,6 +22,8 @@ const RecipeScreen = ({ navigation, route }) => {
     const [steps, setSteps] = useState([]);
     const [comments, setComments] = useState([]);
     const [like, setLike] = useState(false);
+
+    const { token } = useContext(AuthContext);
 
     const id = route.params.data;
 
@@ -59,6 +62,13 @@ const RecipeScreen = ({ navigation, route }) => {
         }, 500)
     }
 
+    async function updateLike() {
+        const res = await likeRecipe(data.id, token);
+        if (res) {
+            setLike(!like);
+        }
+    }
+
     useEffect(() => {
         loadRecipe();
     }, [RecipeScreen])
@@ -82,6 +92,17 @@ const RecipeScreen = ({ navigation, route }) => {
     //     { text: "норм", avtor: { name: "Egor", id: 100 }, likes: [], answers: [], id: 2356 }
     // ]
 
+    function getLikesText() {
+        const likesCount = data.likes.length;
+        if (likesCount === 1) {
+            return "пользователю";
+        } else if (likesCount > 1 && likesCount < 5) {
+            return "пользователям";
+        } else {
+            return "пользователям";
+        }
+    }
+
     if (loading) {
         return <Loader />
     }
@@ -101,22 +122,25 @@ const RecipeScreen = ({ navigation, route }) => {
                 <ScrollView style={styles.page_contanier}>
                     <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + data.image }} />
                     <View style={styles.content}>
-                        <SvgUri
-                            width="24"
-                            height="24"
-                            style={styles.like}
-                            source={like ? like_fill : like_unfill}
-                        />
-
                         <Text style={styles.desc}>
                             {data.description}
                         </Text>
                         <RecipeContent data={steps} />
 
                         <Text style={[styles.desc, { marginTop: 20, color: 'black' }]}>Время приготовления: {data.time > 1 ? data.time : data.time * 60} {data.time > 1 ? "час" : "минут"}</Text>
-                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Категория: {data.category}</Text>
-                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Автор: {data.author}</Text>
-                        <Text style={[styles.desc, { marginTop: 5, color: 'black' }]}>Просмотров: {data.views}</Text>
+                        <Text style={styles.punkt_desc}>Категория: {data.category}</Text>
+                        <Text style={styles.punkt_desc}>Автор: {data.author}</Text>
+                        <Text style={styles.punkt_desc}>Просмотров: {data.views}</Text>
+                        <Text style={styles.punkt_desc}>Рецепт понравился: {data.likes.length} {getLikesText()}</Text>
+                        <View style={{ marginTop: 7, flexDirection: "row" }}>
+                            <Text style={[styles.desc, { color: 'black', marginTop: 10 }]}>Вам понравился рецепт?</Text>
+                            <TouchableOpacity onPress={updateLike} style={{ marginLeft: 30 }}>
+                                <Image
+                                    style={styles.like}
+                                    source={like ? like_fill : like_unfill}
+                                />
+                            </TouchableOpacity>
+                        </View>
 
                         {/* Инпут для ввода комментария и кнопка отправки */}
                         <Text style={{ ...styles.title, marginLeft: 0, marginTop: 20, marginBottom: 20 }}>Комментарии</Text>
@@ -157,8 +181,19 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
 
-    like: {
+    punkt_desc: {
+        fontSize: 16,
+        lineHeight: 24,
+        textAlign: 'left',
+        fontFamily: 'Montserrat-Regular',
+        marginTop: 5,
+        color: 'black'
+    },
 
+    like: {
+        width: 37,
+        height: 46,
+        resizeMode: 'contain'
     },
 
     container: {

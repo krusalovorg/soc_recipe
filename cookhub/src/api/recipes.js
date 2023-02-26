@@ -20,3 +20,24 @@ export const getRecipe = async (id) => {
         return []
     }
 };
+
+export const likeRecipe = async (id, sshkey) => {
+    try {
+        const response = await axios.post(server_ip + `/add_like`, {sshkey, recipe_id: id});
+        return response.data.status
+    } catch (error) {
+        console.log(error);
+        return []
+    }
+};
+
+
+export const addComment = async (id, sshkey, text) => {
+    try {
+        const response = await axios.post(server_ip + `/add_like`, {sshkey, recipe_id: id, text});
+        return response.data.status
+    } catch (error) {
+        console.log(error);
+        return []
+    }
+};

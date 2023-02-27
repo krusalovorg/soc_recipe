@@ -124,14 +124,15 @@ def get_profile():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
-    user_tag = request.json.get("tag")
-    user = session.query(User).order_by(tag=user_tag).first()
-    if session.query(Sessions).order_by(sshkey=sshkey, user_id=user.id).first():
+    ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+    if ses:
+        user = session.query(User).order_by(tag=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.id).all()
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
+            "tag": user.tag,
             "email": user.email,
             "likes": user.likes,
             'recipes': recipes

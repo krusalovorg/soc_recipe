@@ -10,3 +10,12 @@ export const AuthContext = createContext({
     checkLogin: noop,
     isAuthenticated: false,
 })
+
+export const UserContext = createContext({
+    name: null,
+    surname: null,
+    email: null,
+    user_id: null,
+    likes: null,
+    recipes: []
+})

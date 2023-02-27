@@ -99,14 +99,14 @@ def get_comments():
 
 
 # Получаем профль другого пользователя
-@app.route("/api/get_user_profile", methods=["GET"])
+@app.route("/api/get_user_profile", methods=["POST"])
 def get_user_profile():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     user_tag = request.json.get("tag")
-    if session.query(Sessions).order_by(sshkey=sshkey).first():
-        user = session.query(User).order_by(tag=user_tag).first()
+    if session.query(Sessions).filter_by(sshkey=sshkey).first():
+        user = session.query(User).filter_by(tag=user_tag).first()
         recipes = session.query(Recipe).filter_by(author=user.id).all()
         return jsonify({
             "status": True,
@@ -119,12 +119,12 @@ def get_user_profile():
 
 
 # Получаем свой профль
-@app.route("/api/get_profile", methods=["GET"])
+@app.route("/api/get_profile", methods=["POST"])
 def get_profile():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
-    ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
         user = session.query(User).order_by(tag=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.id).all()
@@ -147,8 +147,8 @@ def get_user():
         abort(400)
     user_tag = request.json["tag"]
     if user_tag:
-        user = session.query(User).order_by(tag=user_tag).first()
-        recipes = session.query(Recipe).order_by(author=user.id).filter(access="public").first()
+        user = session.query(User).filter_by(tag=user_tag).first()
+        recipes = session.query(Recipe).filter_by(author=user.id).filter(access="public").first()
         return jsonify({
             "status": True,
             "name": user.name,

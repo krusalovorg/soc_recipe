@@ -20,7 +20,7 @@ export const getProfile = async (sshkey) => {
             sshkey
         });
         console.log(response.data);
-        return response.data.status
+        return response.data
     } catch (error) {
         console.log(error);
         return false

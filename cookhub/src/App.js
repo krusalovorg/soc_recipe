@@ -20,12 +20,13 @@ import RecipeScreen from './pages/RecipeScreen';
 import RegScreen from './pages/RegScreen';
 
 import { Cache } from "react-native-cache";
-import { checkSSHkey } from './api/auth';
+import { checkSSHkey, getProfile } from './api/auth';
 import LoginScreen from './pages/LoginScreen';
 import { AuthContext, UserContext } from './context/auth.context';
 
 import Loader from './components/loader';
 import CreateRecipeScreen from './pages/CreateRecipeScreen';
+import { server_ip } from './api/config';
 
 const Drawer = createDrawerNavigator();
 
@@ -54,6 +55,7 @@ const App = () => {
       const res = await checkSSHkey(sshkey)
       if (res) {
         setToken(sshkey);
+        await loadProfile();
         setIsAuth(true);
       } else {
         console.log("GETETSTT FALSE")
@@ -65,9 +67,16 @@ const App = () => {
     setLoading(false);
   }
 
+  async function loadProfile() {
+    const data = await getProfile(token);
+    console.log('daataaaaaaaaaaaaaaaaaaaa',data)
+    if (data.status) {
+      setDataUser(data);
+    }
+  }
+
   useEffect(() => {
     checkLogin();
-    
   }, [App])
 
   if (loading) {
@@ -77,7 +86,7 @@ const App = () => {
   return (
     <>
       <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
-        <UserContext.Provider value={{}}>
+        <UserContext.Provider value={dataUser}>
           <NavigationContainer>
             {token == null ?
               <Stack.Navigator>

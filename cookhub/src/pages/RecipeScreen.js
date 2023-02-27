@@ -10,7 +10,7 @@ import like_fill from '../assets/like_fill.png';
 import like_unfill from '../assets/like_unfill.png';
 
 import Loader from '../components/loader';
-import { getRecipe, likeRecipe } from '../api/recipes';
+import { addComment, getRecipe, likeRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
 
 import { AuthContext, UserContext } from '../context/auth.context';
@@ -29,15 +29,16 @@ const RecipeScreen = ({ navigation, route }) => {
 
     const id = route.params;
 
-    // Обработчик события изменения значения input элемента
     const handleInputChange = (value) => {
         setInputValue(value);
     };
 
-    // Обработчик события отправки комментария на сервер
-    const handleCommentSubmit = () => {
-        // отправка комментария на сервер
-        setInputValue('');
+    async function handleCommentSubmit() {
+        const res = await addComment(id, token, inputValue);
+        if (res) {
+            setInputValue('');
+            loadRecipe();
+        }
     };
 
     async function loadRecipe() {
@@ -48,6 +49,10 @@ const RecipeScreen = ({ navigation, route }) => {
             setLikes(parsedList);
     
             setData(recipe);
+
+            setComments(recipe.comments);
+
+            console.warn(comments)
 
             if (parsedList.includes(user.user_id)) {
                 setLike(true);
@@ -64,7 +69,6 @@ const RecipeScreen = ({ navigation, route }) => {
                         { name: "Калории", amount: recipe.calories },
                     ]
                 }]);
-            setComments([]); //comments добавить
         }
         setTimeout(() => {
             setLoading(false);
@@ -165,7 +169,6 @@ const RecipeScreen = ({ navigation, route }) => {
                                 <Text style={styles.buttonText}>Отправить</Text>
                             </TouchableOpacity>
                         </View>
-                        <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
                         <Comments comments={comments} />
                         <View style={{ width: "100%", paddingHorizontal: 10, height: 100, marginVertical: 5 }}></View>
                     </View>

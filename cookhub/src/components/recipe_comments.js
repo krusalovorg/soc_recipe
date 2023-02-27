@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import Moment from 'moment';
+
+function dateFormate(date_) {
+    const date = Moment(date_)
+    if (new Date(date_).getDay() == new Date().getDay()) {
+        return `сегодня в ${date.lang('ru').format('HH:MM')}`
+    }
+
+    return Moment(date).lang("ru").format('MMM DD HH:MM')
+}
 
 const Comments = ({ comments, level = 0 }) => {
+    Moment.locale('ru');
     return (
         <View style={{ marginLeft: level * 20, marginBottom: 10 }}>
             {/* Комментарии */}
             {comments.map((comment, i) => (
                 <>
                     <View key={i}>
-                        {/* Отображаем текст комментария и количество лайков */}
                         <Text style={styles.avtor}>
-                            {comment.avtor && comment.avtor.name}
+                            {comment.name} {comment.surname}
                         </Text>
                         <Text style={styles.commentText}>
-                            {comment.text}{' '}
-                            {comment.likes.length > 0 && (
-                                <Text style={styles.likesCount}>
-                                    {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
-                                </Text>
-                            )}
+                            {comment.text}
                         </Text>
-
-                        {/* Если есть ответы на комментарий, рекурсивно вызываем этот же компонент */}
-                        {/* {comment.answers.length > 0 && (
-                        <Comments comments={comment.answers} level={level + 1} />
-                    )} */}
+                        <Text style={styles.date}>
+                            {dateFormate(comment.date)}
+                        </Text>
                     </View>
-                    <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
+                    <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#dce0e0", height: 1, marginVertical: 5 }}></View>
                 </>
             ))}
         </View>
@@ -58,10 +61,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     commentText: {
-        marginBottom: 5,
+        marginBottom: 0,
+        marginTop: 1,
+        color: 'black'
+    },
+    date: {
+        fontSize: 13,
+        margin: 0
     },
     avtor: {
-
+        fontSize: 14
     },
     likesCount: {
         color: '#2196F3',

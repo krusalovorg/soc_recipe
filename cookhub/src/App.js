@@ -27,6 +27,7 @@ import { AuthContext, UserContext } from './context/auth.context';
 import Loader from './components/loader';
 import CreateRecipeScreen from './pages/CreateRecipeScreen';
 import { server_ip } from './api/config';
+import ProfileScreen from './pages/ProfileScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -57,7 +58,7 @@ const App = () => {
         setToken(sshkey);
         const data = await getProfile(sshkey);
         setDataUser(data);
-        cache.set('id',data.id);
+        cache.set('id', data.id);
         setIsAuth(true);
       } else {
         console.log("GETETSTT FALSE")
@@ -103,6 +104,13 @@ const App = () => {
               <Drawer.Navigator
                 drawerContent={(props) => <DrawerProfile {...props} />}
                 initialRouteName={"home"}>
+                <Drawer.Screen
+                  name="profile"
+                  component={ProfileScreen}
+                  options={{
+                    drawerItemStyle: { height: 0 },
+                    headerShown: false
+                  }} />
                 <Drawer.Screen
                   name="add"
                   component={CreateRecipeScreen}

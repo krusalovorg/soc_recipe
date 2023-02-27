@@ -52,14 +52,15 @@ def index():
 # Добавить коменты на рецепт
 @app.route("/api/add_comment", methods=["POST"])
 def add_comment():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
     text = request.json.get("text")
-    if all(sshkey, recipe_id, text):
-        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text)
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if text and ses and recipe_id:
+        user = session.query(User).filter_by(id=ses.user_id).first()
+        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name, surname=user.surname)
         session.add(new_comment)
         session.commit()
         return jsonify({"status": True})
@@ -69,7 +70,7 @@ def add_comment():
 # Удалить комент с рецепта
 @app.route("/api/rem_comment", methods=["POST"])
 def rem_comment():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     comment_id = request.json.get("comment_id")
@@ -85,7 +86,7 @@ def rem_comment():
 # Получить все коменты по id рецепта
 @app.route("/api/get_comments", methods=["POST"])
 def get_comments():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
@@ -126,7 +127,11 @@ def get_profile():
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
-        recipes = session.query(Recipe).filter_by(author=ses.user_id).all()
+        recipes = session.query(Recipe).filter_by(author=user.tag).all()
+        new_recipes = []
+        for recipe in recipes:
+            new_recipes.append(recipe.as_dict())
+
         return jsonify({
             "status": True,
             "name": user.name,
@@ -134,7 +139,7 @@ def get_profile():
             "tag": user.tag,
             "email": user.email,
             "likes": user.likes,
-            'recipes': recipes,
+            'recipes': new_recipes,
             "user_id": user.id
         })
     return jsonify({"status": False})
@@ -550,14 +555,19 @@ def get_recipe():
     id_ = request.args.get('id') or 0
     recipe = session.query(Recipe).filter_by(id=id_).first()
 
-    comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+    if recipe:
+        comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+        new_comments = []
+        for comment in comments:
+            new_comments.append(comment.as_dict())
 
-    recipe.views += 1
-    session.commit()
-    recipe_json = recipe.as_dict()
-    recipe_json['comments'] = comments
+        recipe.views += 1
+        session.commit()
+        recipe_json = recipe.as_dict()
+        recipe_json['comments'] = new_comments
 
-    return jsonify({'recipe': recipe_json})
+        return jsonify({'status': True, 'recipe': recipe_json})
+    return jsonify({'status': False})
 
 
 @app.route('/api/search', methods=['POST'])

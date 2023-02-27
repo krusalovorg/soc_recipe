@@ -7,42 +7,58 @@ import {
     DrawerItemList,
     DrawerItem
 } from '@react-navigation/drawer';
+import { UserContext } from '../context/auth.context';
+import { formateName } from '../utils/formate';
 
 export default function DrawerProfile(props) {
-    const {navigation} = props;
+    const { navigation } = props;
+    const user = useContext(UserContext);
 
     return (
-      <DrawerContentScrollView {...props}>
-          <TouchableHighlight style={{marginBottom: 20}} underlayColor="#DDDDDD" onPress={()=>{navigation.navigate('profile');navigation.closeDrawer();}}>
-            <Text>Egor</Text>
-          </TouchableHighlight>
-          <DrawerItemList {...props} />
-      </DrawerContentScrollView>
+        <DrawerContentScrollView {...props}>
+            <TouchableHighlight style={styles.contanier} underlayColor="#DDDDDD" onPress={() => {
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'profile', params: {id: user.id, type: "forme"} }]
+                })
+            }}>
+                <>
+                    <Text style={styles.name}>{formateName(user.name)} {formateName(user.surname)}</Text>
+                    <Text style={styles.level}>@{user.tag}</Text>
+
+                    <View style={styles.hor_menu}>
+                        <Text style={styles.level_sel}>{user.recipes.length}</Text><Text style={[styles.level, { marginLeft: 3 }]}>Рецептов</Text>
+                        <Text style={[styles.level_sel, { marginLeft: 5 }]}>{user.likes.length}</Text><Text style={[styles.level, { marginLeft: 3 }]}>Подписчиков</Text>
+                    </View>
+                </>
+            </TouchableHighlight>
+            <DrawerItemList {...props} />
+        </DrawerContentScrollView>
     );
-}  
+}
 
 const styles = StyleSheet.create({
     contanier: {
-        padding: 10,
-        backgroundColor: 'transparent',
-        marginHorizontal: 10,
-        borderRadius: 10,
-        minHeight: 250,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ededed',
+        paddingLeft: 15,
+        paddingTop: 20,
+        paddingBottom: 15,
     },
-    info_contanier: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
+    name: {
+        fontSize: 20,
+        fontFamily: "Montserrat-Medium",
+        color: "black"
     },
-    name_contanier: {
-        marginLeft: 10
+    level: {
+        fontFamily: "Montserrat-Regular",
+        marginTop: 3
     },
-    name_text: {
-        fontSize: 16,
-        fontWeight: 'bold',
+    hor_menu: {
+        flexDirection: "row",
+        marginTop: 10
+    },
+    level_sel: {
+        marginTop: 3,
+        color: 'black',
+        fontFamily: "Montserrat-Medium"
     }
 })

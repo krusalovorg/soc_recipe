@@ -17,7 +17,7 @@ export const getRecipe = async (id) => {
         return response.data.recipe
     } catch (error) {
         console.log(error);
-        return []
+        return null
     }
 };
 
@@ -27,7 +27,7 @@ export const likeRecipe = async (id, sshkey) => {
         return response.data.status
     } catch (error) {
         console.log(error);
-        return []
+        return null
     }
 };
 
@@ -38,6 +38,6 @@ export const addComment = async (id, sshkey, text) => {
         return response.data.status
     } catch (error) {
         console.log(error);
-        return []
+        return null
     }
 };

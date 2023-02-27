@@ -27,7 +27,7 @@ const RecipeScreen = ({ navigation, route }) => {
 
     const { token } = useContext(AuthContext);
 
-    const id = route.params.data;
+    const id = route.params;
 
     // Обработчик события изменения значения input элемента
     const handleInputChange = (value) => {
@@ -42,16 +42,14 @@ const RecipeScreen = ({ navigation, route }) => {
 
     async function loadRecipe() {
         const recipe = await getRecipe(id);
-        console.log('UPDATE',recipe)
 
         if (recipe) {
             const parsedList = recipe.likes.split('|').filter(Boolean).map(item => parseInt(item));
             setLikes(parsedList);
     
-            console.log('RECIPE', recipe, { type: "table", table: recipe.ingredients })
             setData(recipe);
-            console.log(user, typeof user.user_id, typeof likes[0], likes.includes(user.user_id))
-            if (likes.includes(user.user_id)) {
+
+            if (parsedList.includes(user.user_id)) {
                 setLike(true);
             }
             setSteps([

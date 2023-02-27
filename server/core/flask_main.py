@@ -56,11 +56,10 @@ def add_comment():
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
-    title = request.json.get("title")
     text = request.json.get("text")
-    if all(sshkey, recipe_id, title, text):
+    if all(sshkey, recipe_id, text):
         ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, title=title, text=text)
+        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text)
         session.add(new_comment)
         session.commit()
         return jsonify({"status": True})

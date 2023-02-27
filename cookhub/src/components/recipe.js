@@ -22,7 +22,7 @@ function Recipe(props) {
                 onPress={() => {
                     props.navigation.reset({
                         index: 0,
-                        routes: [{ name: 'recipe' }]
+                        routes: [{ name: 'recipe', params: props.data.id }]
                     })
                     // props.navigation.navigate('recipe', { data: props.data.id })
                 }}>

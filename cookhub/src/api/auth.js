@@ -16,7 +16,6 @@ export const checkSSHkey = async (sshkey) => {
 
 export const getProfile = async (sshkey) => {
     try {
-        console.log('KEYYYYYYYYYYYYY',sshkey)
         const response = await axios.post(server_ip+'/get_profile', {
             sshkey
         });

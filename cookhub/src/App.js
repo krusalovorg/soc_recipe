@@ -57,6 +57,7 @@ const App = () => {
         setToken(sshkey);
         const data = await getProfile(sshkey);
         setDataUser(data);
+        cache.set('id',data.id);
         setIsAuth(true);
       } else {
         console.log("GETETSTT FALSE")

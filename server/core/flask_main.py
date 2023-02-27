@@ -164,7 +164,7 @@ def sub_profile():
 
 
 # Отписка на чужой профиль
-@app.route("/api/sub_profile", metods=["POST"])
+@app.route("/api/unssub_profile", metods=["POST"])
 def unsub_profile():
     if not request.json:
         abort(400)

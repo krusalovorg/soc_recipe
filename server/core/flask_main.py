@@ -52,13 +52,13 @@ def index():
 # Добавить коменты на рецепт
 @app.route("/api/add_comment", methods=["POST"])
 def add_comment():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
     text = request.json.get("text")
-    if all(sshkey, recipe_id, text):
-        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if text and ses and recipe_id:
         new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text)
         session.add(new_comment)
         session.commit()
@@ -69,7 +69,7 @@ def add_comment():
 # Удалить комент с рецепта
 @app.route("/api/rem_comment", methods=["POST"])
 def rem_comment():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     comment_id = request.json.get("comment_id")
@@ -85,7 +85,7 @@ def rem_comment():
 # Получить все коменты по id рецепта
 @app.route("/api/get_comments", methods=["POST"])
 def get_comments():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")

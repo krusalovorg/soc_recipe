@@ -10,7 +10,7 @@ import like_fill from '../assets/like_fill.png';
 import like_unfill from '../assets/like_unfill.png';
 
 import Loader from '../components/loader';
-import { getRecipe, likeRecipe } from '../api/recipes';
+import { addComment, getRecipe, likeRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
 
 import { AuthContext, UserContext } from '../context/auth.context';
@@ -29,15 +29,15 @@ const RecipeScreen = ({ navigation, route }) => {
 
     const id = route.params;
 
-    // Обработчик события изменения значения input элемента
     const handleInputChange = (value) => {
         setInputValue(value);
     };
 
-    // Обработчик события отправки комментария на сервер
-    const handleCommentSubmit = () => {
-        // отправка комментария на сервер
-        setInputValue('');
+    async function handleCommentSubmit() {
+        const res = await addComment(id, token, inputValue);
+        if (res) {
+            setInputValue('');
+        }
     };
 
     async function loadRecipe() {
@@ -48,6 +48,8 @@ const RecipeScreen = ({ navigation, route }) => {
             setLikes(parsedList);
     
             setData(recipe);
+
+            setComments(recipe.comments);
 
             if (parsedList.includes(user.user_id)) {
                 setLike(true);

@@ -34,7 +34,7 @@ export const likeRecipe = async (id, sshkey) => {
 
 export const addComment = async (id, sshkey, text) => {
     try {
-        const response = await axios.post(server_ip + `/add_like`, {sshkey, recipe_id: id, text});
+        const response = await axios.post(server_ip + `/add_comment`, {sshkey, recipe_id: id, text});
         return response.data.status
     } catch (error) {
         console.log(error);

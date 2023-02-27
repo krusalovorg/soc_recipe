@@ -187,7 +187,7 @@ def unsub_profile():
     return jsonify({"status": False})
 
 
-@app.route("/api/edit_profile/avatar/add",method=["POST"])
+@app.route("/api/edit_profile/avatar/add", methods=["POST"])
 def edit_avatar():
     if not request.json:
         abort(400)

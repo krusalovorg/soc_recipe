@@ -25,15 +25,25 @@ function getBackground(value) {
     var minColor = [222, 247, 246]; // #4BD8EA
     var maxColor = [232, 237, 234]; // #4282F6
 
-    var red = ((maxColor[0] - minColor[0]) * (value - minVal)) / (maxVal - minVal) + minColor[0];
-    var green = ((maxColor[1] - minColor[1]) * (value - minVal)) / (maxVal - minVal) + minColor[1];
-    var blue = ((maxColor[2] - minColor[2]) * (value - minVal)) / (maxVal - minVal) + minColor[2];
+    var numColors = 33;
+
+    var colorIndex = Math.floor((value - minVal) / (maxVal - minVal) * numColors);
+    var colorRange = [
+        [minColor[0], minColor[1], minColor[2]],
+        [(minColor[0] + maxColor[0]) / 2, (minColor[1] + maxColor[1]) / 2, (minColor[2] + maxColor[2]) / 2],
+        [maxColor[0], maxColor[1], maxColor[2]]
+    ];
+
+    var red = colorRange[colorIndex][0];
+    var green = colorRange[colorIndex][1];
+    var blue = colorRange[colorIndex][2];
 
     return "rgb(" + red + ", " + green + ", " + blue + ")";
 }
 
 const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
+    const [sortedRecipes, setSortRecipes] = useState([]);
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
@@ -41,6 +51,16 @@ const ProfileScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         // loadRecipe();
+        setSortRecipes(user.recipes.sort((a, b) => {
+            if (a.views > b.views) {
+                return 1;
+            }
+            if (a.views < b.views) {
+                return -1;
+            }
+            return 0;
+        }))
+
         setLoading(false)
         console.log(user)
     }, [route.params.data])
@@ -69,9 +89,9 @@ const ProfileScreen = ({ navigation, route }) => {
                         {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14 }]}>{user.email}</Text>}
                     </View>
                     <View style={styles.content}>
-                        <Text style={styles.title}>Популярные рецепты:</Text>
+                        <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
                         {
-                            user.recipes.map((item) => {
+                            sortedRecipes.map((item) => {
                                 console.log(item)
                                 return <Recipe key={item.id} data={item} navigation={navigation} />
                             })

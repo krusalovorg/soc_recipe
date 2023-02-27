@@ -11,7 +11,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns
+    Commetns, associated_users_to_users
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -49,7 +49,7 @@ def index():
     return jsonify({"status": True})
 
 
-# Добавить коменты на рецпт
+# Добавить коменты на рецепт
 @app.route("/api/add_comment", methods=["POST"])
 def add_comment():
     if request.json:
@@ -139,6 +139,48 @@ def get_profile():
             "likes": user.likes,
             'recipes': recipes
         })
+    return jsonify({"status": False})
+
+
+# Подписка на чужой профиль
+@app.route("/api/sub_profile", metods=["POST"])
+def sub_profile():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_for = request.json.get("user_for")
+    if all(sshkey, user_for):
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        if ses:  # Эта сессия валидна
+            user_to_user_exist = session.query(associated_users_to_users).order_by(user_id_parent=ses.user_id,
+                                                                                   user_id_child=user_for)
+            if user_to_user_exist:
+                return jsonify({"status": False})
+            new_associated_users_to_users = associated_users_to_users(user_id_parent=ses.user_id,
+                                                                      user_id_child=user_for)
+            session.add(new_associated_users_to_users)
+            session.commit()
+            return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+# Отписка на чужой профиль
+@app.route("/api/sub_profile", metods=["POST"])
+def unsub_profile():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_for = request.json.get("user_for")
+    if all(sshkey, user_for):
+        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        if ses:  # Эта сессия валидна
+            del_associated_users_to_users = session.query(associated_users_to_users).order_by(
+                user_id_parent=ses.user_id,
+                user_id_child=user_for).first()
+            if del_associated_users_to_users:
+                session.delete(del_associated_users_to_users)
+                session.commit()
+                return jsonify({"status": True})
     return jsonify({"status": False})
 
 

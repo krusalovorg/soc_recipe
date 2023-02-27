@@ -138,3 +138,11 @@ associated_users = sqlalchemy.Table(
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('recipes.id'))
 )
+
+associated_users_to_users = sqlalchemy.Table(
+    'user_to_user', SqlBase.metadata,
+    sqlalchemy.Column('user_id_parent', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('users.id')),
+    sqlalchemy.Column('user_id_child', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('users.id'))
+)

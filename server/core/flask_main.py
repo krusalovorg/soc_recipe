@@ -142,7 +142,7 @@ def get_profile():
 
 
 # Подписка на чужой профиль
-@app.route("/api/sub_profile", metods=["POST"])
+@app.route("/api/sub_profile", methods=["POST"])
 def sub_profile():
     if not request.json:
         abort(400)
@@ -164,7 +164,7 @@ def sub_profile():
 
 
 # Отписка на чужой профиль
-@app.route("/api/unssub_profile", metods=["POST"])
+@app.route("/api/unssub_profile", methods=["POST"])
 def unsub_profile():
     if not request.json:
         abort(400)
@@ -181,30 +181,6 @@ def unsub_profile():
                 session.commit()
                 return jsonify({"status": True})
     return jsonify({"status": False})
-
-
-# Получаем свой профль
-@app.route("/api/get_profile", methods=["POST"])
-def get_profile():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-    print(ses, ses.user_id)
-    if ses:
-        user = session.query(User).filter_by(id=ses.user_id).first()
-        print(user)
-        recipes = session.query(Recipe).filter_by(author=ses.user_id).all()
-        return jsonify({
-            "status": True,
-            "tag": user.tag,
-            "email": user.email,
-            "likes": user.likes,
-            'recipes': recipes,
-            "user_id": user.id
-        })
-    return jsonify({"status": False})
-
 
 # Изменение пароля
 @app.route("/api/edit_password", methods=["POST"])

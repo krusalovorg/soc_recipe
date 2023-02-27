@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Moment from 'moment';
 
-function dateFormate(date) {
-    const date = Moment(date)
-    if (date.day == new Date().getDay()) {
+function dateFormate(date_) {
+    const date = Moment(date_)
+    if (new Date(date_).getDay() == new Date().getDay()) {
         return `сегодня в ${date.lang('ru').format('HH:MM')}`
     }
 
@@ -61,13 +61,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     commentText: {
-        marginBottom: 5,
+        marginBottom: 0,
+        marginTop: 1,
+        color: 'black'
     },
     date: {
-
+        fontSize: 13,
+        margin: 0
     },
     avtor: {
-
+        fontSize: 14
     },
     likesCount: {
         color: '#2196F3',

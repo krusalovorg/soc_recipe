@@ -30,7 +30,7 @@ function Recipe(props) {
                     <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + props.data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.title}>{props.data.title}</Text>
-                        <Text style={styles.name}>{props.data.author}</Text>
+                        <Text style={styles.name}>@{props.data.author}</Text>
                         <Text style={styles.views}>{props.data.views} просмотров</Text>
                         <Text style={styles.views}>{parsedList.length} {getLikesText(parsedList.length)}</Text>
                     </View>

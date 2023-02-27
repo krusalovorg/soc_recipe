@@ -20,14 +20,10 @@ function Recipe(props) {
             <TouchableHighlight
                 style={styles.touch}
                 onPress={() => {
-                    props.navigation.dispatch(NavigationActions.reset(
-                        {
-                            index: 0,
-                            actions: [
-                                NavigationActions.navigate({ routeName: 'recipe', data: props.data.id })
-                            ]
-                        }));
-
+                    props.navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'recipe' }]
+                    })
                     // props.navigation.navigate('recipe', { data: props.data.id })
                 }}>
                 <View style={styles.contanier}>

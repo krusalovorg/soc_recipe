@@ -55,7 +55,8 @@ const App = () => {
       const res = await checkSSHkey(sshkey)
       if (res) {
         setToken(sshkey);
-        await loadProfile();
+        const data = await getProfile(sshkey);
+        setDataUser(data);
         setIsAuth(true);
       } else {
         console.log("GETETSTT FALSE")
@@ -65,14 +66,6 @@ const App = () => {
       }
     }
     setLoading(false);
-  }
-
-  async function loadProfile() {
-    const data = await getProfile(token);
-    console.log('daataaaaaaaaaaaaaaaaaaaa',data)
-    if (data.status) {
-      setDataUser(data);
-    }
   }
 
   useEffect(() => {

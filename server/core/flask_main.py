@@ -58,7 +58,7 @@ def add_comment():
     recipe_id = request.json.get("recipe_id")
     text = request.json.get("text")
     if all(sshkey, recipe_id, text):
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text)
         session.add(new_comment)
         session.commit()
@@ -74,8 +74,8 @@ def rem_comment():
     sshkey = request.json.get("sshkey")
     comment_id = request.json.get("comment_id")
     if all(sshkey, comment_id):
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        rem_comment = session.query(Commetns).order_by(id=comment_id, user_id=ses.user_id)
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        rem_comment = session.query(Commetns).filter_by(id=comment_id, user_id=ses.user_id)
         session.delete(rem_comment)
         session.commit()
         return jsonify({"status": True})
@@ -90,8 +90,8 @@ def get_comments():
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
     if all(sshkey, recipe_id):
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        get_comments = session.query(Commetns).order_by(recipe_id=recipe_id, user_id=ses.user_id).all()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        get_comments = session.query(Commetns).filter_by(recipe_id=recipe_id, user_id=ses.user_id).all()
         return jsonify({"status": True,
                         "comments": get_comments})
     return jsonify({"status": False})
@@ -148,9 +148,9 @@ def sub_profile():
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
     if all(sshkey, user_for):
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            user_to_user_exist = session.query(associated_users_to_users).order_by(user_id_parent=ses.user_id,
+            user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
                                                                                    user_id_child=user_for)
             if user_to_user_exist:
                 return jsonify({"status": False})
@@ -170,9 +170,9 @@ def unsub_profile():
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
     if all(sshkey, user_for):
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            del_associated_users_to_users = session.query(associated_users_to_users).order_by(
+            del_associated_users_to_users = session.query(associated_users_to_users).filter_by(
                 user_id_parent=ses.user_id,
                 user_id_child=user_for).first()
             if del_associated_users_to_users:
@@ -189,10 +189,10 @@ def edit_password():
     sshkey = request.json.get("sshkey")
     password = request.json.get("password")
     if sshkey:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        user = session.query(User).order_by(id=ses.user_id).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=ses.user_id).first()
 
-        if session.query(User).order_by(id=user.id).first().check_password(password):
+        if session.query(User).filter_by(id=user.id).first().check_password(password):
             cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
             msg = Message("Subject", recipients=[user.email])
             msg.body = f"If you are trying to change the password copy it {cods[user.id][0]}, then this message is the place to be."
@@ -211,8 +211,8 @@ def remember_password():
     sshkey = request.json.get("sshkey")
     email = request.json.get("email")
     if sshkey:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        user = session.query(User).order_by(id=ses.user_id).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=ses.user_id).first()
 
         if user.email == email:
             cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
@@ -234,8 +234,8 @@ def edit_password_confirm():
     code = request.json.get("code")
     new_password = request.json.get("new_password")
     if sshkey:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        user = session.query(User).order_by(id=ses.user_id).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=ses.user_id).first()
         if cods[user.id][0] == code:
             if ((datetime.datetime().now() - cods[user.id][1]).minute < 3):
                 user.set_password(new_password)
@@ -276,7 +276,7 @@ def get_like():
         abort(400)
     recipe_id = request.json.get("recipe_id")
     if recipe_id:
-        recipes = session.query(Commetns).order_by(recipe_id=recipe_id).all()
+        recipes = session.query(Commetns).filter_by(recipe_id=recipe_id).all()
         return jsonify({"status": True, "recipes": recipes})
     return jsonify({"status": False})
 
@@ -289,8 +289,8 @@ def add_watch():
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
     if sshkey and recipe_id:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
-        wathes = session.query(Watches).order_by(user_id=ses.user_id).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        wathes = session.query(Watches).filter_by(user_id=ses.user_id).first()
         if wathes:
             session.delete(wathes)
             session.commit()
@@ -307,7 +307,7 @@ def get_watch():
         abort(400)
     recipe_id = request.json.get("recipe_id")
     if recipe_id:
-        watch = session.query(Watches).order_by(recipe_id=recipe_id).all()
+        watch = session.query(Watches).filter_by(recipe_id=recipe_id).all()
         return jsonify({"status": True, "watch": watch})
     return jsonify({"status": False})
 
@@ -355,7 +355,7 @@ def logout():
         abort(400)
     sshkey = request.json["sshkey"]
     if sshkey:
-        ses = session.query(Sessions).order_by(sshkey=sshkey).first()
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:
             session.delete(ses)
             session.commit()
@@ -394,7 +394,6 @@ def get_image(filename):
 # Добавить рецепт
 @app.route('/api/add_recipes/', methods=['POST'])
 def add_recipes():
-    print(request.json)
     if not request.json:
         abort(400)
     sshkey = request.json["sshkey"]
@@ -442,7 +441,7 @@ def rem_recipes():
         abort(400)
     sshkey = request.json.get("sshkey")
     id_ = request.json.get("id_")
-    if sshkey == session.query(Session).order_by(sshkey=sshkey).first():
+    if sshkey == session.query(Session).filter_by(sshkey=sshkey).first():
         session.delete(Recipe(id=id_))
         return jsonify({'status': True})
     return jsonify({'status': False})
@@ -472,7 +471,7 @@ def edit_recipes():
     if sshkey:
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
-        recipe = session.query(Recipe).order_by(id=id_).first()
+        recipe = session.query(Recipe).filter_by(id=id_).first()
         if user:
             crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
                                filename.split(".")[1]
@@ -518,9 +517,15 @@ def get_recipes():
 def get_recipe():
     id_ = request.args.get('id') or 0
     recipe = session.query(Recipe).filter_by(id=id_).first()
+
+    comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+
     recipe.views += 1
     session.commit()
-    return jsonify({'recipe': recipe.as_dict()})
+    recipe_json = recipe.as_dict()
+    recipe_json['comments'] = comments
+
+    return jsonify({'recipe': recipe_json})
 
 
 @app.route('/api/search', methods=['POST'])

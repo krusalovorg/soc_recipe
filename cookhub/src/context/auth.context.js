@@ -16,7 +16,7 @@ export const UserContext = createContext({
     surname: null,
     email: null,
     tag: null,
-    id: null,
+    user_id: null,
     likes: null,
     recipes: []
 })

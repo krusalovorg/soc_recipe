@@ -4,14 +4,14 @@ import { server_ip } from "../api/config";
 
 function getLikesText(likesCount) {
     if (likesCount === 1) {
-      return "лайк";
+        return "лайк";
     } else if (likesCount > 1 && likesCount < 5) {
-      return "лайка";
+        return "лайка";
     } else {
-      return "лайков";
+        return "лайков";
     }
-  }
-  
+}
+
 function Recipe(props) {
     const parsedList = props.data.likes.split('|').filter(Boolean).map(item => parseInt(item));
 
@@ -20,10 +20,18 @@ function Recipe(props) {
             <TouchableHighlight
                 style={styles.touch}
                 onPress={() => {
-                    props.navigation.navigate('recipe', {data: props.data.id})
+                    props.navigation.dispatch(NavigationActions.reset(
+                        {
+                            index: 0,
+                            actions: [
+                                NavigationActions.navigate({ routeName: 'recipe', data: props.data.id })
+                            ]
+                        }));
+
+                    // props.navigation.navigate('recipe', { data: props.data.id })
                 }}>
                 <View style={styles.contanier}>
-                    <Image style={styles.image} source={{ uri: server_ip+"/get_image/"+props.data.image }} />
+                    <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + props.data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.title}>{props.data.title}</Text>
                         <Text style={styles.name}>{props.data.author}</Text>

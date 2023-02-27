@@ -183,20 +183,25 @@ def unsub_profile():
     return jsonify({"status": False})
 
 
-# Получаем пользователя для отображения его страницы
-@app.route("/api/get_user", methods=["GET"])
-def get_user():
+# Получаем свой профль
+@app.route("/api/get_profile", methods=["POST"])
+def get_profile():
     if not request.json:
         abort(400)
-    user_tag = request.json["tag"]
-    if user_tag:
-        user = session.query(User).filter_by(tag=user_tag).first()
-        recipes = session.query(Recipe).filter_by(author=user.id).filter(access="public").first()
+    sshkey = request.json.get("sshkey")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    print(ses, ses.user_id)
+    if ses:
+        user = session.query(User).filter_by(id=ses.user_id).first()
+        print(user)
+        recipes = session.query(Recipe).filter_by(author=ses.user_id).all()
         return jsonify({
             "status": True,
-            "name": user.name,
-            "surname": user.surname,
-            "recipes": recipes
+            "tag": user.tag,
+            "email": user.email,
+            "likes": user.likes,
+            'recipes': recipes,
+            "user_id": user.id
         })
     return jsonify({"status": False})
 

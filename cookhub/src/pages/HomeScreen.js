@@ -83,7 +83,7 @@ const HomeScreen = ({ navigation }) => {
                 <Text style={styles.title_contanier}>Актуальное</Text>
                 {
                     recipies.map((item) => {
-                        return <Recipe data={item} navigation={navigation} />
+                        return <Recipe key={item.id} data={item} navigation={navigation} />
                     })
                 }
             </ScrollView>

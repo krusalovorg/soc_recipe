@@ -42,6 +42,7 @@ const RecipeScreen = ({ navigation, route }) => {
 
     async function loadRecipe() {
         const recipe = await getRecipe(id);
+        console.log('UPDATE',recipe)
 
         if (recipe) {
             const parsedList = recipe.likes.split('|').filter(Boolean).map(item => parseInt(item));
@@ -49,8 +50,8 @@ const RecipeScreen = ({ navigation, route }) => {
     
             console.log('RECIPE', recipe, { type: "table", table: recipe.ingredients })
             setData(recipe);
-            console.log(user, typeof user.id)
-            if (likes.includes(user.id)) {
+            console.log(user, typeof user.user_id, typeof likes[0], likes.includes(user.user_id))
+            if (likes.includes(user.user_id)) {
                 setLike(true);
             }
             setSteps([
@@ -81,7 +82,7 @@ const RecipeScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         loadRecipe();
-    }, [RecipeScreen])
+    }, [route.params.data])
 
     // const data = [
     //     { type: "list", list: ["text1", "text2", "text3"] },
@@ -103,7 +104,7 @@ const RecipeScreen = ({ navigation, route }) => {
     // ]
 
     function getLikesText() {
-        const likesCount = data.likes.length;
+        const likesCount = likes.length;
         if (likesCount === 1) {
             return "пользователю";
         } else if (likesCount > 1 && likesCount < 5) {

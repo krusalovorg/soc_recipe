@@ -13,7 +13,7 @@ import Loader from '../components/loader';
 import { getRecipe, likeRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
 
-import { AuthContext } from '../context/auth.context';
+import { AuthContext, UserContext } from '../context/auth.context';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
@@ -22,6 +22,8 @@ const RecipeScreen = ({ navigation, route }) => {
     const [steps, setSteps] = useState([]);
     const [comments, setComments] = useState([]);
     const [like, setLike] = useState(false);
+    const user = useContext(UserContext);
+    const [likes, setLikes] = useState([]);
 
     const { token } = useContext(AuthContext);
 
@@ -40,9 +42,17 @@ const RecipeScreen = ({ navigation, route }) => {
 
     async function loadRecipe() {
         const recipe = await getRecipe(id);
+
         if (recipe) {
+            const parsedList = recipe.likes.split('|').filter(Boolean).map(item => parseInt(item));
+            setLikes(parsedList);
+    
             console.log('RECIPE', recipe, { type: "table", table: recipe.ingredients })
             setData(recipe);
+            console.log(user, typeof user.id)
+            if (likes.includes(user.id)) {
+                setLike(true);
+            }
             setSteps([
                 { type: "list", list: recipe.steps },
                 { type: "table", table: recipe.ingredients },
@@ -131,7 +141,7 @@ const RecipeScreen = ({ navigation, route }) => {
                         <Text style={styles.punkt_desc}>Категория: {data.category}</Text>
                         <Text style={styles.punkt_desc}>Автор: {data.author}</Text>
                         <Text style={styles.punkt_desc}>Просмотров: {data.views}</Text>
-                        <Text style={styles.punkt_desc}>Рецепт понравился: {data.likes.length} {getLikesText()}</Text>
+                        <Text style={styles.punkt_desc}>Рецепт понравился: {likes.length} {getLikesText()}</Text>
                         <View style={{ marginTop: 7, flexDirection: "row" }}>
                             <Text style={[styles.desc, { color: 'black', marginTop: 10 }]}>Вам понравился рецепт?</Text>
                             <TouchableOpacity onPress={updateLike} style={{ marginLeft: 30 }}>

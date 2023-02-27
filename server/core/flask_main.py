@@ -125,10 +125,8 @@ def get_profile():
         abort(400)
     sshkey = request.json.get("sshkey")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-    print(ses, ses.user_id)
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
-        print(user)
         recipes = session.query(Recipe).filter_by(author=ses.user_id).all()
         return jsonify({
             "status": True,
@@ -137,7 +135,8 @@ def get_profile():
             "tag": user.tag,
             "email": user.email,
             "likes": user.likes,
-            'recipes': recipes
+            'recipes': recipes,
+            "user_id": user.id
         })
     return jsonify({"status": False})
 

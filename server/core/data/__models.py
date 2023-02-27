@@ -112,6 +112,9 @@ class Commetns(SqlBase):
     recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 associated_access = sqlalchemy.Table(
     'recipes_access_to_users', SqlBase.metadata,

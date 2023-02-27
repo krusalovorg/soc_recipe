@@ -519,11 +519,16 @@ def get_recipe():
     recipe = session.query(Recipe).filter_by(id=id_).first()
 
     comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+    new_comments = []
+    for comment in comments:
+        new_comments.append(comment.as_dict())
+
+    print(new_comments)
 
     recipe.views += 1
     session.commit()
     recipe_json = recipe.as_dict()
-    recipe_json['comments'] = comments
+    recipe_json['comments'] = new_comments
 
     return jsonify({'recipe': recipe_json})
 

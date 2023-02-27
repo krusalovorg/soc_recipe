@@ -2,26 +2,25 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Comments = ({ comments, level = 0 }) => {
+    console.log("GETTTTTTTTTTTTT",comments)
     return (
         <View style={{ marginLeft: level * 20, marginBottom: 10 }}>
             {/* Комментарии */}
             {comments.map((comment, i) => (
                 <>
                     <View key={i}>
-                        {/* Отображаем текст комментария и количество лайков */}
                         <Text style={styles.avtor}>
                             {comment.avtor && comment.avtor.name}
                         </Text>
                         <Text style={styles.commentText}>
                             {comment.text}{' '}
-                            {comment.likes.length > 0 && (
+                            {/* {comment.likes.length > 0 && (
                                 <Text style={styles.likesCount}>
                                     {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
                                 </Text>
-                            )}
+                            )} */}
                         </Text>
 
-                        {/* Если есть ответы на комментарий, рекурсивно вызываем этот же компонент */}
                         {/* {comment.answers.length > 0 && (
                         <Comments comments={comment.answers} level={level + 1} />
                     )} */}

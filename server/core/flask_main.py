@@ -60,7 +60,8 @@ def add_comment():
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if text and ses and recipe_id:
         user = session.query(User).filter_by(id=ses.user_id).first()
-        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name, surname=user.surname)
+        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name,
+                               surname=user.surname)
         session.add(new_comment)
         session.commit()
         return jsonify({"status": True})
@@ -156,7 +157,7 @@ def sub_profile():
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
-                                                                                   user_id_child=user_for)
+                                                                                    user_id_child=user_for)
             if user_to_user_exist:
                 return jsonify({"status": False})
             new_associated_users_to_users = associated_users_to_users(user_id_parent=ses.user_id,
@@ -196,7 +197,7 @@ def edit_avatar():
     if all(sshkey, image):
         ses = session.query(Sessions).filter_by(sshkey=sshkey)
         user = session.query(User).filter_by(id=ses.user_id)
-        image_hash_name = sha256(image+str(user.id)).hexdigest()+"."
+        image_hash_name = sha256(image + str(user.id)).hexdigest() + "."
         user.avatar = f"./images/{user.id}/{image_hash_name}"
 
         starter = image.find(',')
@@ -206,6 +207,18 @@ def edit_avatar():
         im.save(f'./images/{user.id}/{image_hash_name}')
         session.commit()
         return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+@app.route("/api/get_user_avatar", methods=["GET"])
+def get_user_avatar():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    if sshkey:
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=ses.user_id)
+        return send_file(user.avatar)
     return jsonify({"status": False})
 
 

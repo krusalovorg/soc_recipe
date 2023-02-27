@@ -13,17 +13,8 @@ const Comments = ({ comments, level = 0 }) => {
                             {comment.avtor && comment.avtor.name}
                         </Text>
                         <Text style={styles.commentText}>
-                            {comment.text}{' '}
-                            {/* {comment.likes.length > 0 && (
-                                <Text style={styles.likesCount}>
-                                    {comment.likes.length} {comment.likes.length > 1 ? 'лайков' : 'лайк'}
-                                </Text>
-                            )} */}
+                            {comment.text}
                         </Text>
-
-                        {/* {comment.answers.length > 0 && (
-                        <Comments comments={comment.answers} level={level + 1} />
-                    )} */}
                     </View>
                     <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
                 </>

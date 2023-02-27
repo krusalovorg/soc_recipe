@@ -59,7 +59,8 @@ def add_comment():
     text = request.json.get("text")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if text and ses and recipe_id:
-        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text)
+        user = session.query(User).filter_by(id=ses.user_id)
+        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name, surname=user.surname)
         session.add(new_comment)
         session.commit()
         return jsonify({"status": True})
@@ -522,8 +523,6 @@ def get_recipe():
     new_comments = []
     for comment in comments:
         new_comments.append(comment.as_dict())
-
-    print(new_comments)
 
     recipe.views += 1
     session.commit()

@@ -107,10 +107,13 @@ class Watches(SqlBase):
 class Commetns(SqlBase):
     __tablename__ = "Comments"
 
+    date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
     recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    surname = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

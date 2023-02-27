@@ -107,7 +107,7 @@ class Watches(SqlBase):
 class Commetns(SqlBase):
     __tablename__ = "Comments"
 
-    date = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
     recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))

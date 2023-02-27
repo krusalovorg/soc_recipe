@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import Moment from 'moment';
+
+function dateFormate(date) {
+    const date = Moment(date)
+    if (date.day == new Date().getDay()) {
+        return `сегодня в ${date.lang('ru').format('HH:MM')}`
+    }
+
+    return Moment(date).lang("ru").format('MMM DD HH:MM')
+}
 
 const Comments = ({ comments, level = 0 }) => {
-    console.log("GETTTTTTTTTTTTT",comments)
+    Moment.locale('ru');
     return (
         <View style={{ marginLeft: level * 20, marginBottom: 10 }}>
             {/* Комментарии */}
@@ -10,13 +20,16 @@ const Comments = ({ comments, level = 0 }) => {
                 <>
                     <View key={i}>
                         <Text style={styles.avtor}>
-                            {comment.avtor && comment.avtor.name}
+                            {comment.name} {comment.surname}
                         </Text>
                         <Text style={styles.commentText}>
                             {comment.text}
                         </Text>
+                        <Text style={styles.date}>
+                            {dateFormate(comment.date)}
+                        </Text>
                     </View>
-                    <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
+                    <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#dce0e0", height: 1, marginVertical: 5 }}></View>
                 </>
             ))}
         </View>
@@ -49,6 +62,9 @@ const styles = StyleSheet.create({
     },
     commentText: {
         marginBottom: 5,
+    },
+    date: {
+
     },
     avtor: {
 

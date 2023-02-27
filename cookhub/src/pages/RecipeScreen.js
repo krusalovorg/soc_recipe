@@ -37,6 +37,7 @@ const RecipeScreen = ({ navigation, route }) => {
         const res = await addComment(id, token, inputValue);
         if (res) {
             setInputValue('');
+            loadRecipe();
         }
     };
 
@@ -168,7 +169,6 @@ const RecipeScreen = ({ navigation, route }) => {
                                 <Text style={styles.buttonText}>Отправить</Text>
                             </TouchableOpacity>
                         </View>
-                        <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "black", height: 2, marginVertical: 5 }}></View>
                         <Comments comments={comments} />
                         <View style={{ width: "100%", paddingHorizontal: 10, height: 100, marginVertical: 5 }}></View>
                     </View>

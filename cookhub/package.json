@@ -24,7 +24,7 @@
     "fbjs": "^3.0.4",
     "invert-color": "^2.0.0",
     "localstorage-polyfill": "^1.0.1",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "pouchdb-react-native": "^6.4.1",
     "react": "17.0.2",
     "react-native": "0.68.1",

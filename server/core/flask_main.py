@@ -59,7 +59,7 @@ def add_comment():
     text = request.json.get("text")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if text and ses and recipe_id:
-        user = session.query(User).filter_by(id=ses.user_id)
+        user = session.query(User).filter_by(id=ses.user_id).first()
         new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name, surname=user.surname)
         session.add(new_comment)
         session.commit()
@@ -519,17 +519,19 @@ def get_recipe():
     id_ = request.args.get('id') or 0
     recipe = session.query(Recipe).filter_by(id=id_).first()
 
-    comments = session.query(Commetns).filter_by(recipe_id=id_).all()
-    new_comments = []
-    for comment in comments:
-        new_comments.append(comment.as_dict())
+    if recipe:
+        comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+        new_comments = []
+        for comment in comments:
+            new_comments.append(comment.as_dict())
 
-    recipe.views += 1
-    session.commit()
-    recipe_json = recipe.as_dict()
-    recipe_json['comments'] = new_comments
+        recipe.views += 1
+        session.commit()
+        recipe_json = recipe.as_dict()
+        recipe_json['comments'] = new_comments
 
-    return jsonify({'recipe': recipe_json})
+        return jsonify({'status': True, 'recipe': recipe_json})
+    return jsonify({'status': False})
 
 
 @app.route('/api/search', methods=['POST'])

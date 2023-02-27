@@ -16,6 +16,7 @@ import { server_ip } from '../api/config';
 import { AuthContext, UserContext } from '../context/auth.context';
 
 import { formateName } from '../utils/formate';
+import Recipe from '../components/recipe';
 
 function getBackground(value) {
     var minVal = 0;

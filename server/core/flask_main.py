@@ -127,7 +127,11 @@ def get_profile():
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
-        recipes = session.query(Recipe).filter_by(author=ses.user_id).all()
+        recipes = session.query(Recipe).filter_by(author=user.tag).all()
+        new_recipes = []
+        for recipe in recipes:
+            new_recipes.append(recipe.as_dict())
+
         return jsonify({
             "status": True,
             "name": user.name,
@@ -135,7 +139,7 @@ def get_profile():
             "tag": user.tag,
             "email": user.email,
             "likes": user.likes,
-            'recipes': recipes,
+            'recipes': new_recipes,
             "user_id": user.id
         })
     return jsonify({"status": False})

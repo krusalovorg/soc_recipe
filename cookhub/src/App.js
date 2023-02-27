@@ -81,7 +81,7 @@ const App = () => {
   return (
     <>
       <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
-        <UserContext.Provider value={dataUser}>
+        <UserContext.Provider value={{...dataUser, setUser: setDataUser}}>
           <NavigationContainer>
             {token == null ?
               <Stack.Navigator>

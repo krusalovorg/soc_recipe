@@ -26,3 +26,16 @@ export const getProfile = async (sshkey) => {
         return false
     }
 };
+
+export const getProfileId = async (sshkey, tag) => {
+    try {
+        const response = await axios.post(server_ip+'/get_user_profile', {
+            sshkey, tag
+        });
+        console.log(response.data);
+        return response.data
+    } catch (error) {
+        console.log(error);
+        return false
+    }
+};

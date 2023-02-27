@@ -19,67 +19,18 @@ import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
 import { getProfile, getProfileId } from '../api/auth';
 
-function getBackground(value) {
-    var minVal = 0;
-    var maxVal = 100;
-
-    var minColor = [222, 247, 246]; // #4BD8EA
-    var maxColor = [232, 237, 234]; // #4282F6
-
-    var numColors = 33;
-
-    var colorIndex = Math.floor((value - minVal) / (maxVal - minVal) * numColors);
-    var colorRange = [
-        [minColor[0], minColor[1], minColor[2]],
-        [(minColor[0] + maxColor[0]) / 2, (minColor[1] + maxColor[1]) / 2, (minColor[2] + maxColor[2]) / 2],
-        [maxColor[0], maxColor[1], maxColor[2]]
-    ];
-
-    var red = colorRange[colorIndex][0];
-    var green = colorRange[colorIndex][1];
-    var blue = colorRange[colorIndex][2];
-
-    return "rgb(" + red + ", " + green + ", " + blue + ")";
-}
-
-const ProfileScreen = ({ navigation, route }) => {
+const ChatScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
-    const [sortedRecipes, setSortRecipes] = useState([]);
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
-    const { id, type } = route.params;
-
-    async function loadProfile() {
-        let profile;
-        if (type == "forme") {
-            profile = await getProfile(token);
-        } else {
-            profile = await getProfileId(token, user.tag);
-        }
-        console.log(profile)
-        if (profile) {
-            user.setUser(profile);
-        }
-
-        setSortRecipes(user.recipes.sort((a, b) => {
-            if (a.views > b.views) {
-                return -1;
-            }
-            if (a.views < b.views) {
-                return 1;
-            }
-            return 0;
-        }))
-        console.log(sortedRecipes)
+    async function loadChat() {
     }
 
     useEffect(() => {
-
-        // loadRecipe();
-        loadProfile();
+        loadChat();
         setLoading(false)
-    }, [route.params.data])
+    }, [ChatScreen])
 
     if (loading) {
         return <Loader />
@@ -91,28 +42,9 @@ const ProfileScreen = ({ navigation, route }) => {
                 resizeMode='cover'
                 // source={{ uri: server_ip + "/get_image/" + data.image }}
                 blurRadius={200}>
-                <View style={styles.title_contanier}>
-                    <Text style={styles.title}>@{user.tag}</Text>
-                    <TouchableOpacity style={styles.back} onPress={() => {
-                        navigation.navigate("home")
-                    }}>
-                        <Image style={styles.back_image} source={back} />
-                    </TouchableOpacity>
-                </View>
                 <ScrollView style={styles.page_contanier}>
-                    <View style={[styles.ava, { backgroundColor: getBackground(user.recipes.length) }]}>
-                        <Text style={[styles.title, { color: "black", fontSize: 25 }]}>{formateName(user.name)} {formateName(user.surname)}</Text>
-                        {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14 }]}>{user.email}</Text>}
-                    </View>
                     <View style={styles.content}>
-                        <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
-                        {
-                            sortedRecipes.map((item) => {
-                                console.log(item)
-                                return <Recipe key={item.id} data={item} navigation={navigation} />
-                            })
-                        }
-                        <View style={{minHeight: 100}}></View>
+
                     </View>
                 </ScrollView>
             </ImageBackground>
@@ -190,4 +122,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ProfileScreen;
+export default ChatScreen;

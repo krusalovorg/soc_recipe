@@ -18,5 +18,6 @@ export const UserContext = createContext({
     tag: null,
     user_id: null,
     likes: null,
-    recipes: []
+    recipes: [],
+    setUser: noop
 })

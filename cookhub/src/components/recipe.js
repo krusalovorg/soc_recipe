@@ -1,5 +1,6 @@
 import React from "react";
-import { TextInput, StyleSheet, Image, Text, View, TouchableHighlight } from "react-native";
+import { useState } from "react";
+import { TextInput, StyleSheet, Image, Text, View, TouchableHighlight, ActivityIndicator } from "react-native";
 import { server_ip } from "../api/config";
 
 function getLikesText(likesCount) {
@@ -13,7 +14,12 @@ function getLikesText(likesCount) {
 }
 
 function Recipe(props) {
+    const [loading, setLoading] = useState(true);
     const parsedList = props.data.likes.split('|').filter(Boolean).map(item => parseInt(item));
+
+    function onLoadEnd() {
+        setLoading(false);
+    }
 
     return (
         <>
@@ -27,7 +33,15 @@ function Recipe(props) {
                     // props.navigation.navigate('recipe', { data: props.data.id })
                 }}>
                 <View style={styles.contanier}>
-                    <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + props.data.image }} />
+                    <Image
+                        style={[styles.image, (loading?{width: 0, height: 0}:{})]}
+                        onLoadEnd={onLoadEnd}
+                        source={{ uri: server_ip + "/get_image/" + props.data.image }} />
+                    <ActivityIndicator
+                        style={[styles.activityIndicator, (loading?{}:{width: 0, height: 0})]}
+                        animating={loading}
+                        size={70}
+                    />
                     <View style={styles.content}>
                         <Text style={styles.title}>{props.data.title}</Text>
                         <Text style={styles.name}>@{props.data.author}</Text>
@@ -43,6 +57,12 @@ function Recipe(props) {
 }
 
 const styles = StyleSheet.create({
+    activityIndicator: {
+        width: 150,
+        height: 150,
+        paddingBottom: 20,
+        color: "black"
+    },
     touch: {
         marginVertical: 10,
     },

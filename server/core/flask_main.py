@@ -181,6 +181,38 @@ def unsub_profile():
                 return jsonify({"status": True})
     return jsonify({"status": False})
 
+
+@app.route("/api/edit_profile/avatar/add",method=["POST"])
+def edit_avatar():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    image = request.json.get("image")
+    if all(sshkey, image):
+        ses = session.query(Sessions).filter_by(sshkey=sshkey)
+        user = session.query(User).filter_by(id=ses.user_id)
+        image_hash_name = sha256(image+str(user.id)).hexdigest()+"."
+        if user.avatar:
+            user.avatar = f"./images/{user.id}/{image_hash_name}"
+            starter = image.find(',')
+            image_data = image[starter + 1:]
+            image_data = bytes(image_data, encoding="ascii")
+            im = Image.open(BytesIO(base64.b64decode(image_data)))
+            im.save(f'./images/{user.id}/{image_hash_name}')
+            session.commit()
+            return jsonify({"status":True})
+        else:
+            user.avatar = f"./images/{user.id}/{image_hash_name}"
+            starter = image.find(',')
+            image_data = image[starter + 1:]
+            image_data = bytes(image_data, encoding="ascii")
+            im = Image.open(BytesIO(base64.b64decode(image_data)))
+            im.save(f'./images/{user.id}/{image_hash_name}')
+            session.commit()
+            return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
 # Изменение пароля
 @app.route("/api/edit_password", methods=["POST"])
 def edit_password():

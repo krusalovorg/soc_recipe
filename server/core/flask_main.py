@@ -45,6 +45,7 @@ mail = Mail(app)
 cods = []
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
+dictionary = enchant.Dict("ru_RU")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -583,13 +584,14 @@ def search():
     filter_text = request.json.get("filter")
     new_words = dict()
 
-    dictionary = enchant.Dict("en_US")
     suggestions = set(dictionary.suggest(search_text))
+    print(suggestions,search_text)
 
     for word in suggestions:
         measure = difflib.SequenceMatcher(None, search_text, word).ratio()
         new_words[measure] = word
 
+    print(new_words)
     search_text = new_words[max(new_words.keys())]
 
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
@@ -652,27 +654,28 @@ def chatting():
             word = morph.parse(ingredient)[0].normal_form
             input_ingredients.append(word)
 
-    filtered_recipes = []
+        filtered_recipes = []
 
-    recipes = session.query(Recipe).all()
+        recipes = session.query(Recipe).all()
 
-    for recipe in recipes:
-        recipe_ingredients = recipe.ingredients
-        match_scores = []
-        for ingredient in input_ingredients:
-            best_match = 0
-            for recipe_ingredient in recipe_ingredients:
-                match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
-                if match_score > best_match:
-                    best_match = match_score
-            match_scores.append(best_match)
-        avg_score = sum(match_scores) / len(match_scores)
-        if avg_score >= threshold:
-            filtered_recipes.append((recipe.as_dict(), avg_score))
+        for recipe in recipes:
+            recipe_ingredients = recipe.ingredients
+            match_scores = []
+            for ingredient in input_ingredients:
+                best_match = 0
+                for recipe_ingredient in recipe_ingredients:
+                    match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
+                    if match_score > best_match:
+                        best_match = match_score
+                match_scores.append(best_match)
+            avg_score = sum(match_scores) / len(match_scores)
+            if avg_score >= threshold:
+                filtered_recipes.append((recipe.as_dict(), avg_score))
 
-    filtered_recipes.sort(key=lambda x: x[1], reverse=True)
+        filtered_recipes.sort(key=lambda x: x[1], reverse=True)
 
-    return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes}})
+        return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes}})
+    return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 
 if __name__ == '__main__':

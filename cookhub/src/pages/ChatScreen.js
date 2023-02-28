@@ -58,7 +58,7 @@ const ChatScreen = ({ navigation, route }) => {
                         { dialog.length > 0 &&
                             dialog.map((item)=>{
                                 console.log(item)
-                                return <Text>{item.toString()}</Text>
+                                return <Text>{item.answer.from}: {item.answer.text}</Text>
                             })
                         }
                         <View style={styles.input_contanier}>

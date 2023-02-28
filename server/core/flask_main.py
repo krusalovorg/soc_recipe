@@ -595,12 +595,17 @@ def search():
     search_text = new_words[max(new_words.keys())]
 
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
-
-    recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                          Recipe.steps.like(pattern),
-                                                          Recipe.ingredients.like(pattern),
-                                                          Recipe.description.like(pattern)).and_(
-        *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
+    if filter_text:
+        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                              Recipe.steps.like(pattern),
+                                                              Recipe.ingredients.like(pattern),
+                                                              Recipe.description.like(pattern)).and_(
+            *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
+    else:
+        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                              Recipe.steps.like(pattern),
+                                                              Recipe.ingredients.like(pattern),
+                                                              Recipe.description.like(pattern))).all()
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())

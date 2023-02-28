@@ -43,9 +43,9 @@ export const addComment = async (id, sshkey, text) => {
 };
 
 
-export const searchRecipe = async (search) => {
+export const searchRecipe = async (search_text, filters=[]) => {
     try {
-        const response = await axios.post(server_ip + `/search`, {search});
+        const response = await axios.post(server_ip + `/search`, {search_text, filters});
         return response.data.recipes
     } catch (error) {
         console.log(error);

@@ -585,7 +585,7 @@ def search():
     new_words = dict()
 
     suggestions = set(dictionary.suggest(search_text))
-    print(suggestions,search_text)
+    print(suggestions, search_text)
 
     for word in suggestions:
         measure = difflib.SequenceMatcher(None, search_text, word).ratio()
@@ -595,6 +595,7 @@ def search():
     search_text = new_words[max(new_words.keys())]
 
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
+
     if filter_text:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
@@ -651,7 +652,7 @@ def chatting():
 
     model = {"from": user_id, "text": text}
 
-    res = challenge_command(text, schema_list)
+    res = challenge_command(text.lower(), schema_list)
     print(res)
     if res:
         input_ingredients = []

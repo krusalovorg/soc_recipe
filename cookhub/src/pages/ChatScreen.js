@@ -33,7 +33,7 @@ const ChatScreen = ({ navigation, route }) => {
     async function handleChatSubmit() {
         if (text.length > 0) {
             const msg = await sendMessage(token, text);
-            console.log('get',msg)
+            console.log('get', msg)
             setDialog([...dialog, msg])
         }
     }
@@ -55,17 +55,26 @@ const ChatScreen = ({ navigation, route }) => {
                 blurRadius={200}>
                 <ScrollView style={styles.page_contanier}>
                     <View style={styles.content}>
-                        { dialog.length > 0 &&
-                            dialog.map((item)=>{
-                                console.log(item)
-                                return <Text>{item.answer.from}: {item.answer.text}</Text>
+                        {dialog.length > 0 &&
+                            dialog.map((item) => {
+                                if (item.answer.data) {
+                                    return (
+                                        <>
+                                            <Text>{item.answer.from}: {item.answer.text}</Text>
+                                            {item.answer.data.map((recipe) => {
+                                                return <Recipe key={recipe.id} data={recipe} navigation={navigation} />
+                                            })}
+                                        </>)
+                                } else {
+                                    return <Text>{item.answer.from}: {item.answer.text}</Text>
+                                }
                             })
                         }
                         <View style={styles.input_contanier}>
                             <TextInput
                                 style={styles.input}
                                 value={text}
-                                onChangeText={(text)=>{
+                                onChangeText={(text) => {
                                     setText(text);
                                 }}
                                 placeholder="Задайте вопрос.."

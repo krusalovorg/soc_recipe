@@ -18,13 +18,24 @@ import { AuthContext, UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
 import { getProfile, getProfileId } from '../api/auth';
+import { sendMessage } from '../api/chat';
 
 const ChatScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
+    const [dialog, setDialog] = useState([]);
+    const [text, setText] = useState("");
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
     async function loadChat() {
+    }
+
+    async function handleChatSubmit() {
+        if (text.length > 0) {
+            const msg = sendMessage(token, text);
+            console.log('get',msg)
+            setDialog([...dialog, msg])
+        }
     }
 
     useEffect(() => {
@@ -44,6 +55,26 @@ const ChatScreen = ({ navigation, route }) => {
                 blurRadius={200}>
                 <ScrollView style={styles.page_contanier}>
                     <View style={styles.content}>
+                        { dialog.length > 0 &&
+                            dialog.map((item)=>{
+                                console.log(item)
+                                return <Text>{item.toString()}</Text>
+                            })
+                        }
+                        <View style={styles.input_contanier}>
+                            <TextInput
+                                style={styles.input}
+                                value={text}
+                                onChangeText={(text)=>{
+                                    setText(text);
+                                }}
+                                placeholder="Задайте вопрос.."
+                                placeholderTextColor="#777"
+                            />
+                            <TouchableOpacity style={styles.button} onPress={handleChatSubmit}>
+                                <Text style={styles.buttonText}>Отправить</Text>
+                            </TouchableOpacity>
+                        </View>
 
                     </View>
                 </ScrollView>
@@ -120,6 +151,32 @@ const styles = StyleSheet.create({
         width: "100%",
         backgroundColor: "rgba(255, 255, 255, 0.8)"
     },
+
+    input_contanier: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F2F4F5',
+        paddingHorizontal: 15,
+        borderColor: '#F2F4F5',
+        borderWidth: 2,
+        borderRadius: 20,
+        marginHorizontal: 0,
+        marginBottom: 20
+    },
+    input: {
+        width: "100%",
+        height: 56,
+        flex: 1,
+        paddingTop: 10,
+        paddingRight: 10,
+        paddingBottom: 10,
+        paddingLeft: 0,
+        backgroundColor: '#F2F4F5',
+        color: 'black',
+    }
+
 })
 
 export default ChatScreen;

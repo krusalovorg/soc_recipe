@@ -28,6 +28,7 @@ import Loader from './components/loader';
 import CreateRecipeScreen from './pages/CreateRecipeScreen';
 import { server_ip } from './api/config';
 import ProfileScreen from './pages/ProfileScreen';
+import ChatScreen from './pages/ChatScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -81,7 +82,7 @@ const App = () => {
   return (
     <>
       <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
-        <UserContext.Provider value={{...dataUser, setUser: setDataUser}}>
+        <UserContext.Provider value={{ ...dataUser, setUser: setDataUser }}>
           <NavigationContainer>
             {token == null ?
               <Stack.Navigator>
@@ -122,6 +123,12 @@ const App = () => {
                   component={HomeScreen}
                   options={{
                     title: 'Рецепты',
+                  }} />
+                <Drawer.Screen
+                  name="chat"
+                  component={ChatScreen}
+                  options={{
+                    title: 'Чат',
                   }} />
                 <Drawer.Screen
                   name="recipe"

@@ -600,7 +600,7 @@ def search():
                                                           Recipe.steps.like(pattern),
                                                           Recipe.ingredients.like(pattern),
                                                           Recipe.description.like(pattern)).and_(
-        *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
+        *(getattr(Recipe, filt.get("column")).between(filt.get("value1"), filt.get("value2")) for filt in filter_text))).all()
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())

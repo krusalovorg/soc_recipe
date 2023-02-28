@@ -23,9 +23,6 @@ from server.core.utils.cmd2dict import challenge_command
 
 import enchant
 
-dictionary = enchant.Dict("ru_RU")
-sim = dict()
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
 app.config['MAIL_SERVER'] = 'smtp.mail.ru'
@@ -586,7 +583,7 @@ def search():
     filter_text = request.json.get("filter")
     new_words = dict()
 
-    dictionary = enchant.Dict("ru_RU")
+    dictionary = enchant.Dict("en_US")
     suggestions = set(dictionary.suggest(search_text))
 
     for word in suggestions:
@@ -601,7 +598,7 @@ def search():
                                                           Recipe.steps.like(pattern),
                                                           Recipe.ingredients.like(pattern),
                                                           Recipe.description.like(pattern)).and_(
-        f"{[[filt['colum'], filt['type'], filt['value']] for filt in filter_text]}")).all()
+        *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())

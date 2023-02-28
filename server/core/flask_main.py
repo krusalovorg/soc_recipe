@@ -582,18 +582,16 @@ def get_recipe():
 def search():
     search_text = request.json.get('search_text')
     filter_text = request.json.get("filter")
-    new_words = dict()
-
-    suggestions = set(dictionary.suggest(search_text))
-    print(suggestions, search_text)
-
-    for word in suggestions:
-        measure = difflib.SequenceMatcher(None, search_text, word).ratio()
-        new_words[measure] = word
-
-    print(new_words)
-    search_text = new_words[max(new_words.keys())]
-
+    """
+        new_words = dict()
+        suggestions = set(dictionary.suggest(search_text))
+        print(suggestions, search_text)
+        for word in suggestions:
+            measure = difflib.SequenceMatcher(None, search_text, word).ratio()
+            new_words[measure] = word
+        print(new_words)
+        search_text = new_words[max(new_words.keys())]
+    """
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
     if filter_text:

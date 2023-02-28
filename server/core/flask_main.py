@@ -579,28 +579,30 @@ def get_recipe():
         return jsonify({'status': True, 'recipe': recipe_json})
     return jsonify({'status': False})
 
+
 @app.route('/api/search', methods=['POST'])
 def search():
-    input_string = request.json.get('search')
-    suggestions = set(dictionary.suggest(input_string))
+    search_text = request.json.get('search_text')
+    filter_text = request.json.get("filter")
+    new_words = dict()
 
-    new_words = []
+    dictionary = enchant.Dict("ru_RU")
+    suggestions = set(dictionary.suggest(search_text))
+
     for word in suggestions:
-        measure = difflib.SequenceMatcher(None, input_string, word).ratio()
-        # sim[measure] = word
-        new_words.append(measure)
+        measure = difflib.SequenceMatcher(None, search_text, word).ratio()
+        new_words[measure] = word
 
-    print("Correct word is:", new_words)
+    search_text = new_words[max(sim.keys())]
 
-    pattern = '%' + '%'.join(input_string.split(" ")) + '%'
+    pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
     recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                           Recipe.steps.like(pattern),
                                                           Recipe.ingredients.like(pattern),
-                                                          Recipe.description.like(pattern))).all()
+                                                          Recipe.description.like(pattern))).and_(f"{ [ [filt['colum'], filt['type'], filt['value']] for filt in filter_text ] }").all()
     recipes_array = []
     for recipe in recipes:
-        print(recipe.ingredients)
         recipes_array.append(recipe.as_dict())
     return jsonify({"recipes": recipes_array})
 

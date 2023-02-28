@@ -32,7 +32,7 @@ const ChatScreen = ({ navigation, route }) => {
 
     async function handleChatSubmit() {
         if (text.length > 0) {
-            const msg = sendMessage(token, text);
+            const msg = await sendMessage(token, text);
             console.log('get',msg)
             setDialog([...dialog, msg])
         }

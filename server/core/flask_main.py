@@ -647,7 +647,7 @@ def chatting():
     model = {"from": user_id, "text": text}
 
     res = challenge_command(text, schema_list)
-
+    print(res)
     if res:
         input_ingredients = []
         for ingredient in res['ingredients']:

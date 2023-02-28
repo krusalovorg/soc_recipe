@@ -2,14 +2,15 @@ import React, { useEffect, useState, useContext } from 'react';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView, RefreshControl } from 'react-native';
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
-import { getRecipies } from '../api/recipes';
+import { getRecipies, searchRecipe } from '../api/recipes';
 import Loader from '../components/loader';
 
 const HomeScreen = ({ navigation }) => {
-    const [findValue, setFindValue] = useState("");
+    const [findValue, setFindValue] = useState(null);
     const [recipies, setRecipies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [searchRecipies, setSearchRecipes] = useState([]);
 
     async function loadRecipies() {
         setRefreshing(true);
@@ -26,6 +27,12 @@ const HomeScreen = ({ navigation }) => {
         await loadRecipies();
         setRefreshing(false);
     };
+
+    async function searchRecipeLive(text) {
+        const recipes = await searchRecipe(text);
+        console.log('get', recipes)
+        setSearchRecipes(recipes);
+    }
 
     useEffect(() => {
         loadRecipies();
@@ -53,7 +60,10 @@ const HomeScreen = ({ navigation }) => {
                         value={findValue}
                         style={styles.input}
                         underlineColorAndroid="transparent"
-                        onChangeText={(text) => { setFindValue(text) }}
+                        onChangeText={(text) => {
+                            setFindValue(text);
+                            searchRecipeLive(text);
+                        }}
                     />
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
@@ -79,6 +89,16 @@ const HomeScreen = ({ navigation }) => {
                         </Text>
                     </TouchableHighlight>
                 </View>
+                {findValue != null && searchRecipies != undefined &&
+                    <View>
+                        <Text style={styles.title_contanier}>Поиск по запросу: {findValue.toString()}</Text>
+                        {
+                            searchRecipies.map((item) => {
+                                return <Recipe key={item.id} data={item} navigation={navigation} />
+                            })
+                        }
+                    </View>
+                }
                 <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#F2F4F5", height: 2, marginVertical: 5 }}></View>
                 <Text style={styles.title_contanier}>Актуальное</Text>
                 {

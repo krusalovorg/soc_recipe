@@ -1,3 +1,4 @@
+import difflib
 import random
 from hashlib import sha256
 
@@ -19,6 +20,11 @@ from flask_mail import Mail, Message
 from fuzzywuzzy import fuzz
 
 from server.core.utils.cmd2dict import challenge_command
+
+import enchant
+
+dictionary = enchant.Dict("ru_RU")
+sim = dict()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -573,14 +579,30 @@ def get_recipe():
         return jsonify({'status': True, 'recipe': recipe_json})
     return jsonify({'status': False})
 
-
 @app.route('/api/search', methods=['POST'])
 def search():
-    if request.method == 'POST':
-        input_string = request.json.get('search')
-        return jsonify({"recipes": []})
-    else:
-        return make_response('Nothing found')
+    input_string = request.json.get('search')
+    suggestions = set(dictionary.suggest(input_string))
+
+    new_words = []
+    for word in suggestions:
+        measure = difflib.SequenceMatcher(None, input_string, word).ratio()
+        # sim[measure] = word
+        new_words.append(measure)
+
+    print("Correct word is:", new_words)
+
+    pattern = '%' + '%'.join(input_string.split(" ")) + '%'
+
+    recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                          Recipe.steps.like(pattern),
+                                                          Recipe.ingredients.like(pattern),
+                                                          Recipe.description.like(pattern))).all()
+    recipes_array = []
+    for recipe in recipes:
+        print(recipe.ingredients)
+        recipes_array.append(recipe.as_dict())
+    return jsonify({"recipes": recipes_array})
 
 
 # krusalovorg

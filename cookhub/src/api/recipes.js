@@ -41,3 +41,14 @@ export const addComment = async (id, sshkey, text) => {
         return null
     }
 };
+
+
+export const searchRecipe = async (search) => {
+    try {
+        const response = await axios.post(server_ip + `/search`, {search});
+        return response.data.recipes
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+};

@@ -1,3 +1,5 @@
 export function formateName(str) {
-    return str[0].toUpperCase() + str.slice(1)
+    if (str != null)
+        return str[0].toUpperCase() + str.slice(1)
+    return 'загрузка'
 }

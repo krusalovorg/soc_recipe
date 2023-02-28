@@ -593,14 +593,15 @@ def search():
         measure = difflib.SequenceMatcher(None, search_text, word).ratio()
         new_words[measure] = word
 
-    search_text = new_words[max(sim.keys())]
+    search_text = new_words[max(new_words.keys())]
 
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
     recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                           Recipe.steps.like(pattern),
                                                           Recipe.ingredients.like(pattern),
-                                                          Recipe.description.like(pattern))).and_(f"{ [ [filt['colum'], filt['type'], filt['value']] for filt in filter_text ] }").all()
+                                                          Recipe.description.like(pattern)).and_(
+        f"{[[filt['colum'], filt['type'], filt['value']] for filt in filter_text]}")).all()
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())

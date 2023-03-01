@@ -61,7 +61,7 @@ class User(SqlBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    avatar = sqlalchemy.Column(sqlalchemy.String,nullable=True)
+    avatar = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     tag = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
@@ -103,6 +103,15 @@ class Watches(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
     recipe_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('recipes.id'))
+
+
+# Чаты пользователей
+class DM(SqlBase):
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_sender_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
+    user_recipient_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
+    date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
 
 class Commetns(SqlBase):

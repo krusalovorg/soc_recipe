@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, associated_users_to_users
+    Commetns, associated_users_to_users, DM
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -85,6 +85,48 @@ def rem_comment():
         session.delete(rem_comment)
         session.commit()
         return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
+# Чат пользователей , добавть сообщение
+@app.route("/api/add_chat_message", methods=["POST"])
+def add_chat_message():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_sender_tag = request.json.get("user_author")
+    user_recipient_id = request.json.get("user_recipient_id")
+    text = request.json.get("text")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    user = session.query(User).filter_by(id=ses.user_id).first()
+    if user.tag == user_sender_tag:
+        new_DM = DM(user_sender_id=user.id, user_recipient_id=user_recipient_id, text=text)
+        session.add(new_DM)
+        session.commit()
+        messages = session.query(DM).filter_by(user_recipient_id=user_recipient_id, user_sender_id=user.id).all()
+        send_message = []
+        for message in messages:
+            send_message.append(message)
+        return jsonify({"status": True, "messages": send_message})
+    return jsonify({"status": False})
+
+
+# История чата получение
+@app.route("/api/get_chat_messages", methods=["GET"])
+def get_chat_messages():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_sender_tag = request.json.get("user_sender_tag")
+    user_recipient_id = request.json.get("user_recipient_id")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    user = session.query(User).filter_by(id=ses.user_id).first()
+    if user.tag == user_sender_tag:
+        messages = session.query(DM).filter_by(user_recipient_id=user_recipient_id, user_sender_id=user.id).all()
+        send_message = []
+        for message in messages:
+            send_message.append(message)
+        return jsonify({"status": True, "messages": send_message})
     return jsonify({"status": False})
 
 
@@ -291,6 +333,7 @@ def edit_password_confirm():
     return jsonify({"status": False})
 
 
+# Лайк на рецепт удаление/добавление
 @app.route("/api/add_like", methods=["POST"])
 def add_like():
     if not request.json:
@@ -598,7 +641,8 @@ def search():
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern)).and_(
+                                                              Recipe.description.like(pattern),
+                                                              User.tag(pattern)).and_(
             *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
     else:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),

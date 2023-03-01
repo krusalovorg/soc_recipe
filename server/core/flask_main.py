@@ -619,13 +619,13 @@ def search():
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
                                                               Recipe.description.like(pattern),)).all()
-    users = session.query(User).filter(sqlalchemy.or_(User.tag.like(pattern),
-                                                      User.name.like(pattern),
-                                                      User.surname.like(pattern)))
-
     users_array = []
-    for user in users:
-        users_array.append(user.as_dict())
+    if len(search_text) > 1:
+        users = session.query(User).filter(sqlalchemy.or_(User.tag.like(pattern),
+                                                          User.name.like(pattern),
+                                                          User.surname.like(pattern)))
+        for user in users:
+            users_array.append(user.as_dict())
 
     recipes_array = []
     for recipe in recipes:

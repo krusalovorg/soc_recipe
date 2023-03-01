@@ -19,7 +19,7 @@ class Recipe(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
-    time = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, default=datetime.datetime.now)
+    time = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     steps = sqlalchemy.Column(sqlalchemy.JSON, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Integer)

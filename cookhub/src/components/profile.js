@@ -19,7 +19,7 @@ export default function DrawerProfile(props) {
             <TouchableHighlight style={styles.contanier} underlayColor="#DDDDDD" onPress={() => {
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'profile', params: {id: user.id, type: "forme"} }]
+                    routes: [{ name: 'profile', params: {tag: user.tag, type: "forme"} }]
                 })
             }}>
                 <>

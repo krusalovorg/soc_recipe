@@ -150,13 +150,20 @@ def get_user_profile():
     user_tag = request.json.get("tag")
     if session.query(Sessions).filter_by(sshkey=sshkey).first():
         user = session.query(User).filter_by(tag=user_tag).first()
-        recipes = session.query(Recipe).filter_by(author=user.id).all()
+        recipes = session.query(Recipe).filter_by(author=user.tag).all()
+        recipes_array = []
+
+        for recipe in recipes:
+            recipes_array.append(recipe.as_dict())
+
+        print(recipes_array)
+
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
             "likes": user.likes,
-            'recipes': recipes
+            'recipes': recipes_array
         })
     return jsonify({"status": False})
 
@@ -448,25 +455,26 @@ def add_recipes():
     description = request.json["description"]
 
     if sshkey:
-        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        user = session.query(User).filter_by(id=user_id.user_id).first()
-        if user:
-            crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
-                               filename.split(".")[1]
-            new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
-                                calories=calories, proteins=proteins, fats=fats, description=description,
-                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
-                                image=crypto_name_file, views=0, likes="")
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        if ses:
+            user = session.query(User).filter_by(id=ses.user_id).first()
+            if user:
+                crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
+                                   filename.split(".")[1]
+                new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
+                                    calories=calories, proteins=proteins, fats=fats, description=description,
+                                    carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
+                                    image=crypto_name_file, views=0, likes="")
 
-            starter = image.find(',')
-            image_data = image[starter + 1:]
-            image_data = bytes(image_data, encoding="ascii")
-            im = Image.open(BytesIO(base64.b64decode(image_data)))
-            im.save(f'./images/{crypto_name_file}')
+                starter = image.find(',')
+                image_data = image[starter + 1:]
+                image_data = bytes(image_data, encoding="ascii")
+                im = Image.open(BytesIO(base64.b64decode(image_data)))
+                im.save(f'./images/{crypto_name_file}')
 
-            session.add(new_recipe)
-            session.commit()
-        return jsonify({'status': True})
+                session.add(new_recipe)
+                session.commit()
+                return jsonify({'status': True})
     return jsonify({"status": False})
 
 

@@ -92,7 +92,7 @@ const HomeScreen = ({ navigation }) => {
                         </Text>
                     </TouchableHighlight>
                 </View>
-                {findValue != null && searchRecipies != undefined &&
+                {findValue != null && findValue != "" && searchRecipies != undefined &&
                     <View>
                         <Text style={styles.title_contanier}>{(searchRecipies.length == 0 && searchUsers.length == 0) ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
                         {

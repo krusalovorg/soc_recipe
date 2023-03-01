@@ -75,8 +75,8 @@ const ProfileScreen = ({ navigation, route }) => {
             setProfileData(profile);
             setLoading(false)
         }
-
-        setSortRecipes(profileData.recipes.sort((a, b) => {
+        console.log("GET",profile)
+        setSortRecipes(profile.recipes.sort((a, b) => {
             if (a.views > b.views) {
                 return -1;
             }

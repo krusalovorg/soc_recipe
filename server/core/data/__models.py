@@ -107,6 +107,8 @@ class Watches(SqlBase):
 
 # Чаты пользователей
 class DM(SqlBase):
+    __tablename__ = "DM"
+
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_sender_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
     user_recipient_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))

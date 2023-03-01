@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, associated_users_to_users, DM
+    Commetns, associated_users_to_users, DM,Category
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -55,6 +55,12 @@ def index():
 
 # Получить все категории
 @app.route("/api/get_categories")
+def get_categories():
+    if not request.json:
+        abort(400)
+    categories = session.query(Category).all()
+    return jsonify({"status":True,"categories":categories})
+
 
 # Добавить коменты на рецепт
 @app.route("/api/add_comment", methods=["POST"])

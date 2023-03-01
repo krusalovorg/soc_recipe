@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView, RefreshControl } from 'react-native';
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
-import { getRecipies, searchRecipe } from '../api/recipes';
+import { getRecipies, searchRecipe, searchRecipeOnlyCategorys } from '../api/recipes';
 import Loader from '../components/loader';
 import User from '../components/user';
 
@@ -38,10 +38,21 @@ const HomeScreen = ({ navigation, route }) => {
         setLoading(false);
     }
 
+    async function loadRecipesWithCategories(text, categories) {
+        const recipes = await searchRecipeOnlyCategorys(text, categories);
+        console.log('get', recipes)
+        if (recipes != null && typeof recipes.recipes != undefined) {
+            setRecipies(recipes.recipes);
+        } else {
+            setRecipies([])
+        }
+        setLoading(false);
+    }
+
     useEffect(() => {
         if (route.params && route.params.categories) {
             console.log(route.params);
-            searchRecipeLive("", [], route.params.categories);
+            loadRecipesWithCategories("", route.params.categories);
         } else {
             loadRecipies();
         }
@@ -124,7 +135,7 @@ const HomeScreen = ({ navigation, route }) => {
         </SafeAreaView>
     )
 }
-  
+
 const styles = StyleSheet.create({
     page_contanier: {
         flexGrow: 1,

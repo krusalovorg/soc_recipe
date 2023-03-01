@@ -595,6 +595,8 @@ def search():
     search_text = request.json.get('search_text')
     filter_text = request.json.get("filter")
     categories = request.json.get("categories")
+    only_categories = request.json.get("only_categories") or False
+
     """
         new_words = dict()
         suggestions = set(dictionary.suggest(search_text))
@@ -607,8 +609,6 @@ def search():
     """
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
-    print(categories)
-
     if filter_text:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
@@ -618,11 +618,18 @@ def search():
                                                               ).and_(
             *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
     elif categories:
-        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                              Recipe.steps.like(pattern),
-                                                              Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern)).and_(
-            *(getattr(Category, category.lower()) for category in categories))).all()
+        print('only',only_categories)
+        if only_categories:
+            recipes = session.query(Recipe).filter(sqlalchemy.or_(
+                *[getattr(Category, category.lower(), None) for category in categories if
+                  hasattr(Category, category.lower())])).all()
+        else:
+            recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                                  Recipe.steps.like(pattern),
+                                                                  Recipe.ingredients.like(pattern),
+                                                                  Recipe.description.like(pattern)).and_(
+                *[getattr(Category, category.lower(), None) for category in categories if
+                  hasattr(Category, category.lower())])).all()
     else:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),

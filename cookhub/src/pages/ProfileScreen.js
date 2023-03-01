@@ -108,7 +108,6 @@ const ProfileScreen = ({ navigation, route }) => {
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
                 </View>
-                {/* <SubscribersBlock open={openSubscribers} setOpen={setOpenSubscribes} type={type} user={user}/> */}
                 { openSubscribers &&
                     <View style={styles.bottom_sheep}>
                         <BottomSheet
@@ -155,12 +154,12 @@ const ProfileScreen = ({ navigation, route }) => {
                             }}>Подписчиков: {profileData.likes.length}</Text>
                         </View>
                     </View>
-                    <TouchableHighlight style={styles.subscribe} onPress={()=>{
+                    {type != "forme" && <TouchableHighlight style={styles.subscribe} onPress={()=>{
                         console.log(profileData.likes)
                         subscribeUser(token, tag);
                     }}>
                         <Text style={styles.textSubscribe}>Подписаться</Text>
-                    </TouchableHighlight>
+                    </TouchableHighlight>}
                     <View style={styles.content}>
                         <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
                         {

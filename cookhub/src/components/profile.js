@@ -44,23 +44,35 @@ export default function DrawerProfile(props) {
                     <DrawerItem
                         label="Завтрак"
                         style={styles.drawerItem}
-                        labelStyle={styles.drawerLabel}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
                         onPress={() => {
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'home', params: { categories: ['завтрак'] } }]
+                                routes: [{ name: 'home', params: { categories: ['завтрак'], title: 'Блюда на завтрак' } }]
                             })
                         }}
                     />
                     <DrawerItem
                         style={styles.drawerItem}
-                        labelStyle={styles.drawerLabel}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
                         label="Обед"
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['обед'], title: 'Блюда на обед' } }]
+                            })
+                        }}
                     />
                     <DrawerItem
                         style={styles.drawerItem}
-                        labelStyle={styles.drawerLabel}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
                         label="Ужин"
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['ужин'], title: 'Блюда на ужин' } }]
+                            })
+                        }}
                     />
                 </View>
             }
@@ -125,8 +137,11 @@ const styles = StyleSheet.create({
     },
     drawerLabel: {
         fontSize: 14,
-        fontWeight: 'Montserrat-Bold',
+        fontFamily: 'Montserrat-Regular',
         color: 'black',
         marginLeft: -16,
+    },
+    drawerSelect: {
+        fontFamily: "Montserrat-Medium"
     }
 })

@@ -33,25 +33,38 @@ export default function DrawerProfile(props) {
                     </View>
                 </>
             </TouchableHighlight>
-            <DrawerItem label="Блюда" onPress={() => { setOpen(!open) }} />
+            <DrawerItem
+                label="Блюда"
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+                onPress={() => { setOpen(!open) }} />
             {
                 open &&
-                <>
+                <View style={{paddingLeft: 15}}>
                     <DrawerItem
                         label="Завтрак"
+                        style={styles.drawerItem}
+                        labelStyle={styles.drawerLabel}
                         onPress={() => {
-                            
                             navigation.reset({
                                 index: 0,
                                 routes: [{ name: 'home', params: { categories: ['завтрак'] } }]
-                            })            
+                            })
                         }}
                     />
-                    <DrawerItem label="Обед" />
-                    <DrawerItem label="Ужин" />
-                </>
+                    <DrawerItem
+                        style={styles.drawerItem}
+                        labelStyle={styles.drawerLabel}
+                        label="Обед"
+                    />
+                    <DrawerItem
+                        style={styles.drawerItem}
+                        labelStyle={styles.drawerLabel}
+                        label="Ужин"
+                    />
+                </View>
             }
-            <View style={{ height: 2, width: '100%', backgroundColor: '#F2F4F5' }} />
+            {/* <View style={{ height: 2, width: '100%', backgroundColor: '#F2F4F5' }} /> */}
 
             <DrawerItem
                 label="Рецепты"
@@ -103,5 +116,17 @@ const styles = StyleSheet.create({
         marginTop: 3,
         color: 'black',
         fontFamily: "Montserrat-Medium"
+    },
+    drawerItem: {
+        borderBottomWidth: 2,
+        borderBottomColor: '#F2F4F5',
+        backgroundColor: 'white',
+        paddingLeft: 15
+    },
+    drawerLabel: {
+        fontSize: 14,
+        fontWeight: 'Montserrat-Bold',
+        color: 'black',
+        marginLeft: -16,
     }
 })

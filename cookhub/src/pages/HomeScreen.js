@@ -124,7 +124,7 @@ const HomeScreen = ({ navigation, route }) => {
         </SafeAreaView>
     )
 }
-
+  
 const styles = StyleSheet.create({
     page_contanier: {
         flexGrow: 1,

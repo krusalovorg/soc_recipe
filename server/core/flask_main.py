@@ -202,7 +202,7 @@ def sub_profile():
         abort(400)
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
-    if all(sshkey, user_for):
+    if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
@@ -224,7 +224,7 @@ def unsub_profile():
         abort(400)
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
-    if all(sshkey, user_for):
+    if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             del_associated_users_to_users = session.query(associated_users_to_users).filter_by(
@@ -607,6 +607,8 @@ def search():
     """
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
+    print(categories)
+
     if filter_text:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
@@ -620,8 +622,7 @@ def search():
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
                                                               Recipe.description.like(pattern)).and_(
-        *(getattr(Category, category) for category in categories))).all()
-
+            *(getattr(Category, category.lower()) for category in categories))).all()
     else:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),

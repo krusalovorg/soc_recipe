@@ -6,7 +6,7 @@ import { getRecipies, searchRecipe } from '../api/recipes';
 import Loader from '../components/loader';
 import User from '../components/user';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
     const [findValue, setFindValue] = useState(null);
     const [recipies, setRecipies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,16 +30,22 @@ const HomeScreen = ({ navigation }) => {
         setRefreshing(false);
     };
 
-    async function searchRecipeLive(text) {
-        const recipes = await searchRecipe(text);
+    async function searchRecipeLive(text, filters = [], categories = []) {
+        const recipes = await searchRecipe(text, filters, categories);
         console.log('get', recipes)
         setSearchRecipes(recipes.recipes);
         setSearchUsers(recipes.users)
+        setLoading(false);
     }
 
     useEffect(() => {
-        loadRecipies();
-    }, [HomeScreen])
+        if (route.params && route.params.categories) {
+            console.log(route.params);
+            searchRecipeLive("", [], route.params.categories);
+        } else {
+            loadRecipies();
+        }
+    }, [HomeScreen]);
 
     if (loading) {
         return <Loader />
@@ -70,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
                     />
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
-                <View style={styles.categorys}>
+                <View style={styles.categories}>
                     <TouchableHighlight style={styles.category}>
                         <Text>
                             Ужин
@@ -124,7 +130,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         backgroundColor: 'white',
     },
-    categorys: {
+    categories: {
         flexDirection: "row",
         marginTop: 10,
         marginHorizontal: 15

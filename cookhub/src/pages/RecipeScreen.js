@@ -47,7 +47,7 @@ const RecipeScreen = ({ navigation, route }) => {
         if (recipe) {
             const parsedList = recipe.likes.split('|').filter(Boolean).map(item => parseInt(item));
             setLikes(parsedList);
-    
+
             setData(recipe);
 
             setComments(recipe.comments);
@@ -142,7 +142,12 @@ const RecipeScreen = ({ navigation, route }) => {
 
                         <Text style={[styles.desc, { marginTop: 20, color: 'black' }]}>Время приготовления: {data.time > 1 ? data.time : data.time * 60} {data.time > 1 ? "час" : "минут"}</Text>
                         <Text style={styles.punkt_desc}>Категория: {data.category}</Text>
-                        <Text style={styles.punkt_desc}>Автор: {data.author}</Text>
+                        <Text style={[styles.punkt_desc, {color: '#3A89FF'}]} onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'profile', params: { tag: data.author, type: "user" } }]
+                            })
+                        }}>Автор: {data.author}</Text>
                         <Text style={styles.punkt_desc}>Просмотров: {data.views}</Text>
                         <Text style={styles.punkt_desc}>Рецепт понравился: {likes.length} {getLikesText()}</Text>
                         <View style={{ marginTop: 7, flexDirection: "row" }}>

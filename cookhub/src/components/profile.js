@@ -11,6 +11,7 @@ import { UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
 
 export default function DrawerProfile(props) {
+    const [open, setOpen] = useState(false);
     const { navigation } = props;
     const user = useContext(UserContext);
 
@@ -19,7 +20,7 @@ export default function DrawerProfile(props) {
             <TouchableHighlight style={styles.contanier} underlayColor="#DDDDDD" onPress={() => {
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'profile', params: {tag: user.tag, type: "forme"} }]
+                    routes: [{ name: 'profile', params: { tag: user.tag, type: "forme" } }]
                 })
             }}>
                 <>
@@ -32,7 +33,49 @@ export default function DrawerProfile(props) {
                     </View>
                 </>
             </TouchableHighlight>
-            <DrawerItemList {...props} />
+            <DrawerItem label="Блюда" onPress={() => { setOpen(!open) }} />
+            {
+                open &&
+                <>
+                    <DrawerItem
+                        label="Завтрак"
+                        onPress={() => {
+                            
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['завтрак'] } }]
+                            })            
+                        }}
+                    />
+                    <DrawerItem label="Обед" />
+                    <DrawerItem label="Ужин" />
+                </>
+            }
+            <View style={{ height: 2, width: '100%', backgroundColor: '#F2F4F5' }} />
+
+            <DrawerItem
+                label="Рецепты"
+                onPress={() => props.navigation.navigate('home')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="settings" size={24} />}
+            />
+            <DrawerItem
+                label="Добавить рецепт"
+                onPress={() => props.navigation.navigate('add')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="home" size={24} />}
+            />
+            <DrawerItem
+                label="Чат"
+                onPress={() => props.navigation.navigate('chat')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="settings" size={24} />}
+            />
+
+            {/* <DrawerItemList {...props} /> */}
         </DrawerContentScrollView>
     );
 }

@@ -17,8 +17,7 @@ import { AuthContext, UserContext } from '../context/auth.context';
 
 import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
-import { getProfile, getProfileId } from '../api/auth';
-import SubscribersBlock from '../components/SubscribersBlock';
+import { getProfile, getProfileId, subscribeUser } from '../api/auth';
 import BottomSheet from '@gorhom/bottom-sheet';
 
 function getBackground(value) {
@@ -75,7 +74,7 @@ const ProfileScreen = ({ navigation, route }) => {
             setProfileData(profile);
             setLoading(false)
         }
-        console.log("GET",profile)
+
         setSortRecipes(profile.recipes.sort((a, b) => {
             if (a.views > b.views) {
                 return -1;
@@ -156,6 +155,12 @@ const ProfileScreen = ({ navigation, route }) => {
                             }}>Подписчиков: {profileData.likes.length}</Text>
                         </View>
                     </View>
+                    <TouchableHighlight style={styles.subscribe} onPress={()=>{
+                        console.log(profileData.likes)
+                        subscribeUser(token, tag);
+                    }}>
+                        <Text style={styles.textSubscribe}>Подписаться</Text>
+                    </TouchableHighlight>
                     <View style={styles.content}>
                         <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
                         {
@@ -181,8 +186,18 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         paddingLeft: 20,
         paddingBottom: 20,
+    },
+    subscribe: {
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: "#3A89FF",
+        width: "100%",
         borderBottomColor: "black",
         borderBottomWidth: 1
+
+    },
+    textSubscribe: {
+        color: "white"
     },
     bottom_sheep: {
         flex: 3,

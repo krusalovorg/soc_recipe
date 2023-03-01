@@ -53,6 +53,9 @@ def index():
     return jsonify({"status": True})
 
 
+# Получить все категории
+@app.route("/api/get_categories")
+
 # Добавить коменты на рецепт
 @app.route("/api/add_comment", methods=["POST"])
 def add_comment():
@@ -88,6 +91,7 @@ def rem_comment():
     return jsonify({"status": False})
 
 
+# Добавление сообщения в лс
 def add_chat_message(sshkey, user_sender_tag, user_recipient_id, text):
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     user = session.query(User).filter_by(id=ses.user_id).first()
@@ -103,6 +107,7 @@ def add_chat_message(sshkey, user_sender_tag, user_recipient_id, text):
     return {"status": False}
 
 
+# Получени истори сообщений в лс
 def get_chat_messages(sshkey, user_sender_tag, user_recipient_id):
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     user = session.query(User).filter_by(id=ses.user_id).first()
@@ -219,8 +224,9 @@ def unsub_profile():
     return jsonify({"status": False})
 
 
+# Изменение аватара профиля
 @app.route("/api/edit_profile/avatar/add", methods=["POST"])
-def edit_avatar():
+def edit_profile_avatar():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
@@ -241,6 +247,7 @@ def edit_avatar():
     return jsonify({"status": False})
 
 
+# Получить аватар пользователя
 @app.route("/api/get_user_avatar", methods=["GET"])
 def get_user_avatar():
     if not request.json:
@@ -251,6 +258,7 @@ def get_user_avatar():
         user = session.query(User).filter_by(id=ses.user_id)
         return send_file(user.avatar)
     return jsonify({"status": False})
+
 
 # Забыли пароль
 @app.route("/api/edit_password", methods=["POST"])
@@ -329,6 +337,7 @@ def get_like():
         recipes = session.query(Commetns).filter_by(recipe_id=recipe_id).all()
         return jsonify({"status": True, "recipes": recipes})
     return jsonify({"status": False})
+
 
 # Проверка sshkey верный
 @app.route("/api/correct_key", methods=["POST"])
@@ -475,20 +484,47 @@ def edit_recipes():
         abort(400)
     id_ = request.json.get("id")
     sshkey = request.json.get("sshkey")
-    title = request.json.get("title")
-    category = request.json.get("category")
-    access = request.json.get("access")
-    time_ = request.json.get("time")
-    steps = request.json.get("steps")
-    calories = request.json.get("calories")
-    proteins = request.json.get("proteins")
-    fats = request.json.get("fats")
-    carbohydrates = request.json.get("carbohydrates")
-    ingredients = request.json.get("ingredients")
-    image = request.json.get.get('file')
-    filename = request.json.get('filename')
-    description = request.json.get("description")
+    changes = request.json.get["changes"]
+    if sshkey:
+        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        user = session.query(User).filter_by(id=user_id.user_id).first()
+        recipe = session.query(Recipe).filter_by(id=id_).first()
+        if user:
+            for change in changes:
+                if change["column"] == "title":
+                    recipe.title = change["value"]
+                if change["column"] == "category":
+                    recipe.category = change["value"]
+                if change["column"] == "access":
+                    recipe.access = change["value"]
+                if change["column"] == "steps":
+                    recipe.steps = change["value"]
+                if change["column"] == "calories":
+                    recipe.calories = change["value"]
+                if change["column"] == "proteins":
+                    recipe.proteins = change["value"]
+                if change["column"] == "fats":
+                    recipe.fats = change["value"]
+                if change["column"] == "description":
+                    recipe.description = change["value"]
+                if change["column"] == "carbohydrates":
+                    recipe.carbohydrates = change["value"]
+                if change["column"] == "ingredients":
+                    recipe.ingredients = change["value"]
+            session.commit()
+            return jsonify({'status': True})
+    return jsonify({"status": False})
 
+
+# Изменить рецепт фото
+@app.route('/api/edit_recipes_image', methods=['PUT'])
+def edit_recipes_image():
+    if not request.json:
+        abort(400)
+    id_ = request.json.get("id")
+    sshkey = request.json.get("sshkey")
+    filename = request.json.get("filename")
+    image = request.json.get("image")
     if sshkey:
         user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=user_id.user_id).first()
@@ -496,28 +532,14 @@ def edit_recipes():
         if user:
             crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
                                filename.split(".")[1]
-            recipe.title = title
-            recipe.category = category
-            recipe.time = time_
-            recipe.access = access
-            recipe.steps = steps
-            recipe.calories = calories
-            recipe.proteins = proteins
-            recipe.fats = fats
-            recipe.description = description
-            recipe.carbohydrates = carbohydrates
-            recipe.ingredients = ingredients
-            recipe.author = user.tag
             recipe.image = crypto_name_file
-
             starter = image.find(',')
             image_data = image[starter + 1:]
             image_data = bytes(image_data, encoding="ascii")
             im = Image.open(BytesIO(base64.b64decode(image_data)))
             im.save(f'./images/{crypto_name_file}')
-
             session.commit()
-        return jsonify({'status': True})
+            return jsonify({'status': True})
     return jsonify({"status": False})
 
 

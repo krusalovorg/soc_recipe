@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { ImageBackground, TouchableOpacity } from 'react-native';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
 import Comments from '../components/recipe_comments';
@@ -18,6 +18,7 @@ import { AuthContext, UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
 import { getProfile, getProfileId } from '../api/auth';
+import SubscribersBlock from '../components/SubscribersBlock';
 
 function getBackground(value) {
     var minVal = 0;
@@ -44,11 +45,22 @@ function getBackground(value) {
 
 const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
+    const [openSubscribers, setOpenSubscribes] = useState(false);
     const [sortedRecipes, setSortRecipes] = useState([]);
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
     const { id, type } = route.params;
+
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+        }).start();
+    }, [openSubscribers]);
 
     async function loadProfile() {
         let profile;
@@ -99,10 +111,21 @@ const ProfileScreen = ({ navigation, route }) => {
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
                 </View>
+                <SubscribersBlock openSubscribers={openSubscribers} type={type} user={user} onClose={()=>setOpenSubscribes(false)}/>
                 <ScrollView style={styles.page_contanier}>
                     <View style={[styles.ava, { backgroundColor: getBackground(user.recipes.length) }]}>
                         <Text style={[styles.title, { color: "black", fontSize: 25 }]}>{formateName(user.name)} {formateName(user.surname)}</Text>
-                        {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14 }]}>{user.email}</Text>}
+                        <View style={{
+                            width: 700,
+                            flexDirection: "row",
+                            flexWrap: 'wrap',
+                            alignContent: "space-between"
+                        }}>
+                            {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14, flex: 1 }]}>{user.email}</Text>}
+                            <Text style={[styles.title, { fontSize: 14, flex: 2 }]} onPress={() => {
+                                setOpenSubscribes(true);
+                            }}>Подписчиков: {user.likes.length}</Text>
+                        </View>
                     </View>
                     <View style={styles.content}>
                         <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
@@ -112,7 +135,7 @@ const ProfileScreen = ({ navigation, route }) => {
                                 return <Recipe key={item.id} data={item} navigation={navigation} />
                             })
                         }
-                        <View style={{minHeight: 100}}></View>
+                        <View style={{ minHeight: 100 }}></View>
                     </View>
                 </ScrollView>
             </ImageBackground>

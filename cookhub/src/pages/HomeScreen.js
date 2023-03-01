@@ -91,7 +91,7 @@ const HomeScreen = ({ navigation }) => {
                 </View>
                 {findValue != null && searchRecipies != undefined &&
                     <View>
-                        <Text style={styles.title_contanier}>Поиск по запросу: {findValue.toString()}</Text>
+                        <Text style={styles.title_contanier}>{searchRecipies.length == 0 ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
                         {
                             searchRecipies.map((item) => {
                                 return <Recipe key={item.id} data={item} navigation={navigation} />

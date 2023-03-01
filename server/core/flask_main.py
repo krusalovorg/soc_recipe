@@ -561,11 +561,19 @@ def get_recipes():
     return jsonify({'recipe': recipes_dicts})
 
 
+# получение рекомендаций
+@app.route("/api/get_recomendations",methods=["GET"])
+def get_recommendations():
+    if request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+
+
 # Получить рецепт
 @app.route('/api/get_recipe', methods=['GET'])
 def get_recipe():
     id_ = request.args.get('id') or 0
-    recipe = session.query(Recipe).filter_by(id=id_).first()
+    recipe = session.que#ry(Recipe).filter_by(id=id_).first()
 
     if recipe:
         comments = session.query(Commetns).filter_by(recipe_id=id_).all()

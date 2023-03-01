@@ -68,6 +68,7 @@ class User(SqlBase, UserMixin, SerializerMixin):
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=False)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     likes = orm.relationship('Recipe', secondary='recipes_to_users', backref='users')
 
@@ -76,6 +77,10 @@ class User(SqlBase, UserMixin, SerializerMixin):
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
+
+    def set_admin(self):
+        self.admin = not self.admin
+        return self.admin
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
@@ -114,6 +119,9 @@ class DM(SqlBase):
     user_recipient_id = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.id'))
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Commetns(SqlBase):

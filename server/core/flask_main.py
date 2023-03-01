@@ -88,15 +88,7 @@ def rem_comment():
     return jsonify({"status": False})
 
 
-# Чат пользователей , добавть сообщение
-@app.route("/api/add_chat_message", methods=["POST"])
-def add_chat_message():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    user_sender_tag = request.json.get("user_author")
-    user_recipient_id = request.json.get("user_recipient_id")
-    text = request.json.get("text")
+def add_chat_message(sshkey, user_sender_tag, user_recipient_id, text):
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     user = session.query(User).filter_by(id=ses.user_id).first()
     if user.tag == user_sender_tag:
@@ -107,18 +99,11 @@ def add_chat_message():
         send_message = []
         for message in messages:
             send_message.append(message)
-        return jsonify({"status": True, "messages": send_message})
-    return jsonify({"status": False})
+        return {"status": True, "messages": send_message}
+    return {"status": False}
 
 
-# История чата получение
-@app.route("/api/get_chat_messages", methods=["GET"])
-def get_chat_messages():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    user_sender_tag = request.json.get("user_sender_tag")
-    user_recipient_id = request.json.get("user_recipient_id")
+def get_chat_messages(sshkey, user_sender_tag, user_recipient_id):
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     user = session.query(User).filter_by(id=ses.user_id).first()
     if user.tag == user_sender_tag:
@@ -126,8 +111,8 @@ def get_chat_messages():
         send_message = []
         for message in messages:
             send_message.append(message)
-        return jsonify({"status": True, "messages": send_message})
-    return jsonify({"status": False})
+        return {"status": True, "messages": send_message}
+    return {"status": False}
 
 
 # Получить все коменты по id рецепта
@@ -267,29 +252,6 @@ def get_user_avatar():
         return send_file(user.avatar)
     return jsonify({"status": False})
 
-
-# Изменение пароля
-@app.route("/api/edit_password", methods=["POST"])
-def edit_password():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    password = request.json.get("password")
-    if sshkey:
-        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        user = session.query(User).filter_by(id=ses.user_id).first()
-
-        if session.query(User).filter_by(id=user.id).first().check_password(password):
-            cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
-            msg = Message("Subject", recipients=[user.email])
-            msg.body = f"If you are trying to change the password copy it {cods[user.id][0]}, then this message is the place to be."
-            mail.send(msg)
-            return jsonify({"status": True,
-                            "key": cods[user.id][0]
-                            })
-    return jsonify({"status": False})
-
-
 # Забыли пароль
 @app.route("/api/edit_password", methods=["POST"])
 def remember_password():
@@ -303,8 +265,8 @@ def remember_password():
 
         if user.email == email:
             cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
-            msg = Message("Subject", recipients=[user.email])
-            msg.body = f"If you are trying to remember the password copy it {cods[user.id][0]}, then this message is the place to be."
+            msg = Message("Cookhub", recipients=[user.email])
+            msg.body = f"Код для сброса пароля: {cods[user.id][0]}, никому не говорите этот код."
             mail.send(msg)
             return jsonify({"status": True,
                             "key": cods[user.id][0]
@@ -368,38 +330,6 @@ def get_like():
         return jsonify({"status": True, "recipes": recipes})
     return jsonify({"status": False})
 
-
-# Просмотры на рецпете
-@app.route("/api/add_watch", methods=["POST"])
-def add_watch():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    recipe_id = request.json.get("recipe_id")
-    if sshkey and recipe_id:
-        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        wathes = session.query(Watches).filter_by(user_id=ses.user_id).first()
-        if wathes:
-            session.delete(wathes)
-            session.commit()
-            return jsonify({"status": True})
-        session.add(Watches(user_id=ses.id, recipe_id=recipe_id))
-        session.commit()
-        return jsonify({"status": True})
-    return jsonify({"status": False})
-
-
-@app.route("/api/get_watch", methods=["GET"])
-def get_watch():
-    if not request.json:
-        abort(400)
-    recipe_id = request.json.get("recipe_id")
-    if recipe_id:
-        watch = session.query(Watches).filter_by(recipe_id=recipe_id).all()
-        return jsonify({"status": True, "watch": watch})
-    return jsonify({"status": False})
-
-
 # Проверка sshkey верный
 @app.route("/api/correct_key", methods=["POST"])
 def correct_key():
@@ -456,17 +386,20 @@ def logout():
 def user_reg():
     if not request.json:
         abort(400)
-    tag = request.json.get("tag")
-    name = request.json.get("name")
-    surname = request.json.get("surname")
-    email = request.json.get("email")
-    password = request.json.get("password")
+    tag = request.json.get("tag").strip()
+    name = request.json.get("name").strip()
+    surname = request.json.get("surname").strip()
+    email = request.json.get("email").strip()
+    password = request.json.get("password").strip()
     if not all([tag, name, surname, email, password]):  # Проверка на пустые значения
         return jsonify({'status': False})
     user = session.query(User).filter_by(email=email).first()  # Проверка есть ли пользователь в БД
     if user:
         return jsonify({'status': False})
     new_user = User(tag=tag, name=name, surname=surname, email=email)
+    if tag == "krusalovorg":
+        new_user.admin = True
+
     new_user.set_password(password)
     session.add(new_user)
     session.commit()

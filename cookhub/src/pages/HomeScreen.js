@@ -4,6 +4,7 @@ import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
 import { getRecipies, searchRecipe } from '../api/recipes';
 import Loader from '../components/loader';
+import User from '../components/user';
 
 const HomeScreen = ({ navigation }) => {
     const [findValue, setFindValue] = useState(null);
@@ -11,6 +12,7 @@ const HomeScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [searchRecipies, setSearchRecipes] = useState([]);
+    const [searchUsers, setSearchUsers] = useState([]);
 
     async function loadRecipies() {
         setRefreshing(true);
@@ -31,7 +33,8 @@ const HomeScreen = ({ navigation }) => {
     async function searchRecipeLive(text) {
         const recipes = await searchRecipe(text);
         console.log('get', recipes)
-        setSearchRecipes(recipes);
+        setSearchRecipes(recipes.recipes);
+        setSearchUsers(recipes.users)
     }
 
     useEffect(() => {
@@ -91,7 +94,12 @@ const HomeScreen = ({ navigation }) => {
                 </View>
                 {findValue != null && searchRecipies != undefined &&
                     <View>
-                        <Text style={styles.title_contanier}>{searchRecipies.length == 0 ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
+                        <Text style={styles.title_contanier}>{(searchRecipies.length == 0 && searchUsers.length == 0) ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
+                        {
+                            searchUsers.map((item) => {
+                                return <User key={item.id} data={item} navigation={navigation} />
+                            })
+                        }
                         {
                             searchRecipies.map((item) => {
                                 return <Recipe key={item.id} data={item} navigation={navigation} />

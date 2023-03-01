@@ -85,6 +85,9 @@ class User(SqlBase, UserMixin, SerializerMixin):
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Sessions(SqlBase):
     __tablename__ = "sessions"

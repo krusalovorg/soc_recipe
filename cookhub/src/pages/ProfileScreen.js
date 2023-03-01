@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from 'react';
 import { ImageBackground, TouchableOpacity } from 'react-native';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
 import Comments from '../components/recipe_comments';
@@ -19,6 +19,7 @@ import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
 import { getProfile, getProfileId } from '../api/auth';
 import SubscribersBlock from '../components/SubscribersBlock';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 function getBackground(value) {
     var minVal = 0;
@@ -47,34 +48,35 @@ const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [openSubscribers, setOpenSubscribes] = useState(false);
     const [sortedRecipes, setSortRecipes] = useState([]);
+    const [profileData, setProfileData] = useState({});
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
-    const { id, type } = route.params;
+    const { tag, type } = route.params;
 
-    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const bottomSheetRef = useRef(null);
 
-    useEffect(() => {
-        Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-        }).start();
-    }, [openSubscribers]);
+    const snapPoints = useMemo(() => ['1%', '23%', '50'], []);
+
+    const handleSheetChanges = useCallback((index) => {
+        console.log('handleSheetChanges', index);
+        if (index == 0)
+            setOpenSubscribes(false);
+    }, []);
 
     async function loadProfile() {
         let profile;
-        if (type == "forme") {
+        if (type == "forme" || tag == user.tag) {
             profile = await getProfile(token);
+            setProfileData({...user, ...profile});
+            setLoading(false)
         } else {
-            profile = await getProfileId(token, user.tag);
-        }
-        console.log(profile)
-        if (profile) {
-            user.setUser(profile);
+            profile = await getProfileId(token, tag);
+            setProfileData(profile);
+            setLoading(false)
         }
 
-        setSortRecipes(user.recipes.sort((a, b) => {
+        setSortRecipes(profileData.recipes.sort((a, b) => {
             if (a.views > b.views) {
                 return -1;
             }
@@ -83,14 +85,10 @@ const ProfileScreen = ({ navigation, route }) => {
             }
             return 0;
         }))
-        console.log(sortedRecipes)
     }
 
     useEffect(() => {
-
-        // loadRecipe();
         loadProfile();
-        setLoading(false)
     }, [route.params.data])
 
     if (loading) {
@@ -104,27 +102,58 @@ const ProfileScreen = ({ navigation, route }) => {
                 // source={{ uri: server_ip + "/get_image/" + data.image }}
                 blurRadius={200}>
                 <View style={styles.title_contanier}>
-                    <Text style={styles.title}>@{user.tag}</Text>
+                    <Text style={styles.title}>@{tag}</Text>
                     <TouchableOpacity style={styles.back} onPress={() => {
                         navigation.navigate("home")
                     }}>
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
                 </View>
-                <SubscribersBlock openSubscribers={openSubscribers} type={type} user={user} onClose={()=>setOpenSubscribes(false)}/>
+                {/* <SubscribersBlock open={openSubscribers} setOpen={setOpenSubscribes} type={type} user={user}/> */}
+                { openSubscribers &&
+                    <View style={styles.bottom_sheep}>
+                        <BottomSheet
+                            ref={bottomSheetRef}
+                            index={1}
+                            snapPoints={snapPoints}
+                            onChange={handleSheetChanges}
+                        >
+                            <View style={styles.bottom_sheep_content}>
+                                {/* {type != 'forme' &&
+                                    <Text style={[styles.title, { marginBottom: 20 }]}>
+                                        Подписчики пользователя @{tag}:
+                                    </Text>} */}
+                                <ScrollView>
+                                    {profileData.likes.length == 0 ? (
+                                        <Text style={[styles.title]}>
+                                            {type == 'forme'
+                                                ? `У вас нет подписчиков`
+                                                : `Нет подписчиков`}
+                                        </Text>
+                                    ) : (
+                                        profileData.likes.map((item) => {
+                                            return item;
+                                        })
+                                    )}
+                                </ScrollView>
+                            </View>
+                        </BottomSheet>
+                    </View>
+                }
                 <ScrollView style={styles.page_contanier}>
-                    <View style={[styles.ava, { backgroundColor: getBackground(user.recipes.length) }]}>
-                        <Text style={[styles.title, { color: "black", fontSize: 25 }]}>{formateName(user.name)} {formateName(user.surname)}</Text>
+                    <View style={[styles.ava, { backgroundColor: getBackground(profileData.recipes.length) }]}>
+                        <Text style={[styles.title, { color: "black", fontSize: 25 }]}>{formateName(profileData.name)} {formateName(profileData.surname)}</Text>
                         <View style={{
                             width: 700,
                             flexDirection: "row",
                             flexWrap: 'wrap',
                             alignContent: "space-between"
                         }}>
-                            {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14, flex: 1 }]}>{user.email}</Text>}
+                            {type == "forme" && <Text style={[styles.title, { color: "black", fontSize: 14, flex: 1 }]}>{profileData.email}</Text>}
                             <Text style={[styles.title, { fontSize: 14, flex: 2 }]} onPress={() => {
                                 setOpenSubscribes(true);
-                            }}>Подписчиков: {user.likes.length}</Text>
+                                console.log(openSubscribers)
+                            }}>Подписчиков: {profileData.likes.length}</Text>
                         </View>
                     </View>
                     <View style={styles.content}>
@@ -154,6 +183,20 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         borderBottomColor: "black",
         borderBottomWidth: 1
+    },
+    bottom_sheep: {
+        flex: 3,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: "100%",
+        zIndex: 100,
+        height: Dimensions.get('window').height
+    },
+    bottom_sheep_content: {
+        padding: 24,
     },
     content: {
         padding: 20,

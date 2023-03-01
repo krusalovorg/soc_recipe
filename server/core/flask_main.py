@@ -586,6 +586,7 @@ def get_recipe():
 def search():
     search_text = request.json.get('search_text')
     filter_text = request.json.get("filter")
+    categories = request.json.get("categories")
     """
         new_words = dict()
         suggestions = set(dictionary.suggest(search_text))
@@ -603,13 +604,24 @@ def search():
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
                                                               Recipe.description.like(pattern),
-                                                              User.tag(pattern)).and_(
+                                                              User.tag(pattern),
+                                                              ).and_(
             *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
+    elif categories:
+        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                              Recipe.steps.like(pattern),
+                                                              Recipe.ingredients.like(pattern),
+                                                              Recipe.description.like(pattern),
+                                                              User.tag(pattern),).and_(
+        *(getattr(Category, category) for category in categories))).all()
+
     else:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern))).all()
+                                                              Recipe.description.like(pattern),
+                                                              User.tag(pattern),)).all()
+
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())

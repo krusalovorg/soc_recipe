@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, associated_users_to_users, DM,Category
+    Commetns, associated_users_to_users, DM, Category
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -59,7 +59,7 @@ def get_categories():
     if not request.json:
         abort(400)
     categories = session.query(Category).all()
-    return jsonify({"status":True,"categories":categories})
+    return jsonify({"status": True, "categories": categories})
 
 
 # Добавить коменты на рецепт
@@ -178,6 +178,16 @@ def get_profile():
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.tag).all()
+        subscriptions_users_id = session.query(associated_users_to_users).filter_by(user_id_parent=user.id).all()
+        subscriptions = []  # Нужно переписать это не оптимизированый for
+        for sub in subscriptions_users_id:
+            sub_user = (session.query(User).order_by(id=sub.user_id_child).first())
+            subscriptions.append({
+                "tag": sub_user.tag,
+                "name": sub_user.name,
+                "avatar": sub_user.avatar,
+                "email": sub_user.email,
+            })
         new_recipes = []
         for recipe in recipes:
             new_recipes.append(recipe.as_dict())
@@ -190,7 +200,8 @@ def get_profile():
             "email": user.email,
             "likes": user.likes,
             'recipes': new_recipes,
-            "user_id": user.id
+            "user_id": user.id,
+            "subscriptions": subscriptions
         })
     return jsonify({"status": False})
 
@@ -570,7 +581,7 @@ def get_recipes():
 
 
 # получение рекомендаций
-@app.route("/api/get_recomendations",methods=["GET"])
+@app.route("/api/get_recomendations", methods=["GET"])
 def get_recommendations():
     if request.json:
         abort(400)
@@ -581,7 +592,7 @@ def get_recommendations():
 @app.route('/api/get_recipe', methods=['GET'])
 def get_recipe():
     id_ = request.args.get('id') or 0
-    recipe = session.que#ry(Recipe).filter_by(id=id_).first()
+    recipe = session.query(Recipe).filter_by(id=id_).first()
 
     if recipe:
         comments = session.query(Commetns).filter_by(recipe_id=id_).all()
@@ -626,7 +637,7 @@ def search():
                                                               ).and_(
             *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
     elif categories:
-        print('only',only_categories)
+        print('only', only_categories)
         if only_categories:
             recipes = session.query(Recipe).filter(sqlalchemy.or_(
                 *[getattr(Category, category.lower(), None) for category in categories if
@@ -642,7 +653,7 @@ def search():
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern),)).all()
+                                                              Recipe.description.like(pattern), )).all()
     users_array = []
     if len(search_text) > 1:
         users = session.query(User).filter(sqlalchemy.or_(User.tag.like(pattern),

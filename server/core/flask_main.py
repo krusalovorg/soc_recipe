@@ -167,7 +167,7 @@ def get_user_profile():
         })
     return jsonify({"status": False})
 
-
+"""
 # Получаем свой профль
 @app.route("/api/get_profile", methods=["POST"])
 def get_profile():
@@ -204,7 +204,7 @@ def get_profile():
             "subscriptions": subscriptions
         })
     return jsonify({"status": False})
-
+"""
 
 # Подписка на чужой профиль
 @app.route("/api/sub_profile", methods=["POST"])

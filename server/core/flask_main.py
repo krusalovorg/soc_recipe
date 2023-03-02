@@ -676,6 +676,7 @@ def search():
 
 # krusalovorg
 
+
 chats = [
     {
         "id": 1,
@@ -690,10 +691,42 @@ chats = [
 schema_list = [
     {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context",
      "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
+    {"type": "найди", "ingredients": "context",
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"]},
+    {"type": "добавить", "ingredients": "context",
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 2}
 ]
+
+context = {}
 
 threshold = 60
 limit = 10
+
+def searching(ingredients):
+    input_ingredients = []
+    for ingredient in ingredients:
+        word = morph.parse(ingredient)[0].normal_form
+        input_ingredients.append(word)
+
+    filtered_recipes = []
+
+    recipes = session.query(Recipe).all()
+
+    for recipe in recipes:
+        recipe_ingredients = recipe.ingredients
+        match_scores = []
+        for ingredient in input_ingredients:
+            best_match = 0
+            for recipe_ingredient in recipe_ingredients:
+                match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
+                if match_score > best_match:
+                    best_match = match_score
+            match_scores.append(best_match)
+        avg_score = sum(match_scores) / len(match_scores)
+        if avg_score >= threshold:
+            filtered_recipes.append((recipe.as_dict(), avg_score))
+    recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
+    return recipes_new
 
 
 @app.route('/api/chat', methods=["POST"])
@@ -711,36 +744,16 @@ def chatting():
 
     user_id = session_.user_id
 
-    model = {"from": user_id, "text": text}
-
     res = challenge_command(text.lower().strip(), schema_list)
     print(res)
-    if res:
-        input_ingredients = []
-        for ingredient in res['ingredients']:
-            word = morph.parse(ingredient)[0].normal_form
-            input_ingredients.append(word)
 
-        filtered_recipes = []
-
-        recipes = session.query(Recipe).all()
-
-        for recipe in recipes:
-            recipe_ingredients = recipe.ingredients
-            match_scores = []
-            for ingredient in input_ingredients:
-                best_match = 0
-                for recipe_ingredient in recipe_ingredients:
-                    match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
-                    if match_score > best_match:
-                        best_match = match_score
-                match_scores.append(best_match)
-            avg_score = sum(match_scores) / len(match_scores)
-            if avg_score >= threshold:
-                filtered_recipes.append((recipe.as_dict(), avg_score))
-        recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
-
-        return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes_new}})
+    if res.get("рецепт"):
+        recipes = searching(res.get("ingredients"))
+        if recipes:
+            return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes}})
+        else:
+            context[user_id] = {"step": "add", "ingredients": []} #Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов.
+            return jsonify({"answer": {"from": "bot", "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
     return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 

@@ -702,6 +702,7 @@ context = {}
 threshold = 60
 limit = 10
 
+
 def searching(ingredients):
     input_ingredients = []
     for ingredient in ingredients:
@@ -752,8 +753,10 @@ def chatting():
         if recipes:
             return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes}})
         else:
-            context[user_id] = {"step": "add", "ingredients": []} #Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов.
-            return jsonify({"answer": {"from": "bot", "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
+            context[user_id] = {"step": "add",
+                                "ingredients": []}  # Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов.
+            return jsonify({"answer": {"from": "bot",
+                                       "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
     return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 

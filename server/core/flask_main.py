@@ -586,6 +586,12 @@ def get_recommendations():
     if request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if ses:
+        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes, Recipe.views)).limit(10)
+        return jsonify({"status": True,
+                        "recomendations": recomendations})
+    return jsonify({"status": False})
 
 
 # Получить рецепт

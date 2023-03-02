@@ -72,7 +72,6 @@ class User(SqlBase, UserMixin, SerializerMixin):
 
     likes = orm.relationship('Recipe', secondary='recipes_to_users', backref='users')
 
-
     def __repr__(self):
         return f'<User> {self.id} {self.surname} {self.name}'
 
@@ -88,6 +87,14 @@ class User(SqlBase, UserMixin, SerializerMixin):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+class Subscriptions(SqlBase):
+    __tablename__ = "subscriptions"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_id_parent = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    user_id_child = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
 
 
 class Sessions(SqlBase):
@@ -166,12 +173,4 @@ associated_users = sqlalchemy.Table(
                       sqlalchemy.ForeignKey('users.id')),
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('recipes.id'))
-)
-
-associated_users_to_users = sqlalchemy.Table(
-    'user_to_user', SqlBase.metadata,
-    sqlalchemy.Column('user_id_parent', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('users.id')),
-    sqlalchemy.Column('user_id_child', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('users.id'))
 )

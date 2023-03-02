@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, associated_users_to_users, DM, Category
+    Commetns, Subscriptions, DM, Category
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -178,7 +178,7 @@ def get_profile():
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.tag).all()
-        subscriptions_users_id = session.query(associated_users_to_users).filter_by(user_id_parent=user.id).all()
+        subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user.id).all()
         subscriptions = []  # Нужно переписать это не оптимизированый for
         for sub in subscriptions_users_id:
             sub_user = (session.query(User).order_by(id=sub.user_id_child).first())
@@ -216,12 +216,13 @@ def sub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
-                                                                                    user_id_child=user_for)
+            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id,
+                                                                        user_id_child=user_for)
             if not user_to_user_exist:
                 return jsonify({"status": False})
             user = session.query(User).filter(User.id == ses.user_id).first()
             user__for = session.query(User).filter(User.id == user_for)
+
             user.subscriptions.extend(user__for)
             session.commit()
             return jsonify({"status": True})
@@ -238,11 +239,11 @@ def unsub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            del_associated_users_to_users = session.query(associated_users_to_users).filter_by(
+            del_Subscriptions = session.query(Subscriptions).filter_by(
                 user_id_parent=ses.user_id,
                 user_id_child=user_for).first()
-            if del_associated_users_to_users:
-                session.delete(del_associated_users_to_users)
+            if del_Subscriptions:
+                session.delete(del_Subscriptions)
                 session.commit()
                 return jsonify({"status": True})
     return jsonify({"status": False})

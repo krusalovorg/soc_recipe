@@ -52,8 +52,6 @@ const RecipeScreen = ({ navigation, route }) => {
 
             setComments(recipe.comments);
 
-            console.warn(comments)
-
             if (parsedList.includes(user.user_id)) {
                 setLike(true);
             }

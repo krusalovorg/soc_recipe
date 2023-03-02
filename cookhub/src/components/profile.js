@@ -29,7 +29,7 @@ export default function DrawerProfile(props) {
 
                     <View style={styles.hor_menu}>
                         <Text style={styles.level_sel}>{user.recipes.length}</Text><Text style={[styles.level, { marginLeft: 3 }]}>Рецептов</Text>
-                        <Text style={[styles.level_sel, { marginLeft: 5 }]}>{user.likes.length}</Text><Text style={[styles.level, { marginLeft: 3 }]}>Подписчиков</Text>
+                        <Text style={[styles.level_sel, { marginLeft: 5 }]}>{user.subscriptions.length}</Text><Text style={[styles.level, { marginLeft: 3 }]}>Подписчиков</Text>
                     </View>
                 </>
             </TouchableHighlight>

@@ -218,7 +218,7 @@ def sub_profile():
         if ses:  # Эта сессия валидна
             user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
                                                                                     user_id_child=user_for)
-            if user_to_user_exist:
+            if not user_to_user_exist:
                 return jsonify({"status": False})
             new_associated_users_to_users = associated_users_to_users(user_id_parent=ses.user_id,
                                                                       user_id_child=user_for)

@@ -43,7 +43,7 @@ export const getProfileId = async (sshkey, tag) => {
 export const subscribeUser = async (sshkey, user_for) => {
     try {
         const response = await axios.post(server_ip + `/sub_profile`, {sshkey, user_for});
-        return response.status;
+        return response.data;
     } catch (error) {
         console.log(error);
         return null
@@ -53,7 +53,7 @@ export const subscribeUser = async (sshkey, user_for) => {
 export const unSubscribeUser = async (sshkey, user_for) => {
     try {
         const response = await axios.post(server_ip + `/unssub_profile`, {sshkey, user_for});
-        return response.status;
+        return response.data;
     } catch (error) {
         console.log(error);
         return null

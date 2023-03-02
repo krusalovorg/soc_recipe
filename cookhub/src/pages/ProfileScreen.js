@@ -47,7 +47,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [openSubscribers, setOpenSubscribes] = useState(false);
     const [sortedRecipes, setSortRecipes] = useState([]);
-    const [profileData, setProfileData] = useState({});
+    const [profileData, setProfileData] = useState({subscriptions: []});
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
@@ -67,12 +67,11 @@ const ProfileScreen = ({ navigation, route }) => {
         let profile;
         if (type == "forme" || tag == user.tag) {
             profile = await getProfile(token);
+            console.log('GET',profile)
             setProfileData({...user, ...profile});
-            setLoading(false)
         } else {
             profile = await getProfileId(token, tag);
             setProfileData(profile);
-            setLoading(false)
         }
 
         setSortRecipes(profile.recipes.sort((a, b) => {
@@ -84,6 +83,15 @@ const ProfileScreen = ({ navigation, route }) => {
             }
             return 0;
         }))
+
+        console.log("STOPPPP")
+        setLoading(false)
+    }
+
+    async function subscribe() {
+        console.log(profileData.subscriptions)
+        const req = await subscribeUser(token, tag);
+        console.log(req)
     }
 
     useEffect(() => {
@@ -122,14 +130,14 @@ const ProfileScreen = ({ navigation, route }) => {
                                         Подписчики пользователя @{tag}:
                                     </Text>} */}
                                 <ScrollView>
-                                    {profileData.likes.length == 0 ? (
-                                        <Text style={[styles.title]}>
+                                    {profileData.subscriptions != undefined && profileData.subscriptions.length == 0 ? (
+                                        <Text style={styles.title}>
                                             {type == 'forme'
                                                 ? `У вас нет подписчиков`
                                                 : `Нет подписчиков`}
                                         </Text>
                                     ) : (
-                                        profileData.likes.map((item) => {
+                                        profileData.subscriptions.map((item) => {
                                             return item;
                                         })
                                     )}
@@ -151,12 +159,11 @@ const ProfileScreen = ({ navigation, route }) => {
                             <Text style={[styles.title, { fontSize: 14, flex: 2 }]} onPress={() => {
                                 setOpenSubscribes(true);
                                 console.log(openSubscribers)
-                            }}>Подписчиков: {profileData.likes.length}</Text>
+                            }}>Подписчиков: {profileData.subscriptions ? profileData.subscriptions.length : '...'}</Text>
                         </View>
                     </View>
                     {type != "forme" && <TouchableHighlight style={styles.subscribe} onPress={()=>{
-                        console.log(profileData.likes)
-                        subscribeUser(token, tag);
+                        subscribe()
                     }}>
                         <Text style={styles.textSubscribe}>Подписаться</Text>
                     </TouchableHighlight>}

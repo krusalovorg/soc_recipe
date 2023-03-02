@@ -30,7 +30,7 @@ import { server_ip } from './api/config';
 import ProfileScreen from './pages/ProfileScreen';
 import ChatScreen from './pages/ChatScreen';
 import ErrorBoundary from './pages/ErrorScreen';
-
+import RNRestart from 'react-native-restart'; 
 
 const Drawer = createDrawerNavigator();
 
@@ -53,7 +53,17 @@ const App = () => {
     backend: AsyncStorage
   });
 
-  async function checkLogin() {
+  async function logout() {
+    await cache.remove("token");
+    await cache.remove("id");
+    setToken(null);
+    setIsAuth(false);
+    setTimeout(()=>{
+      RNRestart.Restart();
+    },200)
+  }
+
+  async function checkLogin(login=false) {
     const sshkey = await cache.get("token");
     if (sshkey) {
       const res = await checkSSHkey(sshkey)
@@ -63,10 +73,15 @@ const App = () => {
         setDataUser(data);
         cache.set('id', data.id);
         setIsAuth(true);
+        if (login) {
+          setTimeout(()=>{
+            RNRestart.Restart();
+          },200)
+        }
       } else {
-        console.log("GETETSTT FALSE")
         await cache.remove("token");
-        setToken('');
+        await cache.remove("id");
+        setToken(null);
         setIsAuth(false);
       }
     }
@@ -83,11 +98,11 @@ const App = () => {
 
   return (
     <>
-      <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
+      <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated, logout }}>
         <UserContext.Provider value={{ ...dataUser, setUser: setDataUser }}>
           <ErrorBoundary>
             <NavigationContainer>
-              {(token == null || !isAuthenticated) ?
+              {(!token || !isAuthenticated) ?
                 <Stack.Navigator>
                   <Stack.Screen
                     name="reg"

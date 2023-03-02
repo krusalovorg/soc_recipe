@@ -31,6 +31,7 @@ import ProfileScreen from './pages/ProfileScreen';
 import ChatScreen from './pages/ChatScreen';
 import ErrorBoundary from './pages/ErrorScreen';
 
+
 const Drawer = createDrawerNavigator();
 
 const Stack = createNativeStackNavigator();
@@ -86,7 +87,7 @@ const App = () => {
         <UserContext.Provider value={{ ...dataUser, setUser: setDataUser }}>
           <ErrorBoundary>
             <NavigationContainer>
-              {token == null ?
+              {(token == null || !isAuthenticated) ?
                 <Stack.Navigator>
                   <Stack.Screen
                     name="reg"

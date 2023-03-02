@@ -738,10 +738,9 @@ def chatting():
             avg_score = sum(match_scores) / len(match_scores)
             if avg_score >= threshold:
                 filtered_recipes.append((recipe.as_dict(), avg_score))
+        recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
 
-        filtered_recipes.sort(key=lambda x: x[1], reverse=True)
-
-        return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": filtered_recipes}})
+        return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes_new}})
     return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 

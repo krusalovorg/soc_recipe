@@ -56,17 +56,18 @@ const ChatScreen = ({ navigation, route }) => {
                 <ScrollView style={styles.page_contanier}>
                     <View style={styles.content}>
                         {dialog.length > 0 &&
-                            dialog.map((item) => {
-                                if (item.answer.data) {
+                            dialog.map((item, index) => {
+                                if (item && item.answer && item.answer.data) {
                                     return (
                                         <>
-                                            <Text>{item.answer.from}: {item.answer.text}</Text>
+                                            <Text key={index}>{item.answer.from}: {item.answer.text}</Text>
                                             {item.answer.data.map((recipe) => {
-                                                return <Recipe key={recipe.id} data={recipe} navigation={navigation} />
+                                                if (recipe)
+                                                    return <Recipe key={recipe.id} data={recipe} navigation={navigation} />
                                             })}
                                         </>)
-                                } else {
-                                    return <Text>{item.answer.from}: {item.answer.text}</Text>
+                                } else if (item.answer) {
+                                    return <Text key={index}>{item.answer.from}: {item.answer.text}</Text>
                                 }
                             })
                         }

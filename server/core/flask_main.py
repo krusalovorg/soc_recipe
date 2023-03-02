@@ -220,9 +220,9 @@ def sub_profile():
                                                                                     user_id_child=user_for)
             if not user_to_user_exist:
                 return jsonify({"status": False})
-            new_associated_users_to_users = associated_users_to_users(user_id_parent=ses.user_id,
-                                                                      user_id_child=user_for)
-            session.add(new_associated_users_to_users)
+            user = session.query(User).filter(User.id == ses.user_id).first()
+            user__for = session.query(User).filter(User.id == user_for)
+            user.subscriptions.extend(user__for)
             session.commit()
             return jsonify({"status": True})
     return jsonify({"status": False})

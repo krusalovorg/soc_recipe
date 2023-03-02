@@ -71,6 +71,7 @@ class User(SqlBase, UserMixin, SerializerMixin):
     admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     likes = orm.relationship('Recipe', secondary='recipes_to_users', backref='users')
+    subscriptions = orm.relationship('User', secondary='user_to_user', backref='users')
 
     def __repr__(self):
         return f'<User> {self.id} {self.surname} {self.name}'

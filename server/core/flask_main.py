@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, associated_users_to_users, DM, Category
+    Commetns, DM, Category, associated_users_to_users
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker

@@ -57,6 +57,15 @@ class Ingredient(SqlBase):
         return f'<Ingredient> {self.id}'
 
 
+associated_users_to_users = sqlalchemy.Table(
+    'user_to_user', SqlBase.metadata,
+    sqlalchemy.Column('user_id_parent', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('users.id')),
+    sqlalchemy.Column('user_id_child', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('users.id'))
+)
+
+
 class User(SqlBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
@@ -71,7 +80,11 @@ class User(SqlBase, UserMixin, SerializerMixin):
     admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     likes = orm.relationship('Recipe', secondary='recipes_to_users', backref='users')
-    subscriptions = orm.relationship('User', secondary='user_to_user', backref='users')
+    subscriptions = orm.relationship('User',
+                                     secondary='user_to_user',
+                                     primaryjoin=id == associated_users_to_users.c.user_id_parent,
+                                     secondaryjoin=id == associated_users_to_users.c.user_id_child,
+                                     backref="subscribers",)
 
     def __repr__(self):
         return f'<User> {self.id} {self.surname} {self.name}'
@@ -168,10 +181,3 @@ associated_users = sqlalchemy.Table(
                       sqlalchemy.ForeignKey('recipes.id'))
 )
 
-associated_users_to_users = sqlalchemy.Table(
-    'user_to_user', SqlBase.metadata,
-    sqlalchemy.Column('user_id_parent', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('users.id')),
-    sqlalchemy.Column('user_id_child', sqlalchemy.Integer,
-                      sqlalchemy.ForeignKey('users.id'))
-)

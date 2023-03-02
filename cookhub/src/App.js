@@ -29,6 +29,7 @@ import CreateRecipeScreen from './pages/CreateRecipeScreen';
 import { server_ip } from './api/config';
 import ProfileScreen from './pages/ProfileScreen';
 import ChatScreen from './pages/ChatScreen';
+import ErrorBoundary from './pages/ErrorScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -83,63 +84,65 @@ const App = () => {
     <>
       <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated }}>
         <UserContext.Provider value={{ ...dataUser, setUser: setDataUser }}>
-          <NavigationContainer>
-            {token == null ?
-              <Stack.Navigator>
-                <Stack.Screen
-                  name="reg"
-                  component={RegScreen}
-                  options={{
-                    title: "Регистрация",
-                    headerShown: false
-                  }} />
-                <Stack.Screen
-                  name="login"
-                  component={LoginScreen}
-                  options={{
-                    title: "Вход",
-                    headerShown: false
-                  }} />
-              </Stack.Navigator>
-              :
-              <Drawer.Navigator
-                drawerContent={(props) => <DrawerProfile {...props} />}
-                initialRouteName={"home"}>
-                <Drawer.Screen
-                  name="profile"
-                  component={ProfileScreen}
-                  options={{
-                    drawerItemStyle: { height: 0 },
-                    headerShown: false
-                  }} />
-                <Drawer.Screen
-                  name="add"
-                  component={CreateRecipeScreen}
-                  options={{
-                    title: 'Добавить рецепт',
-                  }} />
-                <Drawer.Screen
-                  name="home"
-                  component={HomeScreen}
-                  options={{
-                    title: 'Рецепты',
-                  }} />
-                <Drawer.Screen
-                  name="chat"
-                  component={ChatScreen}
-                  options={{
-                    title: 'Чат',
-                  }} />
-                <Drawer.Screen
-                  name="recipe"
-                  component={RecipeScreen}
-                  options={{
-                    drawerItemStyle: { height: 0 },
-                    headerShown: false
-                  }} />
-              </Drawer.Navigator>
-            }
-          </NavigationContainer>
+          <ErrorBoundary>
+            <NavigationContainer>
+              {token == null ?
+                <Stack.Navigator>
+                  <Stack.Screen
+                    name="reg"
+                    component={RegScreen}
+                    options={{
+                      title: "Регистрация",
+                      headerShown: false
+                    }} />
+                  <Stack.Screen
+                    name="login"
+                    component={LoginScreen}
+                    options={{
+                      title: "Вход",
+                      headerShown: false
+                    }} />
+                </Stack.Navigator>
+                :
+                <Drawer.Navigator
+                  drawerContent={(props) => <DrawerProfile {...props} />}
+                  initialRouteName={"home"}>
+                  <Drawer.Screen
+                    name="profile"
+                    component={ProfileScreen}
+                    options={{
+                      drawerItemStyle: { height: 0 },
+                      headerShown: false
+                    }} />
+                  <Drawer.Screen
+                    name="add"
+                    component={CreateRecipeScreen}
+                    options={{
+                      title: 'Добавить рецепт',
+                    }} />
+                  <Drawer.Screen
+                    name="home"
+                    component={HomeScreen}
+                    options={{
+                      title: 'Рецепты',
+                    }} />
+                  <Drawer.Screen
+                    name="chat"
+                    component={ChatScreen}
+                    options={{
+                      title: 'Чат',
+                    }} />
+                  <Drawer.Screen
+                    name="recipe"
+                    component={RecipeScreen}
+                    options={{
+                      drawerItemStyle: { height: 0 },
+                      headerShown: false
+                    }} />
+                </Drawer.Navigator>
+              }
+            </NavigationContainer>
+          </ErrorBoundary>
         </UserContext.Provider>
       </AuthContext.Provider>
     </>

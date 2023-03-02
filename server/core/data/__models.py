@@ -156,6 +156,14 @@ class Commetns(SqlBase):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
+class Subscriptions(SqlBase):
+    __tablename__ = "subscriptions"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user_id_parent = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    user_id_child = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
 associated_access = sqlalchemy.Table(
     'recipes_access_to_users', SqlBase.metadata,
     sqlalchemy.Column("recipe_id", sqlalchemy.Integer,

@@ -2,12 +2,10 @@ import requests
 
 while True:
     text = input("=> ")
-    res = requests.post("http://127.0.0.1:8000/api/search", json={
-        "sshkey": "85b2bcf271be2394c1bb7f99f6de4f2b04f1fa722c2290f9b741cf1f8cff505d",
-        "search_text": text,
-        "filter_text": [
-            {"column": "callories", "value": 50, "type": "<"},
-            ]
+    res = requests.post("http://127.0.0.1:8000/api/edit_password_confirm", json={
+        "sshkey": "c894914cca9d2ff9dd8ebf678540d613b64c99d8782f9c65aecbe4f4490e9a22",
+        "code":"60104",
+        "new_password":"new_password"
 
     })
     if res.status_code == 200:

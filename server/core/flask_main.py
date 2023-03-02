@@ -42,10 +42,10 @@ session = Session()
 
 migrate = Migrate(app, engine)
 mail = Mail(app)
-cods = []
+cods = {"2":[60104,datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("ru_RU")
+dictionary = enchant.Dict("en_EU")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -293,14 +293,15 @@ def remember_password():
     if sshkey:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.user_id).first()
-
         if user.email == email:
-            cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
+            cods[str(user.id)] = [random.randint(10000, 99999),datetime.datetime.now()]
+            """
             msg = Message("Cookhub", recipients=[user.email])
-            msg.body = f"Код для сброса пароля: {cods[user.id][0]}, никому не говорите этот код."
+            msg.body = f"Код для сброса пароля: {cods[str(user.id)][0]}, никому не говорите этот код."
             mail.send(msg)
+            """
             return jsonify({"status": True,
-                            "key": cods[user.id][0]
+                            "key": cods[str(user.id)][0]
                             })
     return jsonify({"status": False})
 
@@ -316,8 +317,9 @@ def edit_password_confirm():
     if sshkey:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.user_id).first()
-        if cods[user.id][0] == code:
-            if ((datetime.datetime().now() - cods[user.id][1]).minute < 3):
+
+        if cods[str(user.id)][0] == int(code):
+            if ((datetime.datetime.now()) - cods[str(user.id)][1]).seconds < 180:
                 user.set_password(new_password)
                 sshkey = sha256(f"H@S213s$-1{user.email}{user.hashed_password}".encode('utf-8')).hexdigest()
                 ses.sshkey = sshkey

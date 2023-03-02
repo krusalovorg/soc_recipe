@@ -180,4 +180,3 @@ associated_users = sqlalchemy.Table(
     sqlalchemy.Column('recipe_id', sqlalchemy.Integer,
                       sqlalchemy.ForeignKey('recipes.id'))
 )
-

@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
-    Commetns, DM, Category, associated_users_to_users
+    Commetns, Subscriptions, DM, Category
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -42,10 +42,10 @@ session = Session()
 
 migrate = Migrate(app, engine)
 mail = Mail(app)
-cods = []
+cods = {"2":[60104,datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("ru_RU")
+dictionary = enchant.Dict("en_EU")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -178,7 +178,7 @@ def get_profile():
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.tag).all()
-        subscriptions_users_id = session.query(associated_users_to_users).filter_by(user_id_parent=user.id).all()
+        subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user.id).all()
         subscriptions = []  # Нужно переписать это не оптимизированый for
         for sub in subscriptions_users_id:
             sub_user = (session.query(User).order_by(id=sub.user_id_child).first())
@@ -216,13 +216,12 @@ def sub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
-                                                                                    user_id_child=user_for)
+            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id,
+                                                                        user_id_child=user_for)
             if not user_to_user_exist:
                 return jsonify({"status": False})
-            user = session.query(User).filter(User.id == ses.user_id).first()
-            user__for = session.query(User).filter(User.id == user_for)
-            user.subscriptions.extend(user__for)
+            user__for = Subscriptions(user_id_parent=ses.user_id, user_id_child=user_for)
+            session.add(user__for)
             session.commit()
             return jsonify({"status": True})
     return jsonify({"status": False})
@@ -238,11 +237,11 @@ def unsub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            del_associated_users_to_users = session.query(associated_users_to_users).filter_by(
+            del_Subscriptions = session.query(Subscriptions).filter_by(
                 user_id_parent=ses.user_id,
                 user_id_child=user_for).first()
-            if del_associated_users_to_users:
-                session.delete(del_associated_users_to_users)
+            if del_Subscriptions:
+                session.delete(del_Subscriptions)
                 session.commit()
                 return jsonify({"status": True})
     return jsonify({"status": False})
@@ -294,14 +293,15 @@ def remember_password():
     if sshkey:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.user_id).first()
-
         if user.email == email:
-            cods[user.id] = [random.randint(100000, 999999), datetime.datetime.now()]
+            cods[str(user.id)] = [random.randint(10000, 99999),datetime.datetime.now()]
+            """
             msg = Message("Cookhub", recipients=[user.email])
-            msg.body = f"Код для сброса пароля: {cods[user.id][0]}, никому не говорите этот код."
+            msg.body = f"Код для сброса пароля: {cods[str(user.id)][0]}, никому не говорите этот код."
             mail.send(msg)
+            """
             return jsonify({"status": True,
-                            "key": cods[user.id][0]
+                            "key": cods[str(user.id)][0]
                             })
     return jsonify({"status": False})
 
@@ -317,8 +317,9 @@ def edit_password_confirm():
     if sshkey:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.user_id).first()
-        if cods[user.id][0] == code:
-            if ((datetime.datetime().now() - cods[user.id][1]).minute < 3):
+
+        if cods[str(user.id)][0] == int(code):
+            if ((datetime.datetime.now()) - cods[str(user.id)][1]).seconds < 180:
                 user.set_password(new_password)
                 sshkey = sha256(f"H@S213s$-1{user.email}{user.hashed_password}".encode('utf-8')).hexdigest()
                 ses.sshkey = sshkey
@@ -676,6 +677,7 @@ def search():
 
 # krusalovorg
 
+
 chats = [
     {
         "id": 1,
@@ -690,10 +692,43 @@ chats = [
 schema_list = [
     {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context",
      "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
+    {"type": "найди", "ingredients": "context",
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"]},
+    {"type": "добавить", "ingredients": "context",
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 2}
 ]
+
+context = {}
 
 threshold = 60
 limit = 10
+
+
+def searching(ingredients):
+    input_ingredients = []
+    for ingredient in ingredients:
+        word = morph.parse(ingredient)[0].normal_form
+        input_ingredients.append(word)
+
+    filtered_recipes = []
+
+    recipes = session.query(Recipe).all()
+
+    for recipe in recipes:
+        recipe_ingredients = recipe.ingredients
+        match_scores = []
+        for ingredient in input_ingredients:
+            best_match = 0
+            for recipe_ingredient in recipe_ingredients:
+                match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
+                if match_score > best_match:
+                    best_match = match_score
+            match_scores.append(best_match)
+        avg_score = sum(match_scores) / len(match_scores)
+        if avg_score >= threshold:
+            filtered_recipes.append((recipe.as_dict(), avg_score))
+    recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
+    return recipes_new
 
 
 @app.route('/api/chat', methods=["POST"])
@@ -711,36 +746,18 @@ def chatting():
 
     user_id = session_.user_id
 
-    model = {"from": user_id, "text": text}
-
     res = challenge_command(text.lower().strip(), schema_list)
     print(res)
-    if res:
-        input_ingredients = []
-        for ingredient in res['ingredients']:
-            word = morph.parse(ingredient)[0].normal_form
-            input_ingredients.append(word)
 
-        filtered_recipes = []
-
-        recipes = session.query(Recipe).all()
-
-        for recipe in recipes:
-            recipe_ingredients = recipe.ingredients
-            match_scores = []
-            for ingredient in input_ingredients:
-                best_match = 0
-                for recipe_ingredient in recipe_ingredients:
-                    match_score = fuzz.token_set_ratio(ingredient.lower(), recipe_ingredient['name'].lower())
-                    if match_score > best_match:
-                        best_match = match_score
-                match_scores.append(best_match)
-            avg_score = sum(match_scores) / len(match_scores)
-            if avg_score >= threshold:
-                filtered_recipes.append((recipe.as_dict(), avg_score))
-        recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
-
-        return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes_new}})
+    if res.get("рецепт"):
+        recipes = searching(res.get("ingredients"))
+        if recipes:
+            return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes}})
+        else:
+            context[user_id] = {"step": "add",
+                                "ingredients": []}  # Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов.
+            return jsonify({"answer": {"from": "bot",
+                                       "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
     return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 

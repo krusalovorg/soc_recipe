@@ -40,7 +40,7 @@ const LoginScreen = ({ navigation }) => {
             });
             if (response.data.status == true) {
                 cache.set('token', response.data.sshkey)
-                checkLogin();
+                checkLogin(true);
             } else if (response.data.error == "password") {
                 setError({...error, "server": "Пароль неверный!"});
             } else if (response.data.error == "user") {

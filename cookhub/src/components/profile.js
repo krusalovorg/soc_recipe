@@ -7,13 +7,14 @@ import {
     DrawerItemList,
     DrawerItem
 } from '@react-navigation/drawer';
-import { UserContext } from '../context/auth.context';
+import { AuthContext, UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
 
 export default function DrawerProfile(props) {
     const [open, setOpen] = useState(false);
     const { navigation } = props;
     const user = useContext(UserContext);
+    const auth = useContext(AuthContext);
 
     return (
         <DrawerContentScrollView {...props}>
@@ -96,6 +97,14 @@ export default function DrawerProfile(props) {
                 label="Чат"
                 onPress={() => props.navigation.navigate('chat')}
                 style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="settings" size={24} />}
+            />
+
+            <DrawerItem
+                label="Выйти из аккаунта"
+                onPress={() => {auth.logout()}}
+                style={[styles.drawerItem, {marginTop: '95%'}]}
                 labelStyle={styles.drawerLabel}
             // icon={() => <Icon name="settings" size={24} />}
             />

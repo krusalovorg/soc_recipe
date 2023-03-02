@@ -19,7 +19,7 @@ class Recipe(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     title = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     category = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('categories.id'))
-    time = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, default=datetime.datetime.now)
+    time = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     access = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     steps = sqlalchemy.Column(sqlalchemy.JSON, nullable=False)
     calories = sqlalchemy.Column(sqlalchemy.Integer)
@@ -84,6 +84,9 @@ class User(SqlBase, UserMixin, SerializerMixin):
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Sessions(SqlBase):

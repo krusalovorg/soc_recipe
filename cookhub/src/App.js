@@ -116,7 +116,7 @@ const App = () => {
                   name="add"
                   component={CreateRecipeScreen}
                   options={{
-                    title: 'Добавить рецепи',
+                    title: 'Добавить рецепт',
                   }} />
                 <Drawer.Screen
                   name="home"

@@ -43,10 +43,20 @@ export const addComment = async (id, sshkey, text) => {
 };
 
 
-export const searchRecipe = async (search_text, filters=[]) => {
+export const searchRecipe = async (search_text, filters=[], categories=[]) => {
     try {
-        const response = await axios.post(server_ip + `/search`, {search_text, filters});
-        return response.data.recipes
+        const response = await axios.post(server_ip + `/search`, {search_text, filters, categories, only_categories: false});
+        return response.data
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+};
+
+export const searchRecipeOnlyCategorys = async (search_text, categories) => {
+    try {
+        const response = await axios.post(server_ip + `/search`, {search_text, categories, only_categories: true});
+        return response.data
     } catch (error) {
         console.log(error);
         return null

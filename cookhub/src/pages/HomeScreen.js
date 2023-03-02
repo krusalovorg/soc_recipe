@@ -2,15 +2,17 @@ import React, { useEffect, useState, useContext } from 'react';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView, RefreshControl } from 'react-native';
 import Recipe from '../components/recipe';
 import search_png from '../assets/search.png';
-import { getRecipies, searchRecipe } from '../api/recipes';
+import { getRecipies, searchRecipe, searchRecipeOnlyCategorys } from '../api/recipes';
 import Loader from '../components/loader';
+import User from '../components/user';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
     const [findValue, setFindValue] = useState(null);
     const [recipies, setRecipies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [searchRecipies, setSearchRecipes] = useState([]);
+    const [searchUsers, setSearchUsers] = useState([]);
 
     async function loadRecipies() {
         setRefreshing(true);
@@ -28,15 +30,33 @@ const HomeScreen = ({ navigation }) => {
         setRefreshing(false);
     };
 
-    async function searchRecipeLive(text) {
-        const recipes = await searchRecipe(text);
+    async function searchRecipeLive(text, filters = [], categories = []) {
+        const recipes = await searchRecipe(text, filters, categories);
         console.log('get', recipes)
-        setSearchRecipes(recipes);
+        setSearchRecipes(recipes.recipes);
+        setSearchUsers(recipes.users)
+        setLoading(false);
+    }
+
+    async function loadRecipesWithCategories(text, categories) {
+        const recipes = await searchRecipeOnlyCategorys(text, categories);
+        console.log('get', recipes)
+        if (recipes != null && typeof recipes.recipes != undefined) {
+            setRecipies(recipes.recipes);
+        } else {
+            setRecipies([])
+        }
+        setLoading(false);
     }
 
     useEffect(() => {
-        loadRecipies();
-    }, [HomeScreen])
+        if (route.params && route.params.categories) {
+            console.log(route.params);
+            loadRecipesWithCategories("", route.params.categories);
+        } else {
+            loadRecipies();
+        }
+    }, [HomeScreen]);
 
     if (loading) {
         return <Loader />
@@ -67,7 +87,7 @@ const HomeScreen = ({ navigation }) => {
                     />
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
-                <View style={styles.categorys}>
+                <View style={styles.categories}>
                     <TouchableHighlight style={styles.category}>
                         <Text>
                             Ужин
@@ -89,9 +109,14 @@ const HomeScreen = ({ navigation }) => {
                         </Text>
                     </TouchableHighlight>
                 </View>
-                {findValue != null && searchRecipies != undefined &&
+                {findValue != null && findValue != "" && searchRecipies != undefined &&
                     <View>
-                        <Text style={styles.title_contanier}>{searchRecipies.length == 0 ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
+                        <Text style={styles.title_contanier}>{(searchRecipies.length == 0 && searchUsers.length == 0) ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
+                        {
+                            searchUsers.map((item) => {
+                                return <User key={item.id} data={item} navigation={navigation} />
+                            })
+                        }
                         {
                             searchRecipies.map((item) => {
                                 return <Recipe key={item.id} data={item} navigation={navigation} />
@@ -116,7 +141,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         backgroundColor: 'white',
     },
-    categorys: {
+    categories: {
         flexDirection: "row",
         marginTop: 10,
         marginHorizontal: 15

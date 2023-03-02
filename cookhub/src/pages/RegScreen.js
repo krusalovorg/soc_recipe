@@ -64,7 +64,7 @@ const RegScreen = ({navigation}) => {
                     <View style={styles.form}>
                         <InputAuth placeholder="Введите ваше имя" onChangeText={setName} value={name} label={"Имя"} error={error.name} />
                         <InputAuth placeholder="Введите вашу фамилию" onChangeText={setSurname} value={surname} label={"Фамилия"} error={error.surname} />
-                        <InputAuth placeholder="Введите ваш тэг" onChangeText={setTag} value={tag} label={"Тэг"} autoCapitalize="none" error={error.tag} />
+                        <InputAuth placeholder="Введите ваш тэг" onChangeText={setTag} value={tag} label={"Тэг"} keyboardType={"name"} autoCapitalize="none" error={error.tag} />
                         <InputAuth placeholder="Введите ваш email" onChangeText={setEmail} value={email} label={"Email"} keyboardType={"email-address"} autoCapitalize="none" error={error.email} />
                         <InputAuth placeholder="Введите ваш пароль" onChangeText={setPassword} value={password} label={"Пароль"} secureTextEntry={true} error={error.password} />
 

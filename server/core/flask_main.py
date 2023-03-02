@@ -150,13 +150,20 @@ def get_user_profile():
     user_tag = request.json.get("tag")
     if session.query(Sessions).filter_by(sshkey=sshkey).first():
         user = session.query(User).filter_by(tag=user_tag).first()
-        recipes = session.query(Recipe).filter_by(author=user.id).all()
+        recipes = session.query(Recipe).filter_by(author=user.tag).all()
+        recipes_array = []
+
+        for recipe in recipes:
+            recipes_array.append(recipe.as_dict())
+
+        print(recipes_array)
+
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
             "likes": user.likes,
-            'recipes': recipes
+            'recipes': recipes_array
         })
     return jsonify({"status": False})
 
@@ -195,7 +202,7 @@ def sub_profile():
         abort(400)
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
-    if all(sshkey, user_for):
+    if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user_to_user_exist = session.query(associated_users_to_users).filter_by(user_id_parent=ses.user_id,
@@ -217,7 +224,7 @@ def unsub_profile():
         abort(400)
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
-    if all(sshkey, user_for):
+    if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             del_associated_users_to_users = session.query(associated_users_to_users).filter_by(
@@ -448,25 +455,26 @@ def add_recipes():
     description = request.json["description"]
 
     if sshkey:
-        user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        user = session.query(User).filter_by(id=user_id.user_id).first()
-        if user:
-            crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
-                               filename.split(".")[1]
-            new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
-                                calories=calories, proteins=proteins, fats=fats, description=description,
-                                carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
-                                image=crypto_name_file, views=0, likes="")
+        ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+        if ses:
+            user = session.query(User).filter_by(id=ses.user_id).first()
+            if user:
+                crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
+                                   filename.split(".")[1]
+                new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
+                                    calories=calories, proteins=proteins, fats=fats, description=description,
+                                    carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
+                                    image=crypto_name_file, views=0, likes="")
 
-            starter = image.find(',')
-            image_data = image[starter + 1:]
-            image_data = bytes(image_data, encoding="ascii")
-            im = Image.open(BytesIO(base64.b64decode(image_data)))
-            im.save(f'./images/{crypto_name_file}')
+                starter = image.find(',')
+                image_data = image[starter + 1:]
+                image_data = bytes(image_data, encoding="ascii")
+                im = Image.open(BytesIO(base64.b64decode(image_data)))
+                im.save(f'./images/{crypto_name_file}')
 
-            session.add(new_recipe)
-            session.commit()
-        return jsonify({'status': True})
+                session.add(new_recipe)
+                session.commit()
+                return jsonify({'status': True})
     return jsonify({"status": False})
 
 
@@ -595,6 +603,8 @@ def search():
     search_text = request.json.get('search_text')
     filter_text = request.json.get("filter")
     categories = request.json.get("categories")
+    only_categories = request.json.get("only_categories") or False
+
     """
         new_words = dict()
         suggestions = set(dictionary.suggest(search_text))
@@ -616,24 +626,35 @@ def search():
                                                               ).and_(
             *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
     elif categories:
-        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                              Recipe.steps.like(pattern),
-                                                              Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern),
-                                                              User.tag(pattern),).and_(
-        *(getattr(Category, category) for category in categories))).all()
-
+        print('only',only_categories)
+        if only_categories:
+            recipes = session.query(Recipe).filter(sqlalchemy.or_(
+                *[getattr(Category, category.lower(), None) for category in categories if
+                  hasattr(Category, category.lower())])).all()
+        else:
+            recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                                  Recipe.steps.like(pattern),
+                                                                  Recipe.ingredients.like(pattern),
+                                                                  Recipe.description.like(pattern)).and_(
+                *[getattr(Category, category.lower(), None) for category in categories if
+                  hasattr(Category, category.lower())])).all()
     else:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                               Recipe.steps.like(pattern),
                                                               Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern),
-                                                              User.tag(pattern),)).all()
+                                                              Recipe.description.like(pattern),)).all()
+    users_array = []
+    if len(search_text) > 1:
+        users = session.query(User).filter(sqlalchemy.or_(User.tag.like(pattern),
+                                                          User.name.like(pattern),
+                                                          User.surname.like(pattern)))
+        for user in users:
+            users_array.append(user.as_dict())
 
     recipes_array = []
     for recipe in recipes:
         recipes_array.append(recipe.as_dict())
-    return jsonify({"recipes": recipes_array})
+    return jsonify({"recipes": recipes_array, 'users': users_array})
 
 
 # krusalovorg

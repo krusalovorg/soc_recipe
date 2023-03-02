@@ -11,6 +11,7 @@ import { UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
 
 export default function DrawerProfile(props) {
+    const [open, setOpen] = useState(false);
     const { navigation } = props;
     const user = useContext(UserContext);
 
@@ -19,7 +20,7 @@ export default function DrawerProfile(props) {
             <TouchableHighlight style={styles.contanier} underlayColor="#DDDDDD" onPress={() => {
                 navigation.reset({
                     index: 0,
-                    routes: [{ name: 'profile', params: {id: user.id, type: "forme"} }]
+                    routes: [{ name: 'profile', params: { tag: user.tag, type: "forme" } }]
                 })
             }}>
                 <>
@@ -32,7 +33,74 @@ export default function DrawerProfile(props) {
                     </View>
                 </>
             </TouchableHighlight>
-            <DrawerItemList {...props} />
+            <DrawerItem
+                label="Блюда"
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+                onPress={() => { setOpen(!open) }} />
+            {
+                open &&
+                <View style={{paddingLeft: 15}}>
+                    <DrawerItem
+                        label="Завтрак"
+                        style={styles.drawerItem}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['завтрак'], title: 'Блюда на завтрак' } }]
+                            })
+                        }}
+                    />
+                    <DrawerItem
+                        style={styles.drawerItem}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
+                        label="Обед"
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['обед'], title: 'Блюда на обед' } }]
+                            })
+                        }}
+                    />
+                    <DrawerItem
+                        style={styles.drawerItem}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
+                        label="Ужин"
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['ужин'], title: 'Блюда на ужин' } }]
+                            })
+                        }}
+                    />
+                </View>
+            }
+            {/* <View style={{ height: 2, width: '100%', backgroundColor: '#F2F4F5' }} /> */}
+
+            <DrawerItem
+                label="Рецепты"
+                onPress={() => props.navigation.navigate('home')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="settings" size={24} />}
+            />
+            <DrawerItem
+                label="Добавить рецепт"
+                onPress={() => props.navigation.navigate('add')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="home" size={24} />}
+            />
+            <DrawerItem
+                label="Чат"
+                onPress={() => props.navigation.navigate('chat')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            // icon={() => <Icon name="settings" size={24} />}
+            />
+
+            {/* <DrawerItemList {...props} /> */}
         </DrawerContentScrollView>
     );
 }
@@ -59,6 +127,21 @@ const styles = StyleSheet.create({
     level_sel: {
         marginTop: 3,
         color: 'black',
+        fontFamily: "Montserrat-Medium"
+    },
+    drawerItem: {
+        borderBottomWidth: 2,
+        borderBottomColor: '#F2F4F5',
+        backgroundColor: 'white',
+        paddingLeft: 15
+    },
+    drawerLabel: {
+        fontSize: 14,
+        fontFamily: 'Montserrat-Regular',
+        color: 'black',
+        marginLeft: -16,
+    },
+    drawerSelect: {
         fontFamily: "Montserrat-Medium"
     }
 })

@@ -497,9 +497,16 @@ def rem_recipes():
         abort(400)
     sshkey = request.json.get("sshkey")
     id_ = request.json.get("id_")
-    if sshkey == session.query(Session).filter_by(sshkey=sshkey).first():
-        session.delete(Recipe(id=id_))
-        return jsonify({'status': True})
+    ses = session.query(Session).filter_by(sshkey=sshkey).first()
+    if ses:
+        user = session.query(User).filter_by(id=ses.user_id).first()
+        if user.admin:
+            session.delete(Recipe(id=id_))
+            return jsonify({'status': True})
+        recipe = session.query(Recipe).filter_by(id=id_).first()
+        if user.tag == recipe.author:
+            session.delete(Recipe(id=id_))
+            return jsonify({'status': True})
     return jsonify({'status': False})
 
 

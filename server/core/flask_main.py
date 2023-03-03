@@ -22,10 +22,6 @@ from fuzzywuzzy import fuzz
 from server.core.utils.cmd2dict import challenge_command, parse_command
 
 import enchant
-from OpenSSL import SSL
-context = SSL.Context(SSL.PROTOCOL_TLSv1_2)
-context.use_privatekey_file('server.key')
-context.use_certificate_file('server.crt')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -612,12 +608,17 @@ def get_recommendations():
                     for recipe in session.query(Recipe).filter_by(author=friend.tag).limit(3):
                         frend_arr.append(recipe.as_dict())
         recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes)).limit(10)
-        if frend_arr != []:
-            recomendations.union(frend_arr)
-        rec_dicts = []
+        # if frend_arr != []:
+        #     recomendations.union(frend_arr)
+        rec_dicts = [] + frend_arr
         for rec in recomendations:
             rec_dicts.append(rec.as_dict())
-        return jsonify({"status": True, "recipes": rec_dicts})
+        rec_dicts_new = []
+        for rec_dict in rec_dicts:
+            if rec_dict not in rec_dicts_new:
+                rec_dicts_new.append(rec_dict)
+        # rec_dicts_new = random.shuffle(rec_dicts)
+        return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})
 
 
@@ -831,4 +832,4 @@ def chatting():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=8000,ssl_context=context))
+    app.run(debug=True, host="0.0.0.0", port=8000)

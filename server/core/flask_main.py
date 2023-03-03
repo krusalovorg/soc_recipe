@@ -178,8 +178,8 @@ def get_subs(user_id) -> list:
     subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user_id).all()
     subscriptions = []  # Нужно переписать это не оптимизированый for
     for sub in subscriptions_users_id:
-        print('id', sub.user_id_child)
-        sub_user = session.query(User).filter_by(tag=sub.user_id_child).first()
+        print('get_id', sub.user_id_child)
+        sub_user = session.query(User).filter_by(id=sub.user_id_child).first()
         if sub_user:
             sub_user = sub_user.as_dict()
             del sub_user['email']
@@ -256,14 +256,13 @@ def unsub_profile():
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user = session.query(User).filter_by(id=ses.user_id).first()
-            del_Subscriptions = session.query(Subscriptions).filter_by(
+            del_subscriptions = session.query(Subscriptions).filter_by(
                 user_id_parent=user.id,
                 user_id_child=user_for).first()
-            print('DELLL',del_Subscriptions, user.tag, user_for)
-            if del_Subscriptions:
-                session.delete(del_Subscriptions)
+            print('unsub',del_subscriptions)
+            if del_subscriptions:
+                session.delete(del_subscriptions)
                 session.commit()
-                print("UN SUB",get_subs(ses.user_id))
                 return jsonify({"status": True})
     return jsonify({"status": False})
 
@@ -614,7 +613,6 @@ def get_recommendations():
         rec_dicts = []
         for rec in recomendations:
             rec_dicts.append(rec.as_dict())
-        print(rec_dicts)
         return jsonify({"status": True, "recipes": rec_dicts})
     return jsonify({"status": False, "recipes": []})
 
@@ -642,7 +640,6 @@ def get_recipe():
 
 def search_all(search_text=None, filter_text=None, categories=None, only_categories=True):
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
-    print(pattern)
 
     if filter_text:
         recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),

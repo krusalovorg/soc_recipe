@@ -179,15 +179,14 @@ def get_profile():
         user = session.query(User).filter_by(id=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.tag).all()
         subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user.id).all()
+        print('gettt',subscriptions_users_id, session.query(Subscriptions).all())
         subscriptions = []  # Нужно переписать это не оптимизированый for
         for sub in subscriptions_users_id:
-            sub_user = (session.query(User).order_by(id=sub.user_id_child).first())
-            subscriptions.append({
-                "tag": sub_user.tag,
-                "name": sub_user.name,
-                "avatar": sub_user.avatar,
-                "email": sub_user.email,
-            })
+            sub_user = session.query(User).order_by(id=sub.user_id_child).first()
+            sub_user['email'] = ''
+            sub_user['hashed_password'] = ''
+            sub_user['admin'] = ''
+            subscriptions.append(sub_user.as_dict())
         new_recipes = []
         for recipe in recipes:
             new_recipes.append(recipe.as_dict())
@@ -524,26 +523,7 @@ def edit_recipes():
         recipe = session.query(Recipe).filter_by(id=id_).first()
         if user:
             for change in changes:
-                if change["column"] == "title":
-                    recipe.title = change["value"]
-                if change["column"] == "category":
-                    recipe.category = change["value"]
-                if change["column"] == "access":
-                    recipe.access = change["value"]
-                if change["column"] == "steps":
-                    recipe.steps = change["value"]
-                if change["column"] == "calories":
-                    recipe.calories = change["value"]
-                if change["column"] == "proteins":
-                    recipe.proteins = change["value"]
-                if change["column"] == "fats":
-                    recipe.fats = change["value"]
-                if change["column"] == "description":
-                    recipe.description = change["value"]
-                if change["column"] == "carbohydrates":
-                    recipe.carbohydrates = change["value"]
-                if change["column"] == "ingredients":
-                    recipe.ingredients = change["value"]
+                recipe[change["column"]] = change["value"]
             session.commit()
             return jsonify({'status': True})
     return jsonify({"status": False})
@@ -608,9 +588,9 @@ def get_recommendations():
             recomendations.union(frend_arr)
         if list(recomendations):
             return jsonify({"status": True,
-                            "recomendations": recomendations})
-        return {"status": True, "recomendations": []}
-    return jsonify({"status": False})
+                            "recipes": recomendations})
+        return {"status": True, "recipes": []}
+    return jsonify({"status": False, "recipes": []})
 
 
 # Получить рецепт

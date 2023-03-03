@@ -34,9 +34,9 @@ export default class ErrorBoundries extends Component {
                         justifyContent: 'center',
                         alignItems: 'center',
                     }}>
-                    <Text>Oops!!! Something went wrong..</Text>
+                    <Text>Произошла ошибка..</Text>
                     <Text>Error: {this.state.error.toString()}</Text>
-                    <Text>Error Info: {JSON.stringify(this.state.errorInfo)}</Text>
+                    {/* <Text>Error Info: {JSON.stringify(this.state.errorInfo)}</Text> */}
                 </View>
             );
         }

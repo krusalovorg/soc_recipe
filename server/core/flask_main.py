@@ -3,7 +3,7 @@ import random
 from hashlib import sha256
 
 import pymorphy2
-from flask import Flask, jsonify, make_response, request, abort, send_file
+from flask import Flask, jsonify, request, abort, send_file
 from flask_migrate import Migrate
 from flask_cors import CORS
 
@@ -11,12 +11,12 @@ import base64, time, datetime
 from io import BytesIO
 from PIL import Image
 
-from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes, Sessions, associated_users, Watches, \
+from data.__models import SqlBase, User, Recipe, Sessions, \
     Commetns, Subscriptions, DM, Category
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from fuzzywuzzy import fuzz
 
 from server.core.utils.cmd2dict import challenge_command
@@ -42,7 +42,7 @@ session = Session()
 
 migrate = Migrate(app, engine)
 mail = Mail(app)
-cods = {"2":[60104,datetime.datetime.now()]}
+cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
 dictionary = enchant.Dict("en_EU")
@@ -294,7 +294,7 @@ def remember_password():
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.user_id).first()
         if user.email == email:
-            cods[str(user.id)] = [random.randint(10000, 99999),datetime.datetime.now()]
+            cods[str(user.id)] = [random.randint(10000, 99999), datetime.datetime.now()]
             """
             msg = Message("Cookhub", recipients=[user.email])
             msg.body = f"Код для сброса пароля: {cods[str(user.id)][0]}, никому не говорите этот код."
@@ -591,14 +591,25 @@ def get_recipes():
 # получение рекомендаций
 @app.route("/api/get_recomendations", methods=["GET"])
 def get_recommendations():
-    if request.json:
+    if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
-        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes, Recipe.views)).limit(10)
-        return jsonify({"status": True,
-                        "recomendations": recomendations})
+        subscriptions = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id).limit(20)
+        subsc = []
+        for sub in subscriptions:
+            subsc.append(session.query(User).filter_by(id=sub.user_id_child).first())
+        frend_arr = []
+        for frend in subsc:
+            frend_arr.append(session.query(Recipe).filter_by(author=frend.tag).limit(3))
+        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes)).limit(10)
+        if frend_arr != []:
+            recomendations.union(frend_arr)
+        if list(recomendations):
+            return jsonify({"status": True,
+                            "recomendations": recomendations})
+        return {"status": True, "recomendations": []}
     return jsonify({"status": False})
 
 

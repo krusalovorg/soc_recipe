@@ -2,10 +2,15 @@ import requests
 
 while True:
     text = input("=> ")
-    res = requests.post("http://127.0.0.1:8000/api/edit_password_confirm", json={
-        "sshkey": "c894914cca9d2ff9dd8ebf678540d613b64c99d8782f9c65aecbe4f4490e9a22",
+    res = requests.get("http://127.0.0.1:8000/api/get_recomendations", json={
+        "sshkey": "bef86ecb3a3ef086a065151d380ccc813aabd32856da4c3c88dfe7224f8e354e",
         "code":"60104",
-        "new_password":"new_password"
+        "new_password":"new_password",
+        "tag":"test",
+        "name":"test",
+        "surname":"test",
+        "email":"test@test.test",
+        "password":"password"
 
     })
     if res.status_code == 200:

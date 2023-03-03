@@ -6,6 +6,7 @@ import { getRecipies, searchRecipe, searchRecipeOnlyCategorys } from '../api/rec
 import Loader from '../components/loader';
 import User from '../components/user';
 import { AuthContext } from '../context/auth.context';
+import CategoryList from '../components/CategoryList';
 
 const HomeScreen = ({ navigation, route }) => {
     const [findValue, setFindValue] = useState(null);
@@ -14,12 +15,14 @@ const HomeScreen = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [searchRecipies, setSearchRecipes] = useState([]);
     const [searchUsers, setSearchUsers] = useState([]);
+    const [title, setTitle] = useState("Актуальное");
+
     const {token} = useContext(AuthContext);
 
     async function loadRecipies() {
         setRefreshing(true);
+        setTitle("Актуальное");
         const recipies = await getRecipies(token);
-        console.log('get',recipies)
         if (recipies && recipies.length > 0) {
             setRecipies(recipies);
         }
@@ -62,8 +65,8 @@ const HomeScreen = ({ navigation, route }) => {
     }, [HomeScreen]);
 
     async function openCategories(cat, title) {
+        setTitle(title)
         setRecipies([]);
-        setLoading(true)
         await loadRecipesWithCategories("", [cat]);
         setLoading(false);
     }
@@ -86,7 +89,7 @@ const HomeScreen = ({ navigation, route }) => {
             >
                 <View style={styles.searchSection}>
                     <TextInput
-                        placeholder='Цезарь'
+                        placeholder={'Салат..'}
                         value={findValue}
                         style={styles.input}
                         underlineColorAndroid="transparent"
@@ -97,23 +100,28 @@ const HomeScreen = ({ navigation, route }) => {
                     />
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
-                <View style={styles.categories}>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("ужин","Блюда на ужин")}>
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.categories}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Ужин","Блюда на ужин")}>
                         <Text>
                             Ужин
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("обед","Блюда на обед")}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Обед","Блюда на обед")}>
                         <Text>
                             Обед
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("завтрак","Блюда на завтрак")}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Завтрак","Блюда на завтрак")}>
                         <Text>
                             Завтрак
                         </Text>
                     </TouchableHighlight>
-                </View>
+                    <TouchableHighlight style={styles.category} onPress={() => loadRecipies()}>
+                        <Text>
+                            Актуальное
+                        </Text>
+                    </TouchableHighlight>
+                </ScrollView>
                 {findValue != null && findValue != "" && searchRecipies != undefined &&
                     <View>
                         <Text style={styles.title_contanier}>{(searchRecipies.length == 0 && searchUsers.length == 0) ? "Ничего не найдено по запросу" : "Поиск по запросу"}: {findValue.toString()}</Text>
@@ -130,7 +138,7 @@ const HomeScreen = ({ navigation, route }) => {
                     </View>
                 }
                 <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#F2F4F5", height: 2, marginVertical: 5 }}></View>
-                <Text style={styles.title_contanier}>Актуальное</Text>
+                <Text style={styles.title_contanier}>{title}</Text>
                 {
                     recipies.map((item) => {
                         return <Recipe key={item.id} data={item} navigation={navigation} />
@@ -152,8 +160,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 15
     },
     category: {
-        marginHorizontal: 5,
-        paddingHorizontal: 20,
+        marginRight: 4,
+        paddingHorizontal: 18,
         paddingVertical: 10,
         backgroundColor: "#F2F4F5",
         borderRadius: 20,

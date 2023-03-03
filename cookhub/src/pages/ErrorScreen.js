@@ -1,6 +1,7 @@
 import React from "react";
 import { Component } from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableHighlight, View } from "react-native";
+import RNRestart from 'react-native-restart'; 
 
 export default class ErrorBoundries extends Component {
     constructor(props) {
@@ -36,6 +37,11 @@ export default class ErrorBoundries extends Component {
                     }}>
                     <Text>Произошла ошибка..</Text>
                     <Text>Error: {this.state.error.toString()}</Text>
+                    <TouchableHighlight onPress={()=>{
+                        RNRestart.Restart();
+                    }}>
+                        <Text>Перезайти</Text>
+                    </TouchableHighlight>
                     {/* <Text>Error Info: {JSON.stringify(this.state.errorInfo)}</Text> */}
                 </View>
             );

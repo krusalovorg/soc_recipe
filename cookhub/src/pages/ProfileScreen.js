@@ -48,7 +48,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [openSubscribers, setOpenSubscribes] = useState(false);
     const [sortedRecipes, setSortRecipes] = useState([]);
-    const [profileData, setProfileData] = useState({subscriptions: []});
+    const [profileData, setProfileData] = useState({ subscriptions: [] });
     const [subscriptions, setSubscriptions] = useState([]);
     const [thisSubcribed, setThisSubscrbed] = useState();
     const user = useContext(UserContext);
@@ -69,7 +69,7 @@ const ProfileScreen = ({ navigation, route }) => {
         let profile;
         if (type == "forme" || tag == user.tag) {
             profile = await getProfile(token);
-            setProfileData({...user, ...profile});
+            setProfileData({ ...user, ...profile });
         } else {
             profile = await getProfileId(token, tag);
             setProfileData(profile);
@@ -89,7 +89,7 @@ const ProfileScreen = ({ navigation, route }) => {
 
         checkSub();
 
-        setTimeout(()=>{
+        setTimeout(() => {
             setLoading(false)
         }, 200)
     }
@@ -102,13 +102,15 @@ const ProfileScreen = ({ navigation, route }) => {
 
     async function subscribe() {
         setLoading(true);
-        const res = checkSub()
+        const res = await checkSub()
+        let req;
         if (!res) {
-            const req = await subscribeUser(token, tag);
+            req = await subscribeUser(token, profileData.id);
         } else {
             console.log("UNSUB")
-            const req = await unSubscribeUser(token, tag);
+            req = await unSubscribeUser(token, profileData.id);
         }
+        console.warn("req",req)
         await loadProfile();
         setLoading(false);
     }
@@ -135,7 +137,7 @@ const ProfileScreen = ({ navigation, route }) => {
                         <Image style={styles.back_image} source={back} />
                     </TouchableOpacity>
                 </View>
-                { openSubscribers &&
+                {openSubscribers &&
                     <View style={styles.bottom_sheep}>
                         <BottomSheet
                             ref={bottomSheetRef}
@@ -148,7 +150,7 @@ const ProfileScreen = ({ navigation, route }) => {
                                     <Text style={[styles.title, { marginBottom: 20 }]}>
                                         Подписчики пользователя @{tag}:
                                     </Text>} */}
-                                <ScrollView style={{minHeight: 700}}>
+                                <ScrollView style={{ minHeight: 700 }}>
                                     {subscriptions.length > 0 == 0 ? (
                                         <Text style={styles.title}>
                                             {type == 'forme'
@@ -157,7 +159,7 @@ const ProfileScreen = ({ navigation, route }) => {
                                         </Text>
                                     ) : (
                                         subscriptions.map((item) => {
-                                            return <User navigation={navigation} data={item}/>;
+                                            return <User navigation={navigation} data={item} />;
                                         })
                                     )}
                                 </ScrollView>
@@ -181,21 +183,21 @@ const ProfileScreen = ({ navigation, route }) => {
                             }}>Подписчиков: {subscriptions.length}</Text>
                         </View>
                     </View>
-                    {type != "forme" && tag != user.tag && <TouchableHighlight style={[styles.subscribe, !checkSub ? styles.unsub : {}]} onPress={()=>{
+                    {type != "forme" && tag != user.tag && <TouchableHighlight style={[styles.subscribe, !checkSub ? styles.unsub : {}]} onPress={() => {
                         subscribe()
                     }}>
                         <Text style={styles.textSubscribe}>{thisSubcribed ? 'Отписаться' : 'Подписаться'}</Text>
                     </TouchableHighlight>}
                     <View style={styles.content}>
                         <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
-                        {
-                            sortedRecipes.map((item) => {
-                                console.log(item)
-                                return <Recipe key={item.id} data={item} navigation={navigation} />
-                            })
-                        }
-                        <View style={{ minHeight: 100 }}></View>
                     </View>
+                    {
+                        sortedRecipes.map((item) => {
+                            return <Recipe key={item.id} data={item} navigation={navigation} />
+                        })
+                    }
+                    <View style={{ minHeight: 100 }}></View>
+
                 </ScrollView>
             </ImageBackground>
         </SafeAreaView>
@@ -235,13 +237,15 @@ const styles = StyleSheet.create({
         right: 0,
         width: "100%",
         zIndex: 100,
-        height: Dimensions.get('window').height
+        height: Dimensions.get('window').height+100
     },
     bottom_sheep_content: {
         padding: 24,
     },
     content: {
-        padding: 20,
+        paddingTop: 20,
+        paddingLeft: 15,
+        paddingRight: 0,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         borderRadius: 0,
         shadowColor: 'transparent',

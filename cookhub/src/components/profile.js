@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import { View, Text, StyleSheet, Image, ImageBackground, TouchableHighlight } from 'react-native';
+import { View, Text, StyleSheet, Image, ImageBackground, TouchableHighlight, Dimensions } from 'react-native';
 
 import {
     DrawerContentScrollView,
@@ -9,6 +9,7 @@ import {
 } from '@react-navigation/drawer';
 import { AuthContext, UserContext } from '../context/auth.context';
 import { formateName } from '../utils/formate';
+import { getProfile } from '../api/auth';
 
 export default function DrawerProfile(props) {
     const [open, setOpen] = useState(false);
@@ -16,8 +17,19 @@ export default function DrawerProfile(props) {
     const user = useContext(UserContext);
     const auth = useContext(AuthContext);
 
+    async function loadProfile() {
+        const data = await getProfile(auth.token);
+        if (data) {
+            user.setUser(data);
+        }
+    }
+
+    useEffect(() => {
+        loadProfile();
+    }, [DrawerProfile])
+
     return (
-        <DrawerContentScrollView {...props}>
+        <DrawerContentScrollView {...props} style={{ ...props.style, height: Dimensions.get("window").height }}>
             <TouchableHighlight style={styles.contanier} underlayColor="#DDDDDD" onPress={() => {
                 navigation.reset({
                     index: 0,
@@ -41,7 +53,7 @@ export default function DrawerProfile(props) {
                 onPress={() => { setOpen(!open) }} />
             {
                 open &&
-                <View style={{paddingLeft: 15}}>
+                <View style={{ paddingLeft: 15 }}>
                     <DrawerItem
                         label="Завтрак"
                         style={styles.drawerItem}
@@ -49,7 +61,7 @@ export default function DrawerProfile(props) {
                         onPress={() => {
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'home', params: { categories: ['завтрак'], title: 'Блюда на завтрак' } }]
+                                routes: [{ name: 'home', params: { categories: ['Завтрак'], title: 'Блюда на завтрак' } }]
                             })
                         }}
                     />
@@ -60,7 +72,7 @@ export default function DrawerProfile(props) {
                         onPress={() => {
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'home', params: { categories: ['обед'], title: 'Блюда на обед' } }]
+                                routes: [{ name: 'home', params: { categories: ['Обед'], title: 'Блюда на обед' } }]
                             })
                         }}
                     />
@@ -71,7 +83,7 @@ export default function DrawerProfile(props) {
                         onPress={() => {
                             navigation.reset({
                                 index: 0,
-                                routes: [{ name: 'home', params: { categories: ['ужин'], title: 'Блюда на ужин' } }]
+                                routes: [{ name: 'home', params: { categories: ['Ужин'], title: 'Блюда на ужин' } }]
                             })
                         }}
                     />
@@ -84,31 +96,27 @@ export default function DrawerProfile(props) {
                 onPress={() => props.navigation.navigate('home')}
                 style={styles.drawerItem}
                 labelStyle={styles.drawerLabel}
-            // icon={() => <Icon name="settings" size={24} />}
+            // icon={() => <Icon name="recipes" size={24} />}
             />
             <DrawerItem
                 label="Добавить рецепт"
                 onPress={() => props.navigation.navigate('add')}
                 style={styles.drawerItem}
                 labelStyle={styles.drawerLabel}
-            // icon={() => <Icon name="home" size={24} />}
             />
             <DrawerItem
                 label="Чат"
                 onPress={() => props.navigation.navigate('chat')}
                 style={styles.drawerItem}
                 labelStyle={styles.drawerLabel}
-            // icon={() => <Icon name="settings" size={24} />}
             />
 
             <DrawerItem
                 label="Выйти из аккаунта"
-                onPress={() => {auth.logout()}}
-                style={[styles.drawerItem, {marginTop: '95%'}]}
+                onPress={() => { auth.logout() }}
+                style={styles.drawerItem}
                 labelStyle={styles.drawerLabel}
-            // icon={() => <Icon name="settings" size={24} />}
             />
-
             {/* <DrawerItemList {...props} /> */}
         </DrawerContentScrollView>
     );

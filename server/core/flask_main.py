@@ -173,8 +173,8 @@ def get_user_profile():
     return jsonify({"status": False})
 
 
-def get_subs(tag) -> list:
-    subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=tag).all()
+def get_subs(user_id) -> list:
+    subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user_id).all()
     subscriptions = []  # Нужно переписать это не оптимизированый for
     for sub in subscriptions_users_id:
         print('id', sub.user_id_child)
@@ -202,6 +202,7 @@ def get_profile():
             new_recipes.append(recipe.as_dict())
 
         subs = get_subs(user.id)
+        print(subs)
         return jsonify({
             "status": True,
             "name": user.name,
@@ -227,9 +228,9 @@ def sub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            print('sub', ses.user_id,user_for)
             user = session.query(User).filter_by(id=ses.user_id).first()
-            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=user.tag,
+            print('sub', user.tag,user_for)
+            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=user.id,
                                                                         user_id_child=user_for).first()
             if user_to_user_exist:
                 return jsonify({"status": False})
@@ -252,9 +253,9 @@ def unsub_profile():
         if ses:  # Эта сессия валидна
             user = session.query(User).filter_by(id=ses.user_id).first()
             del_Subscriptions = session.query(Subscriptions).filter_by(
-                user_id_parent=user.tag,
+                user_id_parent=user.id,
                 user_id_child=user_for).first()
-            print('DELLL',del_Subscriptions, ses.user_id, user_for)
+            print('DELLL',del_Subscriptions, user.tag, user_for)
             if del_Subscriptions:
                 session.delete(del_Subscriptions)
                 session.commit()
@@ -635,6 +636,41 @@ def get_recipe():
     return jsonify({'status': False})
 
 
+def search_all(search_text=None, filter_text=None, categories=None, only_categories=True):
+    pattern = '%' + '%'.join(search_text.split(" ")) + '%'
+    print(pattern)
+
+    if filter_text:
+        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                              Recipe.steps.like(pattern),
+                                                              Recipe.ingredients.like(pattern),
+                                                              Recipe.description.like(pattern),
+                                                              User.tag(pattern),
+                                                              ).and_(
+            *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
+    elif categories:
+        if only_categories:
+            # recipes = session.query(Recipe).filter(sqlalchemy.or_(
+            #     *[getattr(Category, category.lower(), None) for category in categories if
+            #       hasattr(Category, category.lower())])).all()
+            recipes = session.query(Recipe).filter_by(category=categories[0]).all()
+        else:
+            recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                                  Recipe.steps.like(pattern),
+                                                                  Recipe.ingredients.like(pattern),
+                                                                  Recipe.description.like(pattern)).and_(
+                *[getattr(Category, category.lower(), None) for category in categories if
+                  hasattr(Category, category.lower())])).all()
+    else:
+        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
+                                                              Recipe.steps.like(pattern),
+                                                              Recipe.ingredients.like(pattern),
+                                                              Recipe.description.like(pattern), )).all()
+    recipes_array = [recipe.as_dict() for recipe in recipes]
+    print(recipes)
+
+    return recipes_array
+
 @app.route('/api/search', methods=['POST'])
 def search():
     search_text = request.json.get('search_text')
@@ -654,34 +690,6 @@ def search():
     """
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
-    if filter_text:
-        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                              Recipe.steps.like(pattern),
-                                                              Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern),
-                                                              User.tag(pattern),
-                                                              ).and_(
-            *(getattr(Recipe, filt["column"]).between(filt["value1"], filt["value2"]) for filt in filter_text))).all()
-    elif categories:
-        print('only', only_categories)
-        if only_categories:
-            # recipes = session.query(Recipe).filter(sqlalchemy.or_(
-            #     *[getattr(Category, category.lower(), None) for category in categories if
-            #       hasattr(Category, category.lower())])).all()
-            recipes = session.query(Recipe).filter(category=categories[0]).all()
-
-        else:
-            recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                                  Recipe.steps.like(pattern),
-                                                                  Recipe.ingredients.like(pattern),
-                                                                  Recipe.description.like(pattern)).and_(
-                *[getattr(Category, category.lower(), None) for category in categories if
-                  hasattr(Category, category.lower())])).all()
-    else:
-        recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
-                                                              Recipe.steps.like(pattern),
-                                                              Recipe.ingredients.like(pattern),
-                                                              Recipe.description.like(pattern), )).all()
     users_array = []
     if len(search_text) > 1:
         users = session.query(User).filter(sqlalchemy.or_(User.tag.like(pattern),
@@ -694,9 +702,8 @@ def search():
             del user['admin']
             users_array.append(user)
 
-    recipes_array = []
-    for recipe in recipes:
-        recipes_array.append(recipe.as_dict())
+    recipes_array = search_all(search_text, filter_text, categories, only_categories)
+
     return jsonify({"recipes": recipes_array, 'users': users_array})
 
 
@@ -751,6 +758,11 @@ def searching(ingredients):
     recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
     return recipes_new
 
+def send_recipes(recipes):
+    return jsonify({"answer": {"from": "bot",
+                               "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:",
+                               "data": recipes}})
+
 @app.route('/api/chat', methods=["POST"])
 def chatting():
     def clear():
@@ -767,7 +779,6 @@ def chatting():
 
     session_ = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if not session_:
-        print('not session')
         abort(400)
 
     user_id = session_.user_id
@@ -775,27 +786,36 @@ def chatting():
 
     res = challenge_command(text.lower().strip(), schema_list)
 
-    print(this_context)
+    clear_text = re.sub("[^аА-яЯ ]", "", text.lower().strip())
+
     if res:
         if res.get("type") == 'рецепт':
+            if res.get("ingredients")[0] == "салат":
+                return jsonify({"answer": {"from": "bot",
+                                           "text": "Для того, чтобы мне было проще найти салат, пожалуйста, сообщите мне его название или список ингредиентов."}})
             recipes = searching(res.get("ingredients"))
             if recipes:
-                return jsonify({"answer": {"from": "bot", "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:", "data": recipes}})
+                return send_recipes(recipes)
             else:
-                return clear()
+                recipes_array = []
+                ingr_str = ""
+                for ingr in res.get("ingredients", []):
+                    ingr_str += morph.parse(ingr)[0].normal_form+" "
+                recipes_array += search_all(ingr_str, False, False, False)
+                if recipes_array:
+                    return send_recipes(recipes_array)
+                else:
+                    return clear()
     elif this_context and this_context.get("step") == "add":
         context[user_id]['step'] = "add2"
         return jsonify({"answer": {"from": "bot",
                                    "text": "Хорошо, перечислите их."}})
     elif this_context and this_context.get("step") == "add2":
-        text = re.sub("[^аА-яЯ ]", "", text.lower().strip())
         context[user_id] = {"step": "add",
-                            "ingredients": [*this_context.get("ingredients", []), text.split(" ")]}
-        recipes = searching(text)
-        if recipes:
-            return jsonify({"answer": {"from": "bot",
-                                       "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:",
-                                       "data": recipes}})
+                            "ingredients": [*this_context.get("ingredients", []), *clear_text.split(" ")]}
+        recipes_array = search_all(clear_text, None, None, False)
+        if recipes_array:
+            return send_recipes(recipes_array)
         else:
             return clear()
 

@@ -43,7 +43,7 @@ function Recipe(props) {
                         size={70}
                     />
                     <View style={styles.content}>
-                        <Text style={styles.title}>{props.data.title}</Text>
+                        <Text style={styles.title} numberOfLines={1} ellipsizeMode='tail'>{props.data.title}</Text>
                         <Text style={styles.name}>@{props.data.author}</Text>
                         <Text style={styles.views}>{props.data.views} просмотров</Text>
                         <Text style={styles.views}>{parsedList.length} {getLikesText(parsedList.length)}</Text>
@@ -82,10 +82,13 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         color: 'black',
-        fontFamily: 'Montserrat-Medium'
+        fontFamily: 'Montserrat-Medium',
+        textOverflow: 'ellipsis',
+        width: '100%',
+        maxWidth: 195
     },
     views: {
-        marginTop: 10
+        marginTop: 4
     },
     name: {
         fontSize: 15,

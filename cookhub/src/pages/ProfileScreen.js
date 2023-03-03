@@ -105,6 +105,7 @@ const ProfileScreen = ({ navigation, route }) => {
         const res = await checkSub()
         let req;
         if (!res) {
+            console.log("TRY SUB",profileData,profileData.id)
             req = await subscribeUser(token, profileData.id);
         } else {
             console.log("UNSUB")

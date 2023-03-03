@@ -168,7 +168,8 @@ def get_user_profile():
             "surname": user.surname,
             "likes": user.likes,
             'recipes': recipes_array,
-            "subscriptions": subs
+            "subscriptions": subs,
+            "id": user.id
         })
     return jsonify({"status": False})
 
@@ -179,11 +180,12 @@ def get_subs(user_id) -> list:
     for sub in subscriptions_users_id:
         print('id', sub.user_id_child)
         sub_user = session.query(User).filter_by(tag=sub.user_id_child).first()
-        sub_user = sub_user.as_dict()
-        del sub_user['email']
-        del sub_user['hashed_password']
-        del sub_user['admin']
-        subscriptions.append(sub_user)
+        if sub_user:
+            sub_user = sub_user.as_dict()
+            del sub_user['email']
+            del sub_user['hashed_password']
+            del sub_user['admin']
+            subscriptions.append(sub_user)
     return subscriptions
 
 # Получаем свой профль
@@ -226,12 +228,14 @@ def sub_profile():
     sshkey = request.json.get("sshkey")
     user_for = request.json.get("user_for")
     if sshkey and user_for:
+        print("ASDOASOPIDJKASOPDJKASOPDAJSOPDJASD")
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user = session.query(User).filter_by(id=ses.user_id).first()
             print('sub', user.tag,user_for)
             user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=user.id,
                                                                         user_id_child=user_for).first()
+            print('isjdasiojdioasjdoiajdois',user_to_user_exist)
             if user_to_user_exist:
                 return jsonify({"status": False})
             user__for = Subscriptions(user_id_parent=ses.user_id, user_id_child=user_for)

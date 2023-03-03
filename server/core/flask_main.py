@@ -163,10 +163,24 @@ def get_user_profile():
             "name": user.name,
             "surname": user.surname,
             "likes": user.likes,
-            'recipes': recipes_array
+            'recipes': recipes_array,
+            "subscriptions": get_subs(user.id)
         })
     return jsonify({"status": False})
 
+
+def get_subs(id_) -> list:
+    subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=id_).all()
+    subscriptions = []  # Нужно переписать это не оптимизированый for
+    for sub in subscriptions_users_id:
+        print('id', sub.user_id_child)
+        sub_user = session.query(User).filter_by(tag=sub.user_id_child).first()
+        sub_user = sub_user.as_dict()
+        del sub_user['email']
+        del sub_user['hashed_password']
+        del sub_user['admin']
+        subscriptions.append(sub_user)
+    return subscriptions
 
 # Получаем свой профль
 @app.route("/api/get_profile", methods=["POST"])
@@ -178,15 +192,7 @@ def get_profile():
     if ses:
         user = session.query(User).filter_by(id=ses.user_id).first()
         recipes = session.query(Recipe).filter_by(author=user.tag).all()
-        subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user.id).all()
-        print('gettt',subscriptions_users_id, session.query(Subscriptions).all())
-        subscriptions = []  # Нужно переписать это не оптимизированый for
-        for sub in subscriptions_users_id:
-            sub_user = session.query(User).order_by(id=sub.user_id_child).first()
-            sub_user['email'] = ''
-            sub_user['hashed_password'] = ''
-            sub_user['admin'] = ''
-            subscriptions.append(sub_user.as_dict())
+
         new_recipes = []
         for recipe in recipes:
             new_recipes.append(recipe.as_dict())
@@ -200,7 +206,7 @@ def get_profile():
             "likes": user.likes,
             'recipes': new_recipes,
             "user_id": user.id,
-            "subscriptions": subscriptions
+            "subscriptions": get_subs(user.id)
         })
     return jsonify({"status": False})
 
@@ -217,7 +223,7 @@ def sub_profile():
         if ses:  # Эта сессия валидна
             user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id,
                                                                         user_id_child=user_for)
-            if not user_to_user_exist:
+            if user_to_user_exist:
                 return jsonify({"status": False})
             user__for = Subscriptions(user_id_parent=ses.user_id, user_id_child=user_for)
             session.add(user__for)
@@ -583,7 +589,7 @@ def get_recommendations():
         frend_arr = []
         for frend in subsc:
             frend_arr.append(session.query(Recipe).filter_by(author=frend.tag).limit(3))
-        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes)).limit(10)
+        recomendations = session.query(Recipe).filter_by(sqlalchemy.desc(Recipe.likes)).limit(10)
         if frend_arr != []:
             recomendations.union(frend_arr)
         if list(recomendations):

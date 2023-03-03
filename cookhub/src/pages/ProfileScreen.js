@@ -107,7 +107,7 @@ const ProfileScreen = ({ navigation, route }) => {
         if (!res) {
             req = await subscribeUser(token, profileData.id);
         } else {
-            console.log("UNSUB")
+            console.log("UNSUBBBBBBBBBBBBBBBB", profileData.id)
             req = await unSubscribeUser(token, profileData.id);
         }
         console.warn("req",req)

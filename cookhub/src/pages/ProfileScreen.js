@@ -17,8 +17,9 @@ import { AuthContext, UserContext } from '../context/auth.context';
 
 import { formateName } from '../utils/formate';
 import Recipe from '../components/recipe';
-import { getProfile, getProfileId, subscribeUser } from '../api/auth';
+import { getProfile, getProfileId, subscribeUser, unSubscribeUser } from '../api/auth';
 import BottomSheet from '@gorhom/bottom-sheet';
+import User from '../components/user';
 
 function getBackground(value) {
     var minVal = 0;
@@ -49,6 +50,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const [sortedRecipes, setSortRecipes] = useState([]);
     const [profileData, setProfileData] = useState({subscriptions: []});
     const [subscriptions, setSubscriptions] = useState([]);
+    const [thisSubcribed, setThisSubscrbed] = useState();
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
 
@@ -59,7 +61,6 @@ const ProfileScreen = ({ navigation, route }) => {
     const snapPoints = useMemo(() => ['1%', '23%', '50'], []);
 
     const handleSheetChanges = useCallback((index) => {
-        console.log('handleSheetChanges', index);
         if (index == 0)
             setOpenSubscribes(false);
     }, []);
@@ -68,13 +69,13 @@ const ProfileScreen = ({ navigation, route }) => {
         let profile;
         if (type == "forme" || tag == user.tag) {
             profile = await getProfile(token);
-            console.log('GET',profile, profile.subscriptions)
             setProfileData({...user, ...profile});
-            setSubscriptions(profile.subscriptions);
         } else {
             profile = await getProfileId(token, tag);
             setProfileData(profile);
         }
+
+        setSubscriptions(profile.subscriptions);
 
         setSortRecipes(profile.recipes.sort((a, b) => {
             if (a.views > b.views) {
@@ -86,15 +87,28 @@ const ProfileScreen = ({ navigation, route }) => {
             return 0;
         }))
 
-        console.log("STOPPPP")
-        setLoading(false)
+        checkSub();
+
+        setTimeout(()=>{
+            setLoading(false)
+        }, 200)
+    }
+
+    function checkSub() {
+        const this_sub = subscriptions.find(item => item.tag === user.tag);
+        setThisSubscrbed(this_sub);
+        return this_sub
     }
 
     async function subscribe() {
         setLoading(true);
-        console.log(profileData.subscriptions)
-        const req = await subscribeUser(token, tag);
-        console.log(req)
+        const res = checkSub()
+        if (!res) {
+            const req = await subscribeUser(token, tag);
+        } else {
+            console.log("UNSUB")
+            const req = await unSubscribeUser(token, tag);
+        }
         await loadProfile();
         setLoading(false);
     }
@@ -134,7 +148,7 @@ const ProfileScreen = ({ navigation, route }) => {
                                     <Text style={[styles.title, { marginBottom: 20 }]}>
                                         Подписчики пользователя @{tag}:
                                     </Text>} */}
-                                <ScrollView>
+                                <ScrollView style={{minHeight: 700}}>
                                     {subscriptions.length > 0 == 0 ? (
                                         <Text style={styles.title}>
                                             {type == 'forme'
@@ -143,7 +157,7 @@ const ProfileScreen = ({ navigation, route }) => {
                                         </Text>
                                     ) : (
                                         subscriptions.map((item) => {
-                                            return item;
+                                            return <User navigation={navigation} data={item}/>;
                                         })
                                     )}
                                 </ScrollView>
@@ -167,10 +181,10 @@ const ProfileScreen = ({ navigation, route }) => {
                             }}>Подписчиков: {subscriptions.length}</Text>
                         </View>
                     </View>
-                    {type != "forme" && <TouchableHighlight style={styles.subscribe} onPress={()=>{
+                    {type != "forme" && tag != user.tag && <TouchableHighlight style={[styles.subscribe, !checkSub ? styles.unsub : {}]} onPress={()=>{
                         subscribe()
                     }}>
-                        <Text style={styles.textSubscribe}>Подписаться</Text>
+                        <Text style={styles.textSubscribe}>{thisSubcribed ? 'Отписаться' : 'Подписаться'}</Text>
                     </TouchableHighlight>}
                     <View style={styles.content}>
                         <Text style={[styles.title, { marginBottom: 20 }]}>Популярные рецепты:</Text>
@@ -205,7 +219,9 @@ const styles = StyleSheet.create({
         width: "100%",
         borderBottomColor: "black",
         borderBottomWidth: 1
-
+    },
+    unsub: {
+        backgroundColor: "#3670c7",
     },
     textSubscribe: {
         color: "white"

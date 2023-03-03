@@ -1,10 +1,10 @@
 import axios from "axios";
 import { server_ip } from "./config";
 
-export const getRecipies = async (from_number = 0, to_number = 10) => {
+export const getRecipies = async (sshkey, from_number = 0, to_number = 10) => {
     try {
-        const response = await axios.get(server_ip + `/get_recomendations?f=${from_number}&t=${to_number}`, {});
-        return response.data.recipe
+        const response = await axios.post(server_ip + `/get_recomendations?f=${from_number}&t=${to_number}`, {sshkey});
+        return response.data.recipes
     } catch (error) {
         console.log(error);
         return []
@@ -15,6 +15,19 @@ export const getRecipe = async (id) => {
     try {
         const response = await axios.get(server_ip + `/get_recipe?id=${id}`, {});
         return response.data.recipe
+    } catch (error) {
+        console.log(error);
+        return null
+    }
+};
+
+export const remRecipe = async (sshkey, id) => {
+    try {
+        const response = await axios.post(server_ip + `/rem_recipes`, {
+            "id_": id,
+            sshkey
+        });
+        return response.status
     } catch (error) {
         console.log(error);
         return null

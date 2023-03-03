@@ -3,17 +3,20 @@ import { ImageBackground, TouchableOpacity } from 'react-native';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
 import Comments from '../components/recipe_comments';
 import RecipeContent from '../components/recipe_content';
-import blur2 from '../assets/blur2.jpg';
 import back from '../assets/back.png';
 
 import like_fill from '../assets/like_fill.png';
 import like_unfill from '../assets/like_unfill.png';
 
 import Loader from '../components/loader';
-import { addComment, getRecipe, likeRecipe } from '../api/recipes';
+import { addComment, getRecipe, likeRecipe, remRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
 
 import { AuthContext, UserContext } from '../context/auth.context';
+
+import {
+    ToastAndroid,
+} from 'react-native';
 
 const RecipeScreen = ({ navigation, route }) => {
     const [inputValue, setInputValue] = useState('');
@@ -80,6 +83,15 @@ const RecipeScreen = ({ navigation, route }) => {
         }
     }
 
+    async function deleteRecipe() {
+        const res = await remRecipe(token, data.id);
+        if (res) {
+            ToastAndroid.show("Рецепт успешно удален!", ToastAndroid.SHORT)
+        } else {
+            ToastAndroid.show("Произошла ошибка!", ToastAndroid.SHORT)
+        }
+    }
+
     useEffect(() => {
         loadRecipe();
     }, [route.params.data])
@@ -140,7 +152,7 @@ const RecipeScreen = ({ navigation, route }) => {
 
                         <Text style={[styles.desc, { marginTop: 20, color: 'black' }]}>Время приготовления: {data.time > 1 ? data.time : data.time * 60} {data.time > 1 ? "час" : "минут"}</Text>
                         <Text style={styles.punkt_desc}>Категория: {data.category}</Text>
-                        <Text style={[styles.punkt_desc, {color: '#3A89FF'}]} onPress={() => {
+                        <Text style={[styles.punkt_desc, { color: '#3A89FF' }]} onPress={() => {
                             navigation.reset({
                                 index: 0,
                                 routes: [{ name: 'profile', params: { tag: data.author, type: "user" } }]
@@ -157,6 +169,15 @@ const RecipeScreen = ({ navigation, route }) => {
                                 />
                             </TouchableOpacity>
                         </View>
+                        { (user.admin == user.tag || user.tag == user.author) &&
+                            <TouchableHighlight onPress={() => {
+                                deleteRecipe()
+                            }}>
+                                <Text>
+                                    Удалить рецепт
+                                </Text>
+                            </TouchableHighlight>
+                        }
 
                         {/* Инпут для ввода комментария и кнопка отправки */}
                         <Text style={{ ...styles.title, marginLeft: 0, marginTop: 20, marginBottom: 20 }}>Комментарии</Text>

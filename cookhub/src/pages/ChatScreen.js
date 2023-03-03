@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { ImageBackground, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { FlatList, ImageBackground, TouchableOpacity } from 'react-native';
 import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
 import Comments from '../components/recipe_comments';
 import RecipeContent from '../components/recipe_content';
@@ -22,24 +22,38 @@ import { sendMessage } from '../api/chat';
 
 const ChatScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
-    const [dialog, setDialog] = useState([]);
+    const [dialog, setDialog] = useState([{ from: 'bot', text: "Привет! Я могу помочь найти рецепты, обратись ко мне - \'найди рецепт ингредиенты\'." }]);
     const [text, setText] = useState("");
     const user = useContext(UserContext);
     const { token } = useContext(AuthContext);
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const flatListRef = useRef();
 
-    async function loadChat() {
+    function updateAnim() {
+        Animated.timing(
+            fadeAnim,
+            {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+            }
+        ).start();
     }
+
+    useEffect(() => {
+        updateAnim()
+    }, [dialog, fadeAnim]);
 
     async function handleChatSubmit() {
         if (text.length > 0) {
             const msg = await sendMessage(token, text);
             console.log('get', msg)
-            setDialog([...dialog, msg])
+            setDialog([...dialog, { 'from': "@" + user.tag, text }, msg['answer']])
+            updateAnim();
         }
     }
 
     useEffect(() => {
-        loadChat();
         setLoading(false)
     }, [ChatScreen])
 
@@ -53,9 +67,9 @@ const ChatScreen = ({ navigation, route }) => {
                 resizeMode='cover'
                 // source={{ uri: server_ip + "/get_image/" + data.image }}
                 blurRadius={200}>
-                <ScrollView style={styles.page_contanier}>
-                    <View style={styles.content}>
-                        {dialog.length > 0 &&
+                {/* <ScrollView style={styles.page_contanier}> */}
+                <View style={[styles.page_contanier, styles.content, { height: '100%' }]}>
+                    {/* {dialog.length > 0 &&
                             dialog.map((item, index) => {
                                 if (item && item.answer && item.answer.data) {
                                     return (
@@ -70,24 +84,61 @@ const ChatScreen = ({ navigation, route }) => {
                                     return <Text key={index}>{item.answer.from}: {item.answer.text}</Text>
                                 }
                             })
-                        }
-                        <View style={styles.input_contanier}>
-                            <TextInput
-                                style={styles.input}
-                                value={text}
-                                onChangeText={(text) => {
-                                    setText(text);
-                                }}
-                                placeholder="Задайте вопрос.."
-                                placeholderTextColor="#777"
-                            />
-                            <TouchableOpacity style={styles.button} onPress={handleChatSubmit}>
-                                <Text style={styles.buttonText}>Отправить</Text>
-                            </TouchableOpacity>
-                        </View>
-
+                        } */}
+                    <FlatList
+                        data={dialog}
+                        style={{
+                            maxHeight: "83%"
+                        }}
+                        renderItem={({ item }) => {
+                            if (item != null && item) {
+                                if (item.data) {
+                                    return (
+                                        <>
+                                            <Animated.View style={{ opacity: fadeAnim }}>
+                                                <Text style={{ fontSize: 20, color: "black", marginTop: 5 }}>{item.from == 'bot' ? "CookHub" : item.from}</Text>
+                                                <View style={styles.message}>
+                                                    <Text>{item.text}</Text>
+                                                </View>
+                                                {item.data.map((recipe) => {
+                                                    if (recipe)
+                                                        return <Recipe key={recipe.id} data={recipe} navigation={navigation} />
+                                                })}
+                                            </Animated.View>
+                                        </>)
+                                } else {
+                                    return (
+                                        <>
+                                            <Animated.View style={{ opacity: fadeAnim }}>
+                                                <Text style={{ fontSize: 20, color: "black", marginTop: 5 }}>{item.from == 'bot' ? "CookHub" : item.from}</Text>
+                                                <View style={styles.message}>
+                                                    <Text>{item.text}</Text>
+                                                </View>
+                                            </Animated.View>
+                                        </>)
+                                }
+                            }
+                        }}
+                        keyExtractor={(item, index) => index.toString()}
+                        onContentSizeChange={() => flatListRef.current.scrollToEnd({ animated: true })}
+                        ref={flatListRef}
+                    />
+                    <View style={styles.input_contanier}>
+                        <TextInput
+                            style={styles.input}
+                            value={text}
+                            onChangeText={(text) => {
+                                setText(text);
+                            }}
+                            placeholder="Задайте вопрос.."
+                            placeholderTextColor="#777"
+                        />
+                        <TouchableOpacity style={styles.button} onPress={handleChatSubmit}>
+                            <Text style={styles.buttonText}>Отправить</Text>
+                        </TouchableOpacity>
                     </View>
-                </ScrollView>
+                </View>
+                {/* </ScrollView> */}
             </ImageBackground>
         </SafeAreaView>
     )
@@ -173,7 +224,13 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: 20,
         marginHorizontal: 0,
-        marginBottom: 20
+        marginBottom: 20,
+
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+
     },
     input: {
         width: "100%",
@@ -185,7 +242,15 @@ const styles = StyleSheet.create({
         paddingLeft: 0,
         backgroundColor: '#F2F4F5',
         color: 'black',
-    }
+    },
+
+    message: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: '#f2f2f2',
+        borderRadius: 16,
+        marginVertical: 4,
+    },
 
 })
 

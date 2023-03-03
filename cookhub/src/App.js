@@ -146,7 +146,7 @@ const App = () => {
                     name="chat"
                     component={ChatScreen}
                     options={{
-                      title: 'Чат',
+                      title: 'CookBot',
                     }} />
                   <Drawer.Screen
                     name="recipe"

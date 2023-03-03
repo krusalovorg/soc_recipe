@@ -5,6 +5,7 @@ import search_png from '../assets/search.png';
 import { getRecipies, searchRecipe, searchRecipeOnlyCategorys } from '../api/recipes';
 import Loader from '../components/loader';
 import User from '../components/user';
+import { AuthContext } from '../context/auth.context';
 
 const HomeScreen = ({ navigation, route }) => {
     const [findValue, setFindValue] = useState(null);
@@ -13,11 +14,13 @@ const HomeScreen = ({ navigation, route }) => {
     const [refreshing, setRefreshing] = useState(false);
     const [searchRecipies, setSearchRecipes] = useState([]);
     const [searchUsers, setSearchUsers] = useState([]);
+    const {token} = useContext(AuthContext);
 
     async function loadRecipies() {
         setRefreshing(true);
-        const recipies = await getRecipies();
-        if (recipies.length > 0) {
+        const recipies = await getRecipies(token);
+        console.log('get',recipies)
+        if (recipies && recipies.length > 0) {
             setRecipies(recipies);
         }
         setLoading(false);
@@ -32,7 +35,6 @@ const HomeScreen = ({ navigation, route }) => {
 
     async function searchRecipeLive(text, filters = [], categories = []) {
         const recipes = await searchRecipe(text, filters, categories);
-        console.log('get', recipes)
         setSearchRecipes(recipes.recipes);
         setSearchUsers(recipes.users)
         setLoading(false);
@@ -40,9 +42,10 @@ const HomeScreen = ({ navigation, route }) => {
 
     async function loadRecipesWithCategories(text, categories) {
         const recipes = await searchRecipeOnlyCategorys(text, categories);
-        console.log('get', recipes)
         if (recipes != null && typeof recipes.recipes != undefined) {
+            console.log("GET",text,categories, recipes.recipes)
             setRecipies(recipes.recipes);
+            console.log('EXIT',recipies)
         } else {
             setRecipies([])
         }
@@ -57,6 +60,13 @@ const HomeScreen = ({ navigation, route }) => {
             loadRecipies();
         }
     }, [HomeScreen]);
+
+    async function openCategories(cat, title) {
+        setRecipies([]);
+        setLoading(true)
+        await loadRecipesWithCategories("", [cat]);
+        setLoading(false);
+    }
 
     if (loading) {
         return <Loader />
@@ -88,24 +98,19 @@ const HomeScreen = ({ navigation, route }) => {
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
                 <View style={styles.categories}>
-                    <TouchableHighlight style={styles.category}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("ужин","Блюда на ужин")}>
                         <Text>
                             Ужин
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("обед","Блюда на обед")}>
                         <Text>
                             Обед
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("завтрак","Блюда на завтрак")}>
                         <Text>
                             Завтрак
-                        </Text>
-                    </TouchableHighlight>
-                    <TouchableHighlight style={styles.category}>
-                        <Text>
-                            Другое
                         </Text>
                     </TouchableHighlight>
                 </View>

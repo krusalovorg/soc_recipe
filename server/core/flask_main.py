@@ -1,5 +1,5 @@
 import difflib
-import random
+import random, re
 from hashlib import sha256
 
 import pymorphy2
@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker
 from flask_mail import Mail
 from fuzzywuzzy import fuzz
 
-from server.core.utils.cmd2dict import challenge_command
+from server.core.utils.cmd2dict import challenge_command, parse_command
 
 import enchant
 
@@ -158,19 +158,23 @@ def get_user_profile():
 
         print(recipes_array)
 
+        subs = get_subs(user.id)
+
+        print("SUBS",subs)
+
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
             "likes": user.likes,
             'recipes': recipes_array,
-            "subscriptions": get_subs(user.id)
+            "subscriptions": subs
         })
     return jsonify({"status": False})
 
 
-def get_subs(id_) -> list:
-    subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=id_).all()
+def get_subs(tag) -> list:
+    subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=tag).all()
     subscriptions = []  # Нужно переписать это не оптимизированый for
     for sub in subscriptions_users_id:
         print('id', sub.user_id_child)
@@ -197,6 +201,7 @@ def get_profile():
         for recipe in recipes:
             new_recipes.append(recipe.as_dict())
 
+        subs = get_subs(user.id)
         return jsonify({
             "status": True,
             "name": user.name,
@@ -206,7 +211,8 @@ def get_profile():
             "likes": user.likes,
             'recipes': new_recipes,
             "user_id": user.id,
-            "subscriptions": get_subs(user.id)
+            "subscriptions": subs,
+            "admin": user.admin
         })
     return jsonify({"status": False})
 
@@ -221,8 +227,10 @@ def sub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
-            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id,
-                                                                        user_id_child=user_for)
+            print('sub', ses.user_id,user_for)
+            user = session.query(User).filter_by(id=ses.user_id).first()
+            user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=user.tag,
+                                                                        user_id_child=user_for).first()
             if user_to_user_exist:
                 return jsonify({"status": False})
             user__for = Subscriptions(user_id_parent=ses.user_id, user_id_child=user_for)
@@ -242,12 +250,15 @@ def unsub_profile():
     if sshkey and user_for:
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
+            user = session.query(User).filter_by(id=ses.user_id).first()
             del_Subscriptions = session.query(Subscriptions).filter_by(
-                user_id_parent=ses.user_id,
+                user_id_parent=user.tag,
                 user_id_child=user_for).first()
+            print('DELLL',del_Subscriptions, ses.user_id, user_for)
             if del_Subscriptions:
                 session.delete(del_Subscriptions)
                 session.commit()
+                print("UN SUB",get_subs(ses.user_id))
                 return jsonify({"status": True})
     return jsonify({"status": False})
 
@@ -575,7 +586,7 @@ def get_recipes():
 
 
 # получение рекомендаций
-@app.route("/api/get_recomendations", methods=["GET"])
+@app.route("/api/get_recomendations", methods=["POST"])
 def get_recommendations():
     if not request.json:
         abort(400)
@@ -587,15 +598,19 @@ def get_recommendations():
         for sub in subscriptions:
             subsc.append(session.query(User).filter_by(id=sub.user_id_child).first())
         frend_arr = []
-        for frend in subsc:
-            frend_arr.append(session.query(Recipe).filter_by(author=frend.tag).limit(3))
-        recomendations = session.query(Recipe).filter_by(sqlalchemy.desc(Recipe.likes)).limit(10)
+        if len(subsc) > 0:
+            for friend in subsc:
+                if friend:
+                    for recipe in session.query(Recipe).filter_by(author=friend.tag).limit(3):
+                        frend_arr.append(recipe.as_dict())
+        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes)).limit(10)
         if frend_arr != []:
             recomendations.union(frend_arr)
-        if list(recomendations):
-            return jsonify({"status": True,
-                            "recipes": recomendations})
-        return {"status": True, "recipes": []}
+        rec_dicts = []
+        for rec in recomendations:
+            rec_dicts.append(rec.as_dict())
+        print(rec_dicts)
+        return jsonify({"status": True, "recipes": rec_dicts})
     return jsonify({"status": False, "recipes": []})
 
 
@@ -650,9 +665,11 @@ def search():
     elif categories:
         print('only', only_categories)
         if only_categories:
-            recipes = session.query(Recipe).filter(sqlalchemy.or_(
-                *[getattr(Category, category.lower(), None) for category in categories if
-                  hasattr(Category, category.lower())])).all()
+            # recipes = session.query(Recipe).filter(sqlalchemy.or_(
+            #     *[getattr(Category, category.lower(), None) for category in categories if
+            #       hasattr(Category, category.lower())])).all()
+            recipes = session.query(Recipe).filter(category=categories[0]).all()
+
         else:
             recipes = session.query(Recipe).filter(sqlalchemy.or_(Recipe.title.like(pattern),
                                                                   Recipe.steps.like(pattern),
@@ -671,7 +688,11 @@ def search():
                                                           User.name.like(pattern),
                                                           User.surname.like(pattern)))
         for user in users:
-            users_array.append(user.as_dict())
+            user = user.as_dict()
+            del user['email']
+            del user['hashed_password']
+            del user['admin']
+            users_array.append(user)
 
     recipes_array = []
     for recipe in recipes:
@@ -695,11 +716,7 @@ chats = [
 
 schema_list = [
     {"type": "рецепт", "act": ["найди", "покажи"], "ingredients": "context",
-     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 1},
-    {"type": "найди", "ingredients": "context",
-     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"]},
-    {"type": "добавить", "ingredients": "context",
-     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до"], 'rang': 2}
+     "whitelist": ["для", "по", "пожалуйста", "на", "с", "и", "а", "до", "привет", "использованием"], 'rang': 1}
 ]
 
 context = {}
@@ -734,9 +751,14 @@ def searching(ingredients):
     recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
     return recipes_new
 
-
 @app.route('/api/chat', methods=["POST"])
 def chatting():
+    def clear():
+        context[user_id] = {"step": "add",
+                            "ingredients": this_context.get("ingredients", []) if this_context else []}
+        return jsonify({"answer": {"from": "bot",
+                                   "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
+
     if not request.json:
         abort(400)
 
@@ -749,19 +771,37 @@ def chatting():
         abort(400)
 
     user_id = session_.user_id
+    this_context = context.get(user_id)
 
     res = challenge_command(text.lower().strip(), schema_list)
-    print(res)
 
-    if res.get("рецепт"):
-        recipes = searching(res.get("ingredients"))
+    print(this_context)
+    if res:
+        if res.get("type") == 'рецепт':
+            recipes = searching(res.get("ingredients"))
+            if recipes:
+                return jsonify({"answer": {"from": "bot", "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:", "data": recipes}})
+            else:
+                return clear()
+    elif this_context and this_context.get("step") == "add":
+        context[user_id]['step'] = "add2"
+        return jsonify({"answer": {"from": "bot",
+                                   "text": "Хорошо, перечислите их."}})
+    elif this_context and this_context.get("step") == "add2":
+        text = re.sub("[^аА-яЯ ]", "", text.lower().strip())
+        context[user_id] = {"step": "add",
+                            "ingredients": [*this_context.get("ingredients", []), text.split(" ")]}
+        recipes = searching(text)
         if recipes:
-            return jsonify({"answer": {"from": "bot", "text": "Конечно! Вот что я нашел:", "data": recipes}})
-        else:
-            context[user_id] = {"step": "add",
-                                "ingredients": []}  # Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов.
             return jsonify({"answer": {"from": "bot",
-                                       "text": "К сожалению, я не смог найти рецепты по указанным ингредиентам. Хотели бы вы добавить еще ингредиентов?"}})
+                                       "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:",
+                                       "data": recipes}})
+        else:
+            return clear()
+
+    else:
+        return clear()
+
     return jsonify({"answer": {"from": "bot", "text": "Попросите меня найти рецепт, я пришлю его прямо сюда!"}})
 
 

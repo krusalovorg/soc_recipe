@@ -45,8 +45,7 @@ mail = Mail(app)
 cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("en_EU")
-
+dictionary = enchant.Dict("ru_RU")
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -160,7 +159,7 @@ def get_user_profile():
 
         subs = get_subs(user.id)
 
-        print("SUBS",subs)
+        print("SUBS", subs)
 
         return jsonify({
             "status": True,
@@ -187,6 +186,7 @@ def get_subs(user_id) -> list:
             del sub_user['admin']
             subscriptions.append(sub_user)
     return subscriptions
+
 
 # Получаем свой профль
 @app.route("/api/get_profile", methods=["POST"])
@@ -232,10 +232,10 @@ def sub_profile():
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:  # Эта сессия валидна
             user = session.query(User).filter_by(id=ses.user_id).first()
-            print('sub', user.tag,user_for)
+            print('sub', user.tag, user_for)
             user_to_user_exist = session.query(Subscriptions).filter_by(user_id_parent=user.id,
                                                                         user_id_child=user_for).first()
-            print('isjdasiojdioasjdoiajdois',user_to_user_exist)
+            print('isjdasiojdioasjdoiajdois', user_to_user_exist)
             if user_to_user_exist:
                 return jsonify({"status": False})
             user__for = Subscriptions(user_id_parent=ses.user_id, user_id_child=user_for)
@@ -259,7 +259,7 @@ def unsub_profile():
             del_subscriptions = session.query(Subscriptions).filter_by(
                 user_id_parent=user.id,
                 user_id_child=user_for).first()
-            print('unsub',del_subscriptions)
+            print('unsub', del_subscriptions)
             if del_subscriptions:
                 session.delete(del_subscriptions)
                 session.commit()
@@ -589,6 +589,24 @@ def get_recipes():
     return jsonify({'recipe': recipes_dicts})
 
 
+# Рекомндации что приготовить
+@app.route("/api/what_to_cook", methods=["GET"])
+def what_to_cook():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey)
+    if ses:
+        return_recipes = []
+        recipes = session.query(Recipe).all()
+        for recipe in recipes.index(random.sample(recipes, 4)):
+            return_recipes.append(recipe)
+        return jsonify({"status": True,
+                        "recipes": return_recipes})
+    return jsonify({"status": False,
+                    "err": "User session not found"})
+
+
 # получение рекомендаций
 @app.route("/api/get_recomendations", methods=["POST"])
 def get_recommendations():
@@ -677,6 +695,7 @@ def search_all(search_text=None, filter_text=None, categories=None, only_categor
 
     return recipes_array
 
+
 @app.route('/api/search', methods=['POST'])
 def search():
     search_text = request.json.get('search_text')
@@ -764,10 +783,12 @@ def searching(ingredients):
     recipes_new = [recipe_dict for recipe_dict, score in filtered_recipes]
     return recipes_new
 
+
 def send_recipes(recipes):
     return jsonify({"answer": {"from": "bot",
                                "text": "Вот несколько рецептов, которые вы можете приготовить из этих ингредиентов:",
                                "data": recipes}})
+
 
 @app.route('/api/chat', methods=["POST"])
 def chatting():
@@ -806,7 +827,7 @@ def chatting():
                 recipes_array = []
                 ingr_str = ""
                 for ingr in res.get("ingredients", []):
-                    ingr_str += morph.parse(ingr)[0].normal_form+" "
+                    ingr_str += morph.parse(ingr)[0].normal_form + " "
                 recipes_array += search_all(ingr_str, False, False, False)
                 if recipes_array:
                     return send_recipes(recipes_array)

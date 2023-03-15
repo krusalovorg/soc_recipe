@@ -47,6 +47,7 @@ cods = {"2": [60104, datetime.datetime.now()]}
 morph = pymorphy2.MorphAnalyzer(lang='ru')
 dictionary = enchant.Dict("ru_RU")
 
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     return jsonify({"status": True})
@@ -595,10 +596,14 @@ def what_to_cook():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
+    catgr = request.json.get("catgr")
     ses = session.query(Sessions).filter_by(sshkey=sshkey)
-    if ses:
+    if ses:  # Session valid
         return_recipes = []
-        recipes = session.query(Recipe).all()
+        if catgr:  # Empty categories
+            recipes = session.query(Recipe).filter_by(category=catgr).all()
+        else:
+            recipes = session.query(Recipe).all()
         for recipe in recipes.index(random.sample(recipes, 4)):
             return_recipes.append(recipe)
         return jsonify({"status": True,

@@ -45,7 +45,7 @@ mail = Mail(app)
 cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("ru_RU")
+dictionary = enchant.Dict("en_EN")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -798,7 +798,7 @@ def get_messages():
     return ({"status": False, "err": "User not found"})
 
 
-@app.route("/api/get_chats_list", method=["GET"])
+@app.route("/api/get_chats_list", methods=["GET"])
 def get_chats_list():
     if not request.json:
         abort(400)

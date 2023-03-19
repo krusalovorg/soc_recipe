@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Sessions, \
-    Commetns, Subscriptions, DM, Category
+    Commetns, Subscriptions, DM, Category, Messages, Chats
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -735,6 +735,52 @@ def search():
     recipes_array = search_all(search_text, filter_text, categories, only_categories)
 
     return jsonify({"recipes": recipes_array, 'users': users_array})
+
+
+@app.route("/api/create_message", methods=["POST"])
+def create_message():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    id_ = request.json.get("id")
+    text = request.json.get("text")
+    chat_id = request.json.get("chat_id")
+    user_id = session.query(Sessions).order_by(sshkey=sshkey).first()
+    if user_id:
+        new_message = Messages(chat=chat_id, author=user_id, text=text)
+        session.add(new_message)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False, "err": "User not found"})
+
+
+@app.route("/api/edit_message", methods=["POST"])
+def edit_message():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    message_id = request.json.get("message_id")
+    text = request.json.get("text")
+    user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if user_id:
+        message = session.query(Messages).filter_by(message_id=message_id).first()
+        message.text = text
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False, "err": "User not found"})
+
+
+@app.route("/api/get_messages", methods=["GET"])
+def get_messages():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    chat_id = request.json.get("chat_id")
+    user_id = session.query(Sessions).filter_by(shhkey=sshkey)
+    if user_id:
+        messages = session.query(Messages).count(30).filter_by(chat_id=chat_id)
+        return jsonify({"status": True, "messages": messages})
+    return ({"status": False, "err": "User not found"})
 
 
 # krusalovorg

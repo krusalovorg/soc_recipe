@@ -84,7 +84,7 @@ class User(SqlBase, UserMixin, SerializerMixin):
                                      secondary='user_to_user',
                                      primaryjoin=id == associated_users_to_users.c.user_id_parent,
                                      secondaryjoin=id == associated_users_to_users.c.user_id_child,
-                                     backref="subscribers",)
+                                     backref="subscribers", )
 
     def __repr__(self):
         return f'<User> {self.id} {self.surname} {self.name}'
@@ -162,6 +162,24 @@ class Subscriptions(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id_parent = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
     user_id_child = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
+def Chats(Sqlbase):
+    __tablename__ = "chats"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user1 = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    user2 = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    created_date = sqlalchemy.Date
+
+def Messages(Sqlbase):
+    __tablename__ = "messages"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    chat = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("chats.id"))
+    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    text = sqlalchemy.Column(sqlalchemy.String(length=1500))
+    date = date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 
 
 associated_access = sqlalchemy.Table(

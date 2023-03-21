@@ -356,7 +356,7 @@ def add_like():
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
-    if all(sshkey, recipe_id):
+    if all([sshkey, recipe_id]):
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.id).first()
         if user:  # проверка что сесия валидна
@@ -365,8 +365,8 @@ def add_like():
             if like:
                 session.delete(like)
             else:
-                new_like = associated_users(user_id=user.id, recipe_id=recipe_id)
-                session.add(new_like)
+                new_like = associated_users.insert().values(user_id=user.id, recipe_id=recipe_id)
+                session.execute(new_like)
             session.commit()
             return jsonify({"status": True})
     return jsonify({"status": False})

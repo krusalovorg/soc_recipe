@@ -581,65 +581,13 @@ def get_recipes():
     from_num = request.args.get('f') or 0
     to_num = request.args.get('t') or 10
     recipes = list(session.query(Recipe).all())[int(from_num):int(to_num)]
-    recipes_dicts = []
+    callbacck = []
     for recipe in recipes:
-        recipes_dicts.append(recipe.as_dict())
-    return jsonify({'recipe': recipes_dicts})
-
-
-# Рекомндации что приготовить
-@app.route("/api/what_to_cook", methods=["GET"])
-def what_to_cook():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    catgr = request.json.get("catgr")
-    ses = session.query(Sessions).filter_by(sshkey=sshkey)
-    if ses:  # Session valid
-        return_recipes = []
-        if catgr:  # Empty categories
-            recipes = session.query(Recipe).filter_by(category=catgr).all()
-        else:
-            recipes = session.query(Recipe).all()
-        for recipe in recipes.index(random.sample(recipes, 4)):
-            return_recipes.append(recipe)
-        return jsonify({"status": True,
-                        "recipes": return_recipes})
-    return jsonify({"status": False,
-                    "err": "User session not found"})
-
-
-# получение рекомендаций
-@app.route("/api/get_recomendations", methods=["POST"])
-def get_recommendations():
-    if not request.json:
-        abort(400)
-    sshkey = request.json.get("sshkey")
-    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-    if ses:
-        subscriptions = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id).limit(20)
-        subsc = []
-        for sub in subscriptions:
-            subsc.append(session.query(User).filter_by(id=sub.user_id_child).first())
-        frend_arr = []
-        if len(subsc) > 0:
-            for friend in subsc:
-                if friend:
-                    for recipe in session.query(Recipe).filter_by(author=friend.tag).limit(3):
-                        frend_arr.append(recipe.as_dict())
-        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.likes)).limit(10)
-        # if frend_arr != []:
-        #     recomendations.union(frend_arr)
-        rec_dicts = [] + frend_arr
-        for rec in recomendations:
-            rec_dicts.append(rec.as_dict())
-        rec_dicts_new = []
-        for rec_dict in rec_dicts:
-            if rec_dict not in rec_dicts_new:
-                rec_dicts_new.append(rec_dict)
-        # rec_dicts_new = random.shuffle(rec_dicts)
-        return jsonify({"status": True, "recipes": rec_dicts_new})
-    return jsonify({"status": False, "recipes": []})
+        recipe = recipe.as_dict()
+        likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
+        comments = session.query(Commetns).filter_by(recipe_id=recipe.id).all()
+        callbacck.append({"recipe": recipe, "likes": len(likes), "comments": len(comments)})
+    return jsonify({"status": True, 'recipe': callbacck})
 
 
 # Получить рецепт
@@ -661,6 +609,58 @@ def get_recipe():
 
         return jsonify({'status': True, 'recipe': recipe_json})
     return jsonify({'status': False})
+
+
+# получение рекомендаций
+@app.route("/api/get_recomendations", methods=["POST"])
+def get_recommendations():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    if ses:
+        subscriptions = session.query(Subscriptions).filter_by(user_id_parent=ses.user_id).limit(20)
+        subsc = []
+        for sub in subscriptions:
+            subsc.append(session.query(User).filter_by(id=sub.user_id_child).first())
+        frend_arr = []
+        if len(subsc) > 0:
+            for friend in subsc:
+                if friend:
+                    for recipe in session.query(Recipe).filter_by(author=friend.tag).limit(3):
+                        frend_arr.append(recipe.as_dict())
+        likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
+        recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.views)).limit(10)
+        rec_dicts_new = [] + frend_arr
+        for recipe in recomendations:
+            if recipe not in rec_dicts_new:
+                likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
+                comments = session.query(Commetns).filter_by(recipe_id=recipe.id).all()
+                rec_dicts_new.append({"rec_dict": recipe, "likes": len(likes), "comments": len(comments)})
+        return jsonify({"status": True, "recipes": rec_dicts_new})
+    return jsonify({"status": False, "recipes": []})
+
+
+# Что приготовить
+@app.route("/api/what_to_cook", methods=["GET"])
+def what_to_cook():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    catgr = request.json.get("catgr")
+    ses = session.query(Sessions).filter_by(sshkey=sshkey)
+    if ses:  # Session valid
+        return_recipes = []
+        if catgr:  # Empty categories
+            recipes = session.query(Recipe).filter_by(category=catgr).all()
+        else:
+            recipes = session.query(Recipe).all()
+        for recipe in recipes.index(random.sample(recipes, 4)):
+            return_recipes.append(recipe)
+        return jsonify({"status": True,
+                        "recipes": return_recipes})
+    return jsonify({"status": False,
+                    "err": "User session not found"})
 
 
 def search_all(search_text=None, filter_text=None, categories=None, only_categories=True):

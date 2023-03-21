@@ -164,7 +164,7 @@ class Subscriptions(SqlBase):
     user_id_child = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
 
 
-def Chats(Sqlbase):
+class Chats(SqlBase):
     __tablename__ = "chats"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
@@ -172,7 +172,8 @@ def Chats(Sqlbase):
     user2 = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     created_date = sqlalchemy.Date
 
-def Messages(Sqlbase):
+
+class Messages(SqlBase):
     __tablename__ = "messages"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

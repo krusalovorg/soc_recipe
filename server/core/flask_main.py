@@ -45,7 +45,7 @@ mail = Mail(app)
 cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("ru_RU")
+dictionary = enchant.Dict("en_EN")
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -753,6 +753,21 @@ def create_message():
     return jsonify({"status": False, "err": "User not found"})
 
 
+@app.route("/api/delete_message", methods=["POST"])
+def delete_message():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    message_id = request.json.get("message_id")
+    user_id = session.query(Sessions).filter_by(sshkey=sshkey).first()
+    message = session.query(Messages).filter_by(id=message_id)
+    if user_id == message.author:
+        session.delete(message)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
+
+
 @app.route("/api/edit_message", methods=["POST"])
 def edit_message():
     if not request.json:
@@ -777,9 +792,31 @@ def get_messages():
     chat_id = request.json.get("chat_id")
     user_id = session.query(Sessions).filter_by(shhkey=sshkey)
     if user_id:
-        messages = session.query(Messages).count(30).filter_by(chat_id=chat_id)
+        messages = session.query(Messages).filter_by(chat_id=chat_id).all()[:30]
         return jsonify({"status": True, "messages": messages})
     return ({"status": False, "err": "User not found"})
+
+
+@app.route("/api/get_chats_list", methods=["GET"])
+def get_chats_list():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_id = session.query(Sessions).filter_by(shhkey=sshkey)
+    if user_id:
+        extend_chats = []
+        chats = session.query(Chats).filter_by(sqlalchemy.or_(Chats.user1 == user_id, Chats.user2 == user_id)).all()
+        for chat in chats:
+            if chat.user1 == user_id:
+                user_obj = session.query(User).filter_by(id=chat.user2).first()
+            else:
+                user_obj = session.query(User).filter_by(id=chat.user1).first()
+            message = session.query(Messages).filter_by(chat=chat.id).order_by(sqlalchemy.desc(session.date)).all()[-1]
+            last_message = {"text": message.text, "date": message.date}
+            user = {"avatar": user_obj.avatar, "name": user_obj.name}
+            extend_chats.append([last_message, user])
+        return jsonify({"status": True, "extend_chats": extend_chats})
+    return jsonify({"status": False, "err": "User not found"})
 
 
 # krusalovorg

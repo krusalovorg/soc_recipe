@@ -205,14 +205,13 @@ def get_profile():
             new_recipes.append(recipe.as_dict())
 
         subs = get_subs(user.id)
-        print(subs)
         return jsonify({
             "status": True,
             "name": user.name,
             "surname": user.surname,
             "tag": user.tag,
             "email": user.email,
-            "likes": user.likes,
+            "likes": len(user.likes),
             'recipes': new_recipes,
             "user_id": user.id,
             "subscriptions": subs,

@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Sessions, \
-    Commetns, Subscriptions, DM, Category, Messages, Chats
+    Commetns, Subscriptions, DM, Category, Messages, Chats, associated_users
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -174,7 +174,7 @@ def get_user_profile():
     return jsonify({"status": False})
 
 
-def get_subs(user_id) -> list:
+def get_subs(user_id: int) -> list:
     subscriptions_users_id = session.query(Subscriptions).filter_by(user_id_parent=user_id).all()
     subscriptions = []  # Нужно переписать это не оптимизированый for
     for sub in subscriptions_users_id:
@@ -356,19 +356,17 @@ def add_like():
         abort(400)
     sshkey = request.json.get("sshkey")
     recipe_id = request.json.get("recipe_id")
-    if sshkey and recipe_id:
+    if all(sshkey, recipe_id):
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         user = session.query(User).filter_by(id=ses.id).first()
-        if user:
+        if user:  # проверка что сесия валидна
             recipe = session.query(Recipe).filter_by(id=recipe_id).first()
-            likes = recipe.likes
-            if isinstance(likes, str):
-                likes = likes.split('|')
-            if str(user.id) in likes:
-                likes.remove(str(user.id))
+            like = session.query(associated_users).filter_by(user_id=user.id, recipe_id=recipe_id).first()
+            if like:
+                session.delete(like)
             else:
-                likes.append(str(user.id))
-            recipe.likes = '|'.join(likes)
+                new_like = associated_users(user_id=user.id, recipe_id=recipe_id)
+                session.add(new_like)
             session.commit()
             return jsonify({"status": True})
     return jsonify({"status": False})

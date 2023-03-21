@@ -28,10 +28,11 @@ class Recipe(SqlBase):
     carbohydrates = sqlalchemy.Column(sqlalchemy.Integer)
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
     views = sqlalchemy.Column(sqlalchemy.Integer)
-    likes = sqlalchemy.Column(sqlalchemy.String)
+    # лайки берём у юзеров они хранятся у них
     image = sqlalchemy.Column(sqlalchemy.String)
     ingredients = sqlalchemy.Column(sqlalchemy.JSON)
     description = sqlalchemy.Column(sqlalchemy.String)
+
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
 

@@ -629,14 +629,13 @@ def get_recommendations():
                 if friend:
                     for recipe in session.query(Recipe).filter_by(author=friend.tag).limit(3):
                         frend_arr.append(recipe.as_dict())
-        likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
         recomendations = session.query(Recipe).order_by(sqlalchemy.desc(Recipe.views)).limit(10)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
                 likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
                 comments = session.query(Commetns).filter_by(recipe_id=recipe.id).all()
-                rec_dicts_new.append({"rec_dict": recipe, "likes": len(likes), "comments": len(comments)})
+                rec_dicts_new.append({"rec_dict": recipe.as_dict(), "likes": len(likes), "comments": len(comments)})
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})
 

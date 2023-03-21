@@ -742,7 +742,6 @@ def create_message():
     if not request.json:
         abort(400)
     sshkey = request.json.get("sshkey")
-    id_ = request.json.get("id")
     text = request.json.get("text")
     chat_id = request.json.get("chat_id")
     user_id = session.query(Sessions).order_by(sshkey=sshkey).first()

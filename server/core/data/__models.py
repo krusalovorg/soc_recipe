@@ -27,6 +27,7 @@ class Recipe(SqlBase):
     fats = sqlalchemy.Column(sqlalchemy.Integer)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Integer)
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
+    author_id = sqlalchemy.Column(sqlalchemy.Integer,sqlalchemy.ForeignKey('users.id'))
     views = sqlalchemy.Column(sqlalchemy.Integer)
     # лайки берём у associated_users они хранятся у них по user_id or recipe_id
     image = sqlalchemy.Column(sqlalchemy.String)

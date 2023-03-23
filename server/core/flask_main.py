@@ -619,26 +619,26 @@ def get_recommendations():
     sshkey = request.json.get("sshkey")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
-        subscriptions = session.query(Subscriptions).filter_by(user_id_child=ses.user_id).limit(20)
+        subscriptions = session.query(Subscriptions).filter_by(user_id_child=ses.user_id).limit(20).all()
         frend_arr = []
         if len(subscriptions) > 0:
             for sub in subscriptions:
-                recipes = session.query(Recipe, associated_users, Commetns)
-                recipes = recipes.outerjoin(associated_users, Recipe.id == associated_users.recipe_id)
-                recipes = recipes.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
-                recipes = recipes.filter_by(author_id=sub.user_id_child).limit(3)
+                recipes = session.query(Recipe).filter_by(author_id=sub.user_id_child)
+                recipes = recipes.limit(3).all()
                 for recipe in recipes:
-                    frend_arr.append(recipe.as_dict())
-        recomendations = session.query(Recipe, associated_users, Commetns)
-        recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.recipe_id)
-        recomendations = recomendations.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
-        recomendations = recomendations.order_by(sqlalchemy.desc()).limit(10)
-        print(recomendations)
+                    like = session.query(associated_users).filter_by(recipe_id=recipe.id).count()
+                    com = session.query(Commetns).filter_by(recipe_id=recipe.id).count()
+                    frend_arr.append({"recipe": recipe.as_dict(), "like": like, "com": com})
+        recomendations = session.query(Recipe)
+        recomendations = recomendations.order_by(sqlalchemy.desc(Recipe.views)).limit(3).all()
         rec_dicts_new = [] + frend_arr
+
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
+                like = session.query(associated_users).filter_by(recipe_id=recipe.id).count()
+                com = session.query(Commetns).filter_by(recipe_id=recipe.id).count()
+                rec_dicts_new.append({"recipe": recipe.as_dict(), "like": like, "com": com})
 
-                rec_dicts_new.append({"rec_dict": recipe.as_dict(), "likes": len(likes), "comments": len(comments)})
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})
 

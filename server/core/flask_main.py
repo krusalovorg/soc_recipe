@@ -21,7 +21,6 @@ from fuzzywuzzy import fuzz
 
 from server.core.utils.cmd2dict import challenge_command, parse_command
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
 app.config['MAIL_SERVER'] = 'smtp.mail.ru'
@@ -44,7 +43,6 @@ mail = Mail(app)
 cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -789,11 +787,28 @@ def get_messages():
         abort(400)
     sshkey = request.json.get("sshkey")
     chat_id = request.json.get("chat_id")
+    start = request.json.get("start") or 0
+    end = request.json.get("end") or 30
     user_id = session.query(Sessions).filter_by(shhkey=sshkey)
     if user_id:
-        messages = session.query(Messages).filter_by(chat_id=chat_id).all()[:30]
+        messages = session.query(Messages).filter_by(chat_id=chat_id).all()[start:end]
         return jsonify({"status": True, "messages": messages})
     return ({"status": False, "err": "User not found"})
+
+
+@app.route("/api/start_chat", methods=["POST"])
+def start_chat():
+    if not request.json:
+        abort(400)
+    sshkey = request.json.get("sshkey")
+    user_with = request.json.get("user_with")
+    user_id = session.query(Sessions).filter_by(shhkey=sshkey)
+    if all([user_id, user_with]):
+        new_chat = Chats(user1=user_id, user2=user_with)
+        session.add(new_chat)
+        session.commit()
+        return jsonify({"status": True})
+    return jsonify({"status": False})
 
 
 @app.route("/api/get_chats_list", methods=["GET"])

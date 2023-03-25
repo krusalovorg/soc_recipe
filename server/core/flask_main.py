@@ -21,7 +21,6 @@ from fuzzywuzzy import fuzz
 
 from server.core.utils.cmd2dict import challenge_command, parse_command
 
-import enchant
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "SECRET_VERY_SECRET_KEY"
@@ -45,7 +44,7 @@ mail = Mail(app)
 cods = {"2": [60104, datetime.datetime.now()]}
 
 morph = pymorphy2.MorphAnalyzer(lang='ru')
-dictionary = enchant.Dict("en_EN")
+
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -619,25 +618,26 @@ def get_recommendations():
     sshkey = request.json.get("sshkey")
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if ses:
-        subscriptions = session.query(Subscriptions).filter_by(user_id_child=ses.user_id).limit(20)
+        subscriptions = session.query(Subscriptions).filter_by(user_id_child=ses.user_id).limit(20).all()
         frend_arr = []
         if len(subscriptions) > 0:
             for sub in subscriptions:
-                recipes = session.query(Recipe, associated_users, Commetns)
-                recipes = recipes.outerjoin(associated_users, Recipe.id == associated_users.recipe_id)
+                recipes = session.query(Recipe, associated_users, Commetns).filter_by(author_id=sub.user_id_child)
+                recipes = recipes.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
                 recipes = recipes.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
-                recipes = recipes.filter_by(author_id=sub.user_id_child).limit(3)
+                recipes = recipes.limit(3)
                 for recipe in recipes:
                     frend_arr.append(recipe.as_dict())
         recomendations = session.query(Recipe, associated_users, Commetns)
-        recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.recipe_id)
+        recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
         recomendations = recomendations.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
         recomendations = recomendations.order_by(sqlalchemy.desc()).limit(10)
         print(recomendations)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
-
+                likes = [2]
+                comments = [2]
                 rec_dicts_new.append({"rec_dict": recipe.as_dict(), "likes": len(likes), "comments": len(comments)})
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})

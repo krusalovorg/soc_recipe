@@ -27,11 +27,13 @@ class Recipe(SqlBase):
     fats = sqlalchemy.Column(sqlalchemy.Integer)
     carbohydrates = sqlalchemy.Column(sqlalchemy.Integer)
     author = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey('users.tag'))
+    author_id = sqlalchemy.Column(sqlalchemy.Integer,sqlalchemy.ForeignKey('users.id'))
     views = sqlalchemy.Column(sqlalchemy.Integer)
-    likes = sqlalchemy.Column(sqlalchemy.String)
+    # лайки берём у associated_users они хранятся у них по user_id or recipe_id
     image = sqlalchemy.Column(sqlalchemy.String)
     ingredients = sqlalchemy.Column(sqlalchemy.JSON)
     description = sqlalchemy.Column(sqlalchemy.String)
+
 
     user_access = orm.relationship('User', secondary='recipes_access_to_users', backref='recipes')
 
@@ -84,7 +86,7 @@ class User(SqlBase, UserMixin, SerializerMixin):
                                      secondary='user_to_user',
                                      primaryjoin=id == associated_users_to_users.c.user_id_parent,
                                      secondaryjoin=id == associated_users_to_users.c.user_id_child,
-                                     backref="subscribers",)
+                                     backref="subscribers", )
 
     def __repr__(self):
         return f'<User> {self.id} {self.surname} {self.name}'
@@ -162,6 +164,25 @@ class Subscriptions(SqlBase):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     user_id_parent = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
     user_id_child = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+
+
+class Chats(SqlBase):
+    __tablename__ = "chats"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    user1 = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    user2 = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    created_date = sqlalchemy.Date
+
+
+class Messages(SqlBase):
+    __tablename__ = "messages"
+
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    chat = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("chats.id"))
+    author = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    text = sqlalchemy.Column(sqlalchemy.String(length=1500))
+    date = date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 
 
 associated_access = sqlalchemy.Table(

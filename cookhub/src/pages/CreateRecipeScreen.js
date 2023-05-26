@@ -169,6 +169,7 @@ const CreateRecipeScreen = ({ navigation }) => {
     launchImageLibrary({ title: 'Выберете изображение' }, (response) => {
       if (!response.didCancel && !response.error) {
         setImage(response);
+        console.log(response)
       }
     });
   };
@@ -179,12 +180,12 @@ const CreateRecipeScreen = ({ navigation }) => {
         <RecipeInput label={"Название"} placeholder={"Введите название рецепта"} value={title} setValue={setTitle} />
         <RecipeInput label={"Описание"} placeholder={"Введите описание блюда"} value={description} setValue={setDescription} />
 
-        <Button title="Выберете изображение" onPress={selectImage} />
+        <Button title="Выберите изображение" onPress={selectImage} />
 
         {image && (
           <View>
             <Text>Выбранное изображение:</Text>
-            <Image source={{ uri: image.uri }} style={{ width: 200, height: 200 }} />
+            <Image source={{ uri: image.assets.uri }} style={{ width: 200, height: 200 }} />
           </View>
         )}
 

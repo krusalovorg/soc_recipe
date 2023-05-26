@@ -77,6 +77,8 @@ const RecipeScreen = ({ navigation, route }) => {
     }
 
     async function updateLike() {
+        setLike(true);
+        setLikes([0])
         const res = await likeRecipe(data.id, token);
         if (res) {
             setLike(!like);

@@ -673,7 +673,7 @@ def search_all(search_text=None, filter_text=None, categories=None, only_categor
                                                               Recipe.ingredients.like(pattern),
                                                               Recipe.description.like(pattern), )).all()
     recipes_array = [recipe.as_dict() for recipe in recipes]
-    print(recipes)
+    print('res',recipes_array)
 
     return recipes_array
 
@@ -807,7 +807,7 @@ def chatting():
                 ingr_str = ""
                 for ingr in res.get("ingredients", []):
                     ingr_str += morph.parse(ingr)[0].normal_form+" "
-                recipes_array += search_all(ingr_str, False, False, False)
+                recipes_array += search_all(ingr_str.strip().title(), False, False, False)
                 if recipes_array:
                     return send_recipes(recipes_array)
                 else:

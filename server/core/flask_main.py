@@ -627,6 +627,8 @@ def get_recommendations():
                 recipes = recipes.outerjoin(Comments, Comments.recipe_id == Recipe.id)
                 recipes = recipes.limit(3).all()
                 for recipe in recipes:
+                    if recipe[1] is None: recipe[1] = 0
+                    if recipe[2] is None: recipe[2] = 0
                     frend_arr.append([recipe[0].as_dict(),recipe[1],recipe[2]])
         recomendations = session.query(Recipe, associated_users, Comments)
         recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
@@ -635,7 +637,10 @@ def get_recommendations():
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
-                likes = recipe[3]
+                print(recipe)
+                if recipe[2] is None: recipe[2] = 0
+                if recipe[3] is None: recipe[3] = 0
+                likes = recipe[2]
                 comments = recipe[3]
                 recipe_json = recipe[0].as_dict()
                 recipe_json["likes"] = likes.count()

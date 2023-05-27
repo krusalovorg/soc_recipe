@@ -87,6 +87,17 @@ export default function DrawerProfile(props) {
                             })
                         }}
                     />
+                    <DrawerItem
+                        style={styles.drawerItem}
+                        labelStyle={[styles.drawerLabel, styles.drawerSelect]}
+                        label="Вегетарианское"
+                        onPress={() => {
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'home', params: { categories: ['Вегетарианское'], title: 'Блюда вегетарианские' } }]
+                            })
+                        }}
+                    />
                 </View>
             }
             {/* <View style={{ height: 2, width: '100%', backgroundColor: '#F2F4F5' }} /> */}

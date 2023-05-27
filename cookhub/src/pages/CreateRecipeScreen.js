@@ -198,6 +198,7 @@ const CreateRecipeScreen = ({ navigation }) => {
           <Picker.Item label="Завтрак" value="Завтрак" />
           <Picker.Item label="Обед" value="Обед" />
           <Picker.Item label="Ужин" value="Ужин" />
+          <Picker.Item label="Вегетарианское" value="Вегетарианское" />
         </Picker>
 
 

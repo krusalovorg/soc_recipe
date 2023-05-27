@@ -17,7 +17,7 @@ const HomeScreen = ({ navigation, route }) => {
     const [searchUsers, setSearchUsers] = useState([]);
     const [title, setTitle] = useState("Актуальное");
 
-    const {token} = useContext(AuthContext);
+    const { token } = useContext(AuthContext);
 
     async function loadRecipies() {
         setRefreshing(true);
@@ -46,9 +46,9 @@ const HomeScreen = ({ navigation, route }) => {
     async function loadRecipesWithCategories(text, categories) {
         const recipes = await searchRecipeOnlyCategorys(text, categories);
         if (recipes != null && typeof recipes.recipes != undefined) {
-            console.log("GET",text,categories, recipes.recipes)
+            console.log("GET", text, categories, recipes.recipes)
             setRecipies(recipes.recipes);
-            console.log('EXIT',recipies)
+            console.log('EXIT', recipies)
         } else {
             setRecipies([])
         }
@@ -101,24 +101,53 @@ const HomeScreen = ({ navigation, route }) => {
                     <Image style={styles.searchIcon} source={search_png} />
                 </View>
                 <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.categories}>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Ужин","Блюда на ужин")}>
+                    <TouchableHighlight style={styles.category} onPress={() => loadRecipies()}>
+                        <Text>
+                            Актуальное
+                        </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Ужин", "Блюда на ужин")}>
                         <Text>
                             Ужин
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Обед","Блюда на обед")}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Обед", "Блюда на обед")}>
                         <Text>
                             Обед
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Завтрак","Блюда на завтрак")}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Завтрак", "Блюда на завтрак")}>
                         <Text>
                             Завтрак
                         </Text>
                     </TouchableHighlight>
-                    <TouchableHighlight style={styles.category} onPress={() => loadRecipies()}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("Вегетарианское", "Блюда вегатерианские")}>
                         <Text>
-                            Актуальное
+                            Вегетарианское
+                        </Text>
+                    </TouchableHighlight>
+                </ScrollView>
+                <View style={{ width: "100%", paddingHorizontal: 10, backgroundColor: "#F2F4F5", height: 2, marginVertical: 5 }}></View>
+                <Text style={styles.desc_c}>Калорийность</Text>
+                <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.categories}>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("200k", "Блюда для похудения")}>
+                        <Text>
+                            Похудение
+                        </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("300k", "Блюда сбалансированные")}>
+                        <Text>
+                            Сбалансированное
+                        </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("400k", "Блюда до 400 калорий")}>
+                        <Text>
+                            До 400
+                        </Text>
+                    </TouchableHighlight>
+                    <TouchableHighlight style={styles.category} onPress={() => openCategories("500k", "Блюда до 500 калорий")}>
+                        <Text>
+                            До 500
                         </Text>
                     </TouchableHighlight>
                 </ScrollView>
@@ -175,6 +204,13 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         marginLeft: 15,
         fontFamily: 'Montserrat-Regular'
+    },
+
+    desc_c: {
+        fontFamily: 'Montserrat-Regular',
+        fontSize: 15,
+        fontWeight: "400",
+        paddingLeft: 10
     },
 
     searchSection: {

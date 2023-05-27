@@ -724,6 +724,15 @@ def search():
         print(new_words)
         search_text = new_words[max(new_words.keys())]
     """
+
+    if categories[0].endswith("k"):
+        value = int(categories[0][:2])
+        recipes = session.query(Recipe).filter(Recipe.calories < value).all()
+        recipes_array = []
+        for recipe in recipes:
+            recipes_array.append(recipe.as_dict())
+        return jsonify({"recipes": recipes_array, 'users': []})
+
     pattern = '%' + '%'.join(search_text.split(" ")) + '%'
 
     users_array = []

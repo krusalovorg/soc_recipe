@@ -2,6 +2,8 @@ import React from "react";
 import { useState } from "react";
 import { TextInput, StyleSheet, Image, Text, View, TouchableHighlight, ActivityIndicator } from "react-native";
 import { server_ip } from "../api/config";
+import { useContext } from "react";
+import { ConfigContext } from "../context/auth.context";
 
 function getLikesText(likesCount) {
     if (likesCount === 1) {
@@ -15,6 +17,7 @@ function getLikesText(likesCount) {
 
 function Recipe(props) {
     const [loading, setLoading] = useState(true);
+    const {ip} = useContext(ConfigContext);
     // const parsedList = props.data.likes.split('|').filter(Boolean).map(item => parseInt(item));
 
     function onLoadEnd() {
@@ -36,7 +39,7 @@ function Recipe(props) {
                     <Image
                         style={[styles.image, (loading?{width: 0, height: 0}:{})]}
                         onLoadEnd={onLoadEnd}
-                        source={{ uri: server_ip + "/get_image/" + props.data.image }} />
+                        source={{ uri: ip + "/get_image/" + props.data.image }} />
                     <ActivityIndicator
                         style={[styles.activityIndicator, (loading?{}:{width: 0, height: 0})]}
                         animating={loading}

@@ -143,7 +143,7 @@ class DM(SqlBase):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Commetns(SqlBase):
+class Comments(SqlBase):
     __tablename__ = "Comments"
 
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)

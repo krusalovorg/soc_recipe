@@ -27,6 +27,7 @@ const RecipeScreen = ({ navigation, route }) => {
     const [like, setLike] = useState(false);
     const user = useContext(UserContext);
     const [likes, setLikes] = useState([]);
+    const {ip} = useContext(ConfigContext);
 
     const { token } = useContext(AuthContext);
 
@@ -136,7 +137,7 @@ const RecipeScreen = ({ navigation, route }) => {
         <SafeAreaView style={styles.container}>
             <ImageBackground
                 resizeMode='cover'
-                source={{ uri: server_ip + "/get_image/" + data.image }}
+                source={{ uri: ip + "/get_image/" + data.image }}
                 blurRadius={200}>
                 <View style={styles.title_contanier}>
                     <Text style={styles.title}>{data.title}</Text>
@@ -145,7 +146,7 @@ const RecipeScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>
                 <ScrollView style={styles.page_contanier}>
-                    <Image style={styles.image} source={{ uri: server_ip + "/get_image/" + data.image }} />
+                    <Image style={styles.image} source={{ uri: ip + "/get_image/" + data.image }} />
                     <View style={styles.content}>
                         <Text style={styles.desc}>
                             {data.description}

@@ -22,7 +22,7 @@ import RegScreen from './pages/RegScreen';
 import { Cache } from "react-native-cache";
 import { checkSSHkey, getProfile } from './api/auth';
 import LoginScreen from './pages/LoginScreen';
-import { AuthContext, UserContext } from './context/auth.context';
+import { AuthContext, UserContext, ConfigContext } from './context/auth.context';
 
 import Loader from './components/loader';
 import CreateRecipeScreen from './pages/CreateRecipeScreen';
@@ -43,6 +43,7 @@ const App = () => {
 
   const [dataUser, setDataUser] = useState({});
   const [loading, setLoading] = useState(true);
+  const [ip, setIp] = useState("");
 
   const cache = new Cache({
     namespace: "auth",
@@ -65,6 +66,7 @@ const App = () => {
 
   async function checkLogin(login = false) {
     const sshkey = await cache.get("token");
+    const ip_get = await cache.get("ip");
     if (sshkey) {
       const res = await checkSSHkey(sshkey)
       if (res) {
@@ -85,6 +87,11 @@ const App = () => {
         setIsAuth(false);
       }
     }
+    if (ip_get) {
+      setIp(ip_get)
+    } else {
+      await cache.set("ip", "http://192.168.0.12:8000/api")
+    }
     setLoading(false);
   }
 
@@ -100,71 +107,73 @@ const App = () => {
     <>
       <AuthContext.Provider value={{ token, userId, checkLogin, isAuthenticated, logout }}>
         <UserContext.Provider value={{ ...dataUser, setUser: setDataUser }}>
-          <ErrorBoundary>
-            <NavigationContainer>
-              {(!token || !isAuthenticated) ?
-                <Stack.Navigator>
-                  <Stack.Screen
-                    name="reg"
-                    component={RegScreen}
-                    options={{
-                      title: "Регистрация",
-                      headerShown: false
-                    }} />
-                  <Stack.Screen
-                    name="login"
-                    component={LoginScreen}
-                    options={{
-                      title: "Вход",
-                      headerShown: false
-                    }} />
-                </Stack.Navigator>
-                :
-                <Drawer.Navigator
-                  drawerContent={(props) => <DrawerProfile {...props} />}
-                  initialRouteName={"home"}>
-                  <Drawer.Screen
-                    name="profile"
-                    component={ProfileScreen}
-                    options={{
-                      drawerItemStyle: { height: 0 },
-                      headerShown: false
-                    }} />
-                  <Drawer.Screen
-                    name="add"
-                    component={CreateRecipeScreen}
-                    options={{
-                      title: 'Добавить рецепт',
-                    }} />
-                  <Drawer.Screen
-                    name="home"
-                    component={HomeScreen}
-                    options={{
-                      title: 'Рецепты',
-                    }} />
-                  <Drawer.Screen
-                    name="chat"
-                    component={ChatScreen}
-                    options={{
-                      title: 'CookBot',
-                    }} />
-                  <Drawer.Screen
-                    name="settings"
-                    component={SettingsScreen}
-                    options={{
-                      title: 'Настройки',
-                    }} />
-                  <Drawer.Screen
-                    name="recipe"
-                    component={RecipeScreen}
-                    options={{
-                      drawerItemStyle: { height: 0 },
-                      headerShown: false
-                    }} />
-                </Drawer.Navigator>
-              }
-            </NavigationContainer>
-          </ErrorBoundary>
+          <ConfigContext.Provider value={{ ip }}>
+            <ErrorBoundary>
+              <NavigationContainer>
+                {(!token || !isAuthenticated) ?
+                  <Stack.Navigator>
+                    <Stack.Screen
+                      name="reg"
+                      component={RegScreen}
+                      options={{
+                        title: "Регистрация",
+                        headerShown: false
+                      }} />
+                    <Stack.Screen
+                      name="login"
+                      component={LoginScreen}
+                      options={{
+                        title: "Вход",
+                        headerShown: false
+                      }} />
+                  </Stack.Navigator>
+                  :
+                  <Drawer.Navigator
+                    drawerContent={(props) => <DrawerProfile {...props} />}
+                    initialRouteName={"home"}>
+                    <Drawer.Screen
+                      name="profile"
+                      component={ProfileScreen}
+                      options={{
+                        drawerItemStyle: { height: 0 },
+                        headerShown: false
+                      }} />
+                    <Drawer.Screen
+                      name="add"
+                      component={CreateRecipeScreen}
+                      options={{
+                        title: 'Добавить рецепт',
+                      }} />
+                    <Drawer.Screen
+                      name="home"
+                      component={HomeScreen}
+                      options={{
+                        title: 'Рецепты',
+                      }} />
+                    <Drawer.Screen
+                      name="chat"
+                      component={ChatScreen}
+                      options={{
+                        title: 'CookBot',
+                      }} />
+                    <Drawer.Screen
+                      name="settings"
+                      component={SettingsScreen}
+                      options={{
+                        title: 'Настройки',
+                      }} />
+                    <Drawer.Screen
+                      name="recipe"
+                      component={RecipeScreen}
+                      options={{
+                        drawerItemStyle: { height: 0 },
+                        headerShown: false
+                      }} />
+                  </Drawer.Navigator>
+                }
+              </NavigationContainer>
+            </ErrorBoundary>
+          </ConfigContext.Provider>
         </UserContext.Provider>
       </AuthContext.Provider>
     </>

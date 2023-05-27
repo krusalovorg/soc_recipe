@@ -34,7 +34,7 @@ const LoginScreen = ({ navigation }) => {
         // })
 
         try {
-            const response = await axios.post(server_ip + '/user_login', {
+            const response = await axios.post(await server_ip() + '/user_login', {
                 email,
                 password,
             });

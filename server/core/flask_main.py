@@ -12,7 +12,7 @@ from io import BytesIO
 from PIL import Image
 
 from data.__models import SqlBase, User, Recipe, Sessions, \
-    Commetns, Subscriptions, DM, Category, Messages, Chats, associated_users
+    Comments, Subscriptions, DM, Category, Messages, Chats, associated_users
 
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -70,7 +70,7 @@ def add_comment():
     ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
     if text and ses and recipe_id:
         user = session.query(User).filter_by(id=ses.user_id).first()
-        new_comment = Commetns(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name,
+        new_comment = Comments(user_id=ses.user_id, recipe_id=recipe_id, text=text, name=user.name,
                                surname=user.surname)
         session.add(new_comment)
         session.commit()
@@ -87,7 +87,7 @@ def rem_comment():
     comment_id = request.json.get("comment_id")
     if all(sshkey, comment_id):
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        rem_comment = session.query(Commetns).filter_by(id=comment_id, user_id=ses.user_id)
+        rem_comment = session.query(Comments).filter_by(id=comment_id, user_id=ses.user_id)
         session.delete(rem_comment)
         session.commit()
         return jsonify({"status": True})
@@ -132,7 +132,7 @@ def get_comments():
     recipe_id = request.json.get("recipe_id")
     if all(sshkey, recipe_id):
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
-        get_comments = session.query(Commetns).filter_by(recipe_id=recipe_id, user_id=ses.user_id).all()
+        get_comments = session.query(Comments).filter_by(recipe_id=recipe_id, user_id=ses.user_id).all()
         return jsonify({"status": True,
                         "comments": get_comments})
     return jsonify({"status": False})
@@ -374,7 +374,7 @@ def get_like():
         abort(400)
     recipe_id = request.json.get("recipe_id")
     if recipe_id:
-        recipes = session.query(Commetns).filter_by(recipe_id=recipe_id).all()
+        recipes = session.query(Comments).filter_by(recipe_id=recipe_id).all()
         return jsonify({"status": True, "recipes": recipes})
     return jsonify({"status": False})
 
@@ -584,7 +584,7 @@ def get_recipes():
     for recipe in recipes:
         recipe = recipe.as_dict()
         likes = session.query(associated_users).filter_by(recipe_id=recipe.id).all()
-        comments = session.query(Commetns).filter_by(recipe_id=recipe.id).all()
+        comments = session.query(Comments).filter_by(recipe_id=recipe.id).all()
         callbacck.append({"recipe": recipe, "likes": len(likes), "comments": len(comments)})
     return jsonify({"status": True, 'recipe': callbacck})
 
@@ -596,7 +596,7 @@ def get_recipe():
     recipe = session.query(Recipe).filter_by(id=id_).first()
 
     if recipe:
-        comments = session.query(Commetns).filter_by(recipe_id=id_).all()
+        comments = session.query(Comments).filter_by(recipe_id=id_).all()
         new_comments = []
         for comment in comments:
             new_comments.append(comment.as_dict())
@@ -622,25 +622,24 @@ def get_recommendations():
         frend_arr = []
         if len(subscriptions) > 0:
             for sub in subscriptions:
-                recipes = session.query(Recipe, associated_users, Commetns).filter_by(author_id=sub.user_id_child)
+                recipes = session.query(Recipe, associated_users, Comments).filter_by(author_id=sub.user_id_child)
                 recipes = recipes.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
-                recipes = recipes.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
+                recipes = recipes.outerjoin(Comments, Comments.recipe_id == Recipe.id)
                 recipes = recipes.limit(3).all()
                 for recipe in recipes:
                     frend_arr.append([recipe[0].as_dict(),recipe[1],recipe[2]])
-        recomendations = session.query(Recipe, associated_users, Commetns)
+        recomendations = session.query(Recipe, associated_users, Comments)
         recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
-        recomendations = recomendations.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
+        recomendations = recomendations.outerjoin(Comments, Comments.recipe_id == Recipe.id)
         recomendations = recomendations.order_by(sqlalchemy.desc("id")).limit(10)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
-                print(recipe)
-                likes = recipe[2]
-                comments = recipe[2]
+                likes = recipe[3]
+                comments = recipe[3]
                 recipe_json = recipe[0].as_dict()
-                recipe_json["likes"] = len(likes)
-                recipe_json["comments"] = len(comments)
+                recipe_json["likes"] = likes.count()
+                recipe_json["comments"] = comments.count()
                 rec_dicts_new.append(recipe_json)
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})

@@ -135,7 +135,7 @@ const CreateRecipeScreen = ({ navigation }) => {
     // });
 
     try {
-      console.log(server_ip + '/add_recipes/')
+      console.log(await server_ip() + '/add_recipes/')
       const select_image = image.assets[0];
       const uri_file = select_image.uri
       const file_base64 = "data:" + select_image.type + ";base64," + await fs.readFile(uri_file, 'base64')
@@ -143,7 +143,7 @@ const CreateRecipeScreen = ({ navigation }) => {
       data["file"] = file_base64;
       data["filename"] = select_image.fileName;
 
-      const res = await axios.post(server_ip + '/add_recipes', data);
+      const res = await axios.post(await server_ip() + '/add_recipes', data);
 
       if (res.data.status) {
         alert('Рецепт сохранён!');

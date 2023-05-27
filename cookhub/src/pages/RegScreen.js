@@ -40,7 +40,7 @@ const RegScreen = ({navigation}) => {
         })
 
         try {
-            const response = await axios.post(server_ip + '/user_reg', {
+            const response = await axios.post(await server_ip() + '/user_reg', {
                 name,
                 surname,
                 email,

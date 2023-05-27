@@ -3,7 +3,7 @@ import { server_ip } from "./config";
 
 export const checkSSHkey = async (sshkey) => {
     try {
-        const response = await axios.post(server_ip+'/correct_key', {
+        const response = await axios.post(await server_ip()+'/correct_key', {
             sshkey
         });
         console.log(response.data);
@@ -16,7 +16,7 @@ export const checkSSHkey = async (sshkey) => {
 
 export const getProfile = async (sshkey) => {
     try {
-        const response = await axios.post(server_ip+'/get_profile', {
+        const response = await axios.post(await server_ip()+'/get_profile', {
             sshkey
         });
         console.log(response.data);
@@ -29,7 +29,7 @@ export const getProfile = async (sshkey) => {
 
 export const getProfileId = async (sshkey, tag) => {
     try {
-        const response = await axios.post(server_ip+'/get_user_profile', {
+        const response = await axios.post(await server_ip()+'/get_user_profile', {
             sshkey, tag
         });
         console.log(response.data);
@@ -42,7 +42,7 @@ export const getProfileId = async (sshkey, tag) => {
 
 export const subscribeUser = async (sshkey, user_for) => {
     try {
-        const response = await axios.post(server_ip + `/sub_profile`, {sshkey, user_for});
+        const response = await axios.post(await server_ip() + `/sub_profile`, {sshkey, user_for});
         return response.data;
     } catch (error) {
         console.log(error);
@@ -52,7 +52,7 @@ export const subscribeUser = async (sshkey, user_for) => {
 
 export const unSubscribeUser = async (sshkey, user_for) => {
     try {
-        const response = await axios.post(server_ip + `/unssub_profile`, {sshkey, user_for});
+        const response = await axios.post(await server_ip() + `/unssub_profile`, {sshkey, user_for});
         return response.data;
     } catch (error) {
         console.log(error);

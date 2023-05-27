@@ -22,3 +22,7 @@ export const UserContext = createContext({
     setUser: noop,
     subscriptions: []
 })
+
+export const ConfigContext = createContext({
+    ip: ""
+})

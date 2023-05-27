@@ -50,16 +50,16 @@ const RecipeScreen = ({ navigation, route }) => {
         const recipe = await getRecipe(id);
 
         if (recipe) {
-            const parsedList = recipe.likes.split('|').filter(Boolean).map(item => parseInt(item));
+            const parsedList = recipe.likes || [];
             setLikes(parsedList);
 
             setData(recipe);
 
             setComments(recipe.comments);
 
-            if (parsedList.includes(user.user_id)) {
-                setLike(true);
-            }
+            // if (parsedList.includes(user.user_id)) {
+            setLike(true);
+            // }
             setSteps([
                 { type: "list", list: recipe.steps },
                 { type: "table", table: recipe.ingredients },

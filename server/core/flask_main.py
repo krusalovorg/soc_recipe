@@ -487,7 +487,9 @@ def add_recipes():
         ses = session.query(Sessions).filter_by(sshkey=sshkey).first()
         if ses:
             user = session.query(User).filter_by(id=ses.user_id).first()
+            print(user)
             if user:
+                print('fesfesf')
                 crypto_name_file = sha256((filename + str(time.time())).encode("utf-8")).hexdigest() + "." + \
                                    filename.split(".")[1]
                 new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,

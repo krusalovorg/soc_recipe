@@ -400,7 +400,9 @@ def login():
     password = request.json["password"]
     users = session.query(User).all()
     user_found = False
+    print("FOUND")
     for user in users:
+        print("FOUND")
         if (user.email == email or user.tag == email) and user.check_password(password):
             sshkey = sha256(f"H@S213s$-1{email}{user.hashed_password}".encode('utf-8')).hexdigest()
             ses = Sessions(user_id=user.id, sshkey=sshkey)
@@ -635,8 +637,9 @@ def get_recommendations():
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
-                likes = [2]
-                comments = [2]
+                print(recipe)
+                likes = recipe[2]
+                comments = recipe[2]
                 recipe_json = recipe[0].as_dict()
                 recipe_json["likes"] = len(likes)
                 recipe_json["comments"] = len(comments)

@@ -638,8 +638,10 @@ def get_recommendations():
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
                 print(recipe)
+                if recipe[2] is None: recipe[2] = 0
+                if recipe[3] is None: recipe[3] = 0
                 likes = recipe[2]
-                comments = recipe[2]
+                comments = recipe[3]
                 recipe_json = recipe[0].as_dict()
                 recipe_json["likes"] = len(likes)
                 recipe_json["comments"] = len(comments)

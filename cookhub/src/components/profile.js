@@ -110,7 +110,12 @@ export default function DrawerProfile(props) {
                 style={styles.drawerItem}
                 labelStyle={styles.drawerLabel}
             />
-
+            <DrawerItem
+                label="Настройки"
+                onPress={() => props.navigation.navigate('settings')}
+                style={styles.drawerItem}
+                labelStyle={styles.drawerLabel}
+            />
             <DrawerItem
                 label="Выйти из аккаунта"
                 onPress={() => { auth.logout() }}

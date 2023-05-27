@@ -15,7 +15,7 @@ function getLikesText(likesCount) {
 
 function Recipe(props) {
     const [loading, setLoading] = useState(true);
-    const parsedList = props.data.likes.split('|').filter(Boolean).map(item => parseInt(item));
+    // const parsedList = props.data.likes.split('|').filter(Boolean).map(item => parseInt(item));
 
     function onLoadEnd() {
         setLoading(false);
@@ -46,7 +46,7 @@ function Recipe(props) {
                         <Text style={styles.title} numberOfLines={1} ellipsizeMode='tail'>{props.data.title}</Text>
                         <Text style={styles.name}>@{props.data.author}</Text>
                         <Text style={styles.views}>{props.data.views} просмотров</Text>
-                        <Text style={styles.views}>{parsedList.length} {getLikesText(parsedList.length)}</Text>
+                        <Text style={styles.views}>{props.data.likes} {getLikesText(props.data.likes)}</Text>
                     </View>
                 </View>
             </TouchableHighlight>

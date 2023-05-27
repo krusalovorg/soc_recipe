@@ -26,11 +26,11 @@ import { AuthContext, UserContext } from './context/auth.context';
 
 import Loader from './components/loader';
 import CreateRecipeScreen from './pages/CreateRecipeScreen';
-import { server_ip } from './api/config';
 import ProfileScreen from './pages/ProfileScreen';
 import ChatScreen from './pages/ChatScreen';
 import ErrorBoundary from './pages/ErrorScreen';
-import RNRestart from 'react-native-restart'; 
+import RNRestart from 'react-native-restart';
+import SettingsScreen from './pages/SettingsScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -58,12 +58,12 @@ const App = () => {
     await cache.remove("id");
     setToken(null);
     setIsAuth(false);
-    setTimeout(()=>{
+    setTimeout(() => {
       RNRestart.Restart();
-    },200)
+    }, 200)
   }
 
-  async function checkLogin(login=false) {
+  async function checkLogin(login = false) {
     const sshkey = await cache.get("token");
     if (sshkey) {
       const res = await checkSSHkey(sshkey)
@@ -74,9 +74,9 @@ const App = () => {
         cache.set('id', data.id);
         setIsAuth(true);
         if (login) {
-          setTimeout(()=>{
+          setTimeout(() => {
             RNRestart.Restart();
-          },200)
+          }, 200)
         }
       } else {
         await cache.remove("token");
@@ -147,6 +147,12 @@ const App = () => {
                     component={ChatScreen}
                     options={{
                       title: 'CookBot',
+                    }} />
+                  <Drawer.Screen
+                    name="settings"
+                    component={SettingsScreen}
+                    options={{
+                      title: 'Настройки',
                     }} />
                   <Drawer.Screen
                     name="recipe"

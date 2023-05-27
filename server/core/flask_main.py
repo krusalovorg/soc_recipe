@@ -629,14 +629,18 @@ def get_recommendations():
         recomendations = session.query(Recipe, associated_users, Commetns)
         recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
         recomendations = recomendations.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
-        recomendations = recomendations.order_by(sqlalchemy.desc()).limit(10)
+        recomendations = recomendations.order_by(sqlalchemy.desc("id")).limit(10)
         print(recomendations)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
+            print('get',recipe)
             if recipe not in rec_dicts_new:
                 likes = [2]
                 comments = [2]
-                rec_dicts_new.append({"rec_dict": recipe.as_dict(), "likes": len(likes), "comments": len(comments)})
+                recipe_json = recipe[0].as_dict()
+                recipe_json["likes"] = len(likes)
+                recipe_json["comments"] = len(comments)
+                rec_dicts_new.append(recipe_json)
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})
 

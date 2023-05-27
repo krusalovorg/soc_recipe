@@ -623,14 +623,13 @@ def get_recommendations():
                 recipes = session.query(Recipe, associated_users, Commetns).filter_by(author_id=sub.user_id_child)
                 recipes = recipes.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
                 recipes = recipes.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
-                recipes = recipes.limit(3)
+                recipes = recipes.limit(3).all()
                 for recipe in recipes:
-                    frend_arr.append(recipe.as_dict())
+                    frend_arr.append([recipe[0].as_dict(),recipe[1],recipe[2],recipe[3]])
         recomendations = session.query(Recipe, associated_users, Commetns)
         recomendations = recomendations.outerjoin(associated_users, Recipe.id == associated_users.c.recipe_id)
         recomendations = recomendations.outerjoin(Commetns, Commetns.recipe_id == Recipe.id)
         recomendations = recomendations.order_by(sqlalchemy.desc("id")).limit(10)
-        print(recomendations)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
             print('get',recipe)

@@ -643,8 +643,8 @@ def get_recommendations():
                 likes = recipe[2] or []
                 comments = recipe[3] or []
                 recipe_json = recipe[0].as_dict()
-                recipe_json["likes"] = len(likes)
-                recipe_json["comments"] = len(comments)
+                recipe_json["likes"] = 0
+                recipe_json["comments"] = 0
                 rec_dicts_new.append(recipe_json)
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})

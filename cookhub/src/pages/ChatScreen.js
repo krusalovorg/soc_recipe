@@ -50,6 +50,7 @@ const ChatScreen = ({ navigation, route }) => {
             console.log('get', msg)
             setDialog([...dialog, { 'from': "@" + user.tag, text }, msg['answer']])
             updateAnim();
+            setText("");
         }
     }
 

@@ -633,7 +633,6 @@ def get_recommendations():
         print(recomendations)
         rec_dicts_new = [] + frend_arr
         for recipe in recomendations:
-            print('get',recipe)
             if recipe not in rec_dicts_new:
                 likes = [2]
                 comments = [2]

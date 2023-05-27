@@ -1,19 +1,47 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
-import { FlatList, ImageBackground, TouchableOpacity } from 'react-native';
-import { ScrollView, View, Text, Image, Animated, StyleSheet, TouchableHighlight, Dimensions, TextInput, SafeAreaView } from 'react-native';
-
+import { TouchableOpacity } from 'react-native';
+import { ToastAndroid, View, Text, StyleSheet, TextInput, SafeAreaView } from 'react-native';
 import Loader from '../components/loader';
 
 import { UserContext } from '../context/auth.context';
+import { AsyncStorage } from 'react-native';
+
+let ipv4 = /(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/;
 
 const SettingsScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
-    const [text, setText] = useState("");
+    const [ip, setIp] = useState("");
     const user = useContext(UserContext);
 
     useEffect(() => {
         setLoading(false)
+        loadIp();
     }, [SettingsScreen])
+
+    async function loadIp() {
+        const ip_load = await AsyncStorage.getItem("ip");
+        setIp(ip_load)
+    }
+
+    async function saveIp() {
+        if (ip.match(ipv4)) {
+            await AsyncStorage.setItem(
+                'ip',
+                ip
+            );
+            ToastAndroid.showWithGravity(
+                'Айпи адрес изменен успешно!',
+                ToastAndroid.SHORT,
+                ToastAndroid.CENTER,
+            );
+        } else {
+            ToastAndroid.showWithGravity(
+                'Айпи адрес не валидный',
+                ToastAndroid.SHORT,
+                ToastAndroid.CENTER,
+            );
+        }
+    }
 
     if (loading) {
         return <Loader />
@@ -22,17 +50,19 @@ const SettingsScreen = ({ navigation, route }) => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={[styles.page_contanier, styles.content, { height: '100%' }]}>
+                <Text style={[styles.title, { marginTop: 0, marginBottom: 20 }]}>Сеть:</Text>
+                <Text style={[styles.title, { fontSize: 15, marginBottom: 5 }]}>Айпи адрес</Text>
                 <View style={styles.input_contanier}>
                     <TextInput
                         style={styles.input}
-                        value={text}
+                        value={ip}
                         onChangeText={(text) => {
-                            setText(text);
+                            setIp(text);
                         }}
                         placeholder="Ip address"
                         placeholderTextColor="#777"
                     />
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => { saveIp() }}>
                         <Text style={styles.buttonText}>Сохранить</Text>
                     </TouchableOpacity>
                 </View>
@@ -43,6 +73,8 @@ const SettingsScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
     content: {
+        display: "flex",
+        flexDirection: "column",
         padding: 20,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         borderRadius: 0,
@@ -85,11 +117,6 @@ const styles = StyleSheet.create({
         padding: 10
     },
 
-    back_image: {
-        width: 20,
-        height: 20,
-    },
-
     title_contanier: {
         flexDirection: "row",
         alignItems: "center",
@@ -100,7 +127,7 @@ const styles = StyleSheet.create({
     },
 
     input_contanier: {
-        flex: 1,
+        flexGrow: 1,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
@@ -111,7 +138,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginHorizontal: 0,
         marginBottom: 20,
-        height: 50
+        maxHeight: 56
     },
     input: {
         width: "100%",
@@ -124,7 +151,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#F2F4F5',
         color: 'black',
     },
-
 })
 
 export default SettingsScreen;

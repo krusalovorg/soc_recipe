@@ -13,6 +13,7 @@ import { addComment, getRecipe, likeRecipe, remRecipe } from '../api/recipes';
 import { server_ip } from '../api/config';
 
 import { AuthContext, UserContext } from '../context/auth.context';
+import { ConfigContext } from "../context/auth.context";
 
 import {
     ToastAndroid,

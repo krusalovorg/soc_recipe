@@ -493,7 +493,7 @@ def add_recipes():
                 new_recipe = Recipe(title=title, category=category, time=time_, access=access, steps=steps,
                                     calories=calories, proteins=proteins, fats=fats, description=description,
                                     carbohydrates=carbohydrates, ingredients=ingredients, author=user.tag,
-                                    image=crypto_name_file, views=0, likes="")
+                                    image=crypto_name_file, views=0)
 
                 starter = image.find(',')
                 image_data = image[starter + 1:]
@@ -638,13 +638,11 @@ def get_recommendations():
         for recipe in recomendations:
             if recipe not in rec_dicts_new:
                 print(recipe)
-                if recipe[2] is None: recipe[2] = 0
-                if recipe[3] is None: recipe[3] = 0
-                likes = recipe[2]
-                comments = recipe[3]
+                likes = recipe[2] or []
+                comments = recipe[3] or []
                 recipe_json = recipe[0].as_dict()
-                recipe_json["likes"] = likes.count()
-                recipe_json["comments"] = comments.count()
+                recipe_json["likes"] = len(likes)
+                recipe_json["comments"] = len(comments)
                 rec_dicts_new.append(recipe_json)
         return jsonify({"status": True, "recipes": rec_dicts_new})
     return jsonify({"status": False, "recipes": []})

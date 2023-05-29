@@ -64,6 +64,9 @@ const LoginScreen = ({ navigation }) => {
                         <TouchableOpacity style={[styles.button, {marginTop: 5}]} onPress={handleLogin}>
                             <Text style={styles.buttonText}>Войти</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, {marginTop: 5, backgroundColor: "red"}]} onPress={()=>{navigation.navigate("settings")}}>
+                            <Text style={styles.buttonText}>Coder mode</Text>
+                        </TouchableOpacity>
                         <View style={styles.loginLinkContainer}>
                             <Text style={styles.loginLinkText}>Нет аккаунта?</Text>
                             <TouchableOpacity onPress={() => { navigation.navigate("reg") }}>

@@ -10,7 +10,7 @@ const validateEmail = (email) => {
 };
 
 function validatePassword(password) {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{7,}$/;
     return regex.test(password);
 }
 
@@ -40,6 +40,7 @@ const RegScreen = ({navigation}) => {
         })
 
         try {
+            console.log("IP",await server_ip() + '/user_reg')
             const response = await axios.post(await server_ip() + '/user_reg', {
                 name,
                 surname,

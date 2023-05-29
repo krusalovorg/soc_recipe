@@ -57,7 +57,7 @@ function RecipeInput(props) {
 
 const CreateRecipeScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('Завтрак');
   const [access, setAccess] = useState('');
   const [time, setTime] = useState('');
   const [steps, setSteps] = useState([{ type: 'text', text: '' }]);
@@ -94,10 +94,12 @@ const CreateRecipeScreen = ({ navigation }) => {
   const handleSave = async () => {
     let isValidForm = true;
 
+    let category_ = category || "Завтрак";
+
     const data = {
       sshkey: token,
       title,
-      category,
+      category: category_,
       access: access ? "private" : "public",
       time,
       steps,
@@ -112,6 +114,7 @@ const CreateRecipeScreen = ({ navigation }) => {
     Object.keys(data).map((key) => {
       const item = data[key];
       if (item == '' && typeof item != 'boolean') {
+        console.log('ITEM::::',item, key)
         setError(`Поле ${translate_ids[key]} не может быть пустым`);
         isValidForm = false;
       }

@@ -4,16 +4,31 @@ import { server_ip } from "./config";
 export const getRecipies = async (sshkey) => {
     try {
         console.log(sshkey)
-        const response = await fetch(await server_ip() + `/get_recomendations`, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ sshkey })
+        // const response = await axios.post(await server_ip() + `/get_recomendations`, {
+        //     method: 'POST',
+        //     headers: {
+        //         Accept: 'application/json',
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({ sshkey })
+        // });
+        // const data = await response.json();
+        // return data.recipes;
+
+        const response = await axios.get(await server_ip() + `/get_recomendations`, {
+            sshkey,
+            maxContentLength: 100000000,
+            maxBodyLength: 1000000000
         });
-        const data = await response.json();
-        return data.recipes;
+        // const response = await axios({
+        //     method: 'post',
+        //     url: await server_ip() + `/get_recomendations`,
+        //     data: JSON.stringify({ sshkey }),
+        //     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        //     maxContentLength: 100000000,
+        //     maxBodyLength: 1000000000
+        // })
+        return response.data.recipes
     } catch (error) {
         console.log(error);
         return [];

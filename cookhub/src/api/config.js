@@ -13,5 +13,5 @@ const cache = new Cache({
 export async function server_ip() {
     const ip = await cache.get("ip")
     console.log('get', ip)
-    return ip || "http://192.168.0.12:8000/api"
+    return "http://"+ip+":8000/api"// || "http://192.168.0.12:8000/api"
 };

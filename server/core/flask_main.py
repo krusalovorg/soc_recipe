@@ -466,6 +466,7 @@ def get_image(filename):
 # Добавить рецепт
 @app.route('/api/add_recipes/', methods=['POST'])
 def add_recipes():
+    print("GET")
     if not request.json:
         abort(400)
     sshkey = request.json["sshkey"]
@@ -646,7 +647,8 @@ def get_recommendations():
                 recipe_json["likes"] = 0
                 recipe_json["comments"] = 0
                 rec_dicts_new.append(recipe_json)
-        return jsonify({"status": True, "recipes": rec_dicts_new})
+        return jsonify({"status": True, "recipes": [rec_dicts_new[1]]})
+    print("NULL, ses not", sshkey, request.json)
     return jsonify({"status": False, "recipes": []})
 
 
@@ -709,9 +711,9 @@ def search_all(search_text=None, filter_text=None, categories=None, only_categor
 
 @app.route('/api/search', methods=['POST'])
 def search():
-    search_text = request.json.get('search_text')
+    search_text = request.json.get('search_text') or ""
     filter_text = request.json.get("filter")
-    categories = request.json.get("categories")
+    categories = request.json.get("categories") or []
     only_categories = request.json.get("only_categories") or False
 
     """
@@ -725,7 +727,7 @@ def search():
         search_text = new_words[max(new_words.keys())]
     """
 
-    if categories[0].endswith("k"):
+    if categories != None and len(categories) >= 1 and categories[0].endswith("k"):
         value = int(categories[0][:2])
         recipes = session.query(Recipe).filter(Recipe.calories < value).all()
         recipes_array = []

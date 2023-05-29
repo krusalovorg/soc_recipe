@@ -90,7 +90,7 @@ const App = () => {
     if (ip_get) {
       setIp(ip_get)
     } else {
-      await cache.set("ip", "http://192.168.0.12:8000/api")
+      // await cache.set("ip", "http://192.168.0.12:8000/api")
     }
     setLoading(false);
   }
@@ -99,7 +99,7 @@ const App = () => {
     checkLogin();
   }, [App])
 
-  if (loading) {
+  if (loading && false) {
     return <Loader />
   }
 
@@ -124,6 +124,13 @@ const App = () => {
                       component={LoginScreen}
                       options={{
                         title: "Вход",
+                        headerShown: false
+                      }} />
+                    <Stack.Screen
+                      name="settings"
+                      component={SettingsScreen}
+                      options={{
+                        title: "Настройки",
                         headerShown: false
                       }} />
                   </Stack.Navigator>

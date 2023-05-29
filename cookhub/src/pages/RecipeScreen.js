@@ -58,7 +58,7 @@ const RecipeScreen = ({ navigation, route }) => {
             setComments(recipe.comments);
 
             // if (parsedList.includes(user.user_id)) {
-            setLike(true);
+            setLike(false);
             // }
             setSteps([
                 { type: "list", list: recipe.steps },

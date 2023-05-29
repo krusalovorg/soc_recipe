@@ -5,8 +5,18 @@ import Loader from '../components/loader';
 
 import { UserContext } from '../context/auth.context';
 import { AsyncStorage } from 'react-native';
+import { Cache } from 'react-native-cache';
 
 let ipv4 = /(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])/;
+
+const cache = new Cache({
+    namespace: "auth",
+    policy: {
+        maxEntries: 50000,
+        stdTTL: 0
+    },
+    backend: AsyncStorage
+});
 
 const SettingsScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
@@ -19,13 +29,13 @@ const SettingsScreen = ({ navigation, route }) => {
     }, [SettingsScreen])
 
     async function loadIp() {
-        const ip_load = await AsyncStorage.getItem("ip");
+        const ip_load = await cache.get("ip");
         setIp(ip_load)
     }
 
     async function saveIp() {
         if (ip.match(ipv4)) {
-            await AsyncStorage.setItem(
+            await cache.set(
                 'ip',
                 ip
             );

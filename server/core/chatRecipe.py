@@ -10,7 +10,7 @@ from data.__models import SqlBase, User, Recipe, Ingredient, associated_recipes,
 from server.core.utils.cmd2dict import challenge_command
 
 app = Flask(__name__)
-engine = sqlalchemy.create_engine('sqlite:///db/db.db?check_same_thread=False', echo=False)
+engine = sqlalchemy.create_engine('sqlite:///db/db_tset.db?check_same_thread=False', echo=False)
 SqlBase.metadata.create_all(engine)
 SqlBase.metadata.bind = engine
 Session = sessionmaker(bind=engine)

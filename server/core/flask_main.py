@@ -47,6 +47,10 @@ morph = pymorphy2.MorphAnalyzer(lang='ru')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    ses = session.query(User).all()
+    for s in ses:
+        print(s)
+
     return jsonify({"status": True})
 
 
@@ -409,6 +413,7 @@ def login():
             session.add(ses)
             session.commit()
             user_found = True
+            print("FOUND3")
             return jsonify({'status': True, "sshkey": sshkey})
 
     if user_found:
